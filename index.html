@@ -34,7 +34,6 @@
 
     #hud {
       position: absolute;
-
       top: 15px;
       left: 15px;
       right: 15px;
@@ -48,7 +47,7 @@
     }
 
     .hudBox {
-      background: rgba(10, 15, 20, 0.94);
+      background: rgba(10,15,20,0.94);
 
       color: white;
 
@@ -57,7 +56,7 @@
       border-radius: 12px;
 
       box-shadow:
-        0 3px 12px rgba(0, 0, 0, 0.4);
+        0 3px 12px rgba(0,0,0,0.4);
 
       font-weight: bold;
     }
@@ -84,7 +83,7 @@
 
       z-index: 1000;
 
-      background: rgba(10, 15, 20, 0.94);
+      background: rgba(10,15,20,0.94);
 
       color: white;
 
@@ -117,7 +116,7 @@
     }
 
     /* =========================
-       COIN
+       COINS
        ========================= */
 
     .coin {
@@ -140,10 +139,9 @@
       box-shadow:
         0 0 8px #ffd700,
         0 0 18px #ffb000,
-        0 0 28px rgba(255, 190, 0, 0.7);
+        0 0 28px rgba(255,190,0,0.7);
 
       display: flex;
-
       align-items: center;
       justify-content: center;
 
@@ -175,9 +173,7 @@
 <body>
 
 
-  <!-- =========================
-       HUD
-       ========================= -->
+  <!-- HUD -->
 
   <div id="hud">
 
@@ -198,26 +194,25 @@
   </div>
 
 
-  <!-- =========================
-       STATUS
-       ========================= -->
+  <!-- STATUS -->
 
   <div id="status">
     📍 Finding your location...
   </div>
 
 
-  <!-- =========================
-       MAP
-       ========================= -->
+  <!-- MAP -->
 
   <div id="map"></div>
 
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
 
 
   <script>
+
 
     /* =====================================================
        GAME VARIABLES
@@ -244,22 +239,35 @@
        SETTINGS
        ===================================================== */
 
-    const NUMBER_OF_COINS = 8;
-
-    const SEARCH_DISTANCE_METERS = 500;
-
-    const MIN_COIN_DISTANCE = 50;
-
-    const COIN_REFRESH_DISTANCE = 100;
+    const SEARCH_DISTANCE_METERS = 700;
 
     const COLLECTION_DISTANCE = 15;
 
     const COIN_VALUE = 10;
 
+    const COIN_REFRESH_DISTANCE = 150;
 
     /*
-      OSM servers.
+      Main trail.
     */
+
+    const MAIN_COINS = 5;
+
+    const MAIN_SPACING = 70;
+
+    /*
+      Mini branch.
+    */
+
+    const BRANCH_COINS = 3;
+
+    const BRANCH_SPACING = 60;
+
+
+
+    /* =====================================================
+       OVERPASS SERVERS
+       ===================================================== */
 
     const OVERPASS_SERVERS = [
 
@@ -280,12 +288,11 @@
       longitude
     ) {
 
+
       /*
         IMPORTANT:
 
-        The map is centered ONCE.
-
-        GPS updates never call setView().
+        Map centers only ONCE.
       */
 
       map =
@@ -302,7 +309,7 @@
 
 
       /*
-        OpenStreetMap tiles.
+        OSM tiles.
       */
 
       L.tileLayer(
@@ -320,7 +327,7 @@
 
 
       /*
-        Player icon.
+        Player.
       */
 
       const playerIcon =
@@ -332,10 +339,10 @@
             '<div class="player"></div>',
 
           iconSize:
-            [28, 28],
+            [28,28],
 
           iconAnchor:
-            [14, 14]
+            [14,14]
 
         });
 
@@ -366,10 +373,10 @@
 
 
       /*
-        Find coins.
+        Generate paths.
       */
 
-      loadCoinsFromOSM(
+      loadGamePaths(
 
         latitude,
 
@@ -382,15 +389,17 @@
 
 
     /* =====================================================
-       GPS UPDATE
+       GPS
        ===================================================== */
 
     function updateLocation(
       position
     ) {
 
+
       const latitude =
         position.coords.latitude;
+
 
       const longitude =
         position.coords.longitude;
@@ -416,9 +425,9 @@
 
 
       /*
-        Move player.
+        Move player only.
 
-        NO map.setView() HERE.
+        NO map.setView().
       */
 
       player.setLatLng([
@@ -431,7 +440,7 @@
 
 
       /*
-        Check nearby coins.
+        Check coins.
       */
 
       checkCoinCollection(
@@ -444,8 +453,8 @@
 
 
       /*
-        Only refresh coins after
-        traveling 100 meters.
+        Refresh trails after
+        moving 150 meters.
       */
 
       if (
@@ -455,6 +464,7 @@
         lastLongitude !== null
 
       ) {
+
 
         const moved =
           getDistanceMeters(
@@ -475,6 +485,7 @@
           COIN_REFRESH_DISTANCE
         ) {
 
+
           lastLatitude =
             latitude;
 
@@ -482,7 +493,7 @@
             longitude;
 
 
-          loadCoinsFromOSM(
+          loadGamePaths(
 
             latitude,
 
@@ -499,16 +510,17 @@
 
 
     /* =====================================================
-       LOAD OSM DATA
+       LOAD OSM
        ===================================================== */
 
-    async function loadCoinsFromOSM(
+    async function loadGamePaths(
 
       latitude,
 
       longitude
 
     ) {
+
 
       if (loadingCoins) {
         return;
@@ -521,18 +533,18 @@
       document.getElementById(
         "status"
       ).innerText =
-        "🗺️ Finding coin locations...";
+        "🗺️ Looking for paths...";
 
 
       /*
-        Remove old uncollected coins.
+        Remove old coins.
       */
 
       removeUncollectedCoins();
 
 
       /*
-        Convert 500m to coordinates.
+        Bounding box.
       */
 
       const latOffset =
@@ -573,7 +585,7 @@
 
 
       /*
-        Ask OSM for highway/path ways.
+        OSM query.
       */
 
       const query = `
@@ -594,7 +606,7 @@
 
 
       /*
-        Try first server, then backup.
+        Try servers.
       */
 
       for (
@@ -608,7 +620,9 @@
 
       ) {
 
+
         try {
+
 
           const response =
             await fetch(
@@ -657,6 +671,7 @@
 
         } catch (error) {
 
+
           console.log(
             "OSM error:",
             error
@@ -669,10 +684,12 @@
 
       if (!data) {
 
+
         document.getElementById(
           "status"
         ).innerText =
           "⚠️ Couldn't load map data.";
+
 
         loadingCoins = false;
 
@@ -682,11 +699,11 @@
 
 
       /*
-        Get candidate locations.
+        Find usable ways.
       */
 
-      const candidates =
-        getCoinCandidates(
+      const paths =
+        getUsablePaths(
 
           data,
 
@@ -697,59 +714,120 @@
         );
 
 
-      /*
-        Sort by distance.
+      if (
+        paths.length === 0
+      ) {
 
-        This makes placement
-        predictable.
+
+        document.getElementById(
+          "status"
+        ).innerText =
+
+          gameMode === "PUBLIC"
+
+            ? "🔎 No suitable public paths nearby."
+
+            : "🔎 No mapped paths nearby.";
+
+
+        loadingCoins = false;
+
+        return;
+
+      }
+
+
+      /*
+        Build main trail.
       */
 
-      candidates.sort(
+      const mainTrail =
+        buildMainTrail(
 
-        function(a, b) {
+          paths[0],
 
-          return (
-            a.distance -
-            b.distance
-          );
+          latitude,
 
-        }
+          longitude
 
-      );
-
-
-      /*
-        Choose evenly spaced
-        locations.
-
-        No random selection.
-      */
-
-      const selected =
-        chooseCoinLocations(
-          candidates
         );
 
 
       /*
-        Create coins.
+        Find branch paths.
       */
 
-      selected.forEach(
+      const branch =
+        findBranchPath(
 
-        function(location) {
+          paths,
+
+          paths[0],
+
+          mainTrail
+
+        );
+
+
+      /*
+        Build branch trail.
+      */
+
+      const branchTrail =
+        branch
+
+          ? buildBranchTrail(
+              branch
+            )
+
+          : [];
+
+
+      /*
+        Add main coins.
+      */
+
+      mainTrail.forEach(
+
+        function(point) {
 
           createCoin(
 
-            location.latitude,
+            point.lat,
 
-            location.longitude
+            point.lon
 
           );
 
         }
 
       );
+
+
+      /*
+        Add branch coins.
+      */
+
+      branchTrail.forEach(
+
+        function(point) {
+
+          createCoin(
+
+            point.lat,
+
+            point.lon
+
+          );
+
+        }
+
+      );
+
+
+      const total =
+        mainTrail.length +
+        branchTrail.length;
 
 
       document.getElementById(
@@ -757,8 +835,8 @@
       ).innerText =
 
         "🎮 " +
-        selected.length +
-        " coins found!";
+        total +
+        " coins • explore the paths!";
 
 
       loadingCoins = false;
@@ -768,10 +846,10 @@
 
 
     /* =====================================================
-       FIND CANDIDATES
+       USABLE PATHS
        ===================================================== */
 
-    function getCoinCandidates(
+    function getUsablePaths(
 
       data,
 
@@ -781,17 +859,8 @@
 
     ) {
 
-      const candidates = [];
 
-
-      if (
-        !data ||
-        !data.elements
-      ) {
-
-        return candidates;
-
-      }
+      const paths = [];
 
 
       data.elements.forEach(
@@ -837,32 +906,14 @@
             ).toLowerCase();
 
 
-          const motorVehicle =
-            String(
-              tags.motor_vehicle || ""
-            ).toLowerCase();
-
-
-          const vehicle =
-            String(
-              tags.vehicle || ""
-            ).toLowerCase();
-
-
-
-          /* =========================================
-             PUBLIC MODE
-             ========================================= */
+          /*
+            PUBLIC mode.
+          */
 
           if (
             gameMode === "PUBLIC"
           ) {
 
-
-            /*
-              Explicitly restricted
-              ways are rejected.
-            */
 
             if (
 
@@ -870,26 +921,9 @@
 
               access === "no" ||
 
-              access === "customers" ||
+              access === "permit" ||
 
-              access === "permit"
-
-            ) {
-
-              return;
-
-            }
-
-
-            if (
-
-              motorVehicle === "private" ||
-
-              motorVehicle === "no" ||
-
-              vehicle === "private" ||
-
-              vehicle === "no"
+              access === "customers"
 
             ) {
 
@@ -897,11 +931,6 @@
 
             }
 
-
-            /*
-              Favor pedestrian-oriented
-              ways.
-            */
 
             const publicWays = [
 
@@ -935,22 +964,18 @@
           }
 
 
+          /*
+            UNLIMITED mode.
 
-          /* =========================================
-             UNLIMITED MODE
-             ========================================= */
+            Still avoid major roads.
+          */
 
           if (
             gameMode === "UNLIMITED"
           ) {
 
 
-            /*
-              Still avoid major
-              high-speed roads.
-            */
-
-            const dangerousWays = [
+            const dangerous = [
 
               "motorway",
 
@@ -968,7 +993,7 @@
 
 
             if (
-              dangerousWays.includes(
+              dangerous.includes(
                 highway
               )
             ) {
@@ -980,53 +1005,29 @@
           }
 
 
-
           /*
-            Pick midpoint instead of random
-            point.
-
-            This makes it consistent.
+            Closest point.
           */
 
-          const midpoint =
-            getGeometryMidpoint(
+          const closest =
+            getClosestPointOnWay(
 
-              element.geometry
-
-            );
-
-
-          if (!midpoint) {
-            return;
-          }
-
-
-          const distance =
-            getDistanceMeters(
+              element.geometry,
 
               playerLatitude,
 
-              playerLongitude,
-
-              midpoint.lat,
-
-              midpoint.lon
+              playerLongitude
 
             );
 
 
-          if (
-            distance <
-            MIN_COIN_DISTANCE
-          ) {
-
+          if (!closest) {
             return;
-
           }
 
 
           if (
-            distance >
+            closest.distance >
             SEARCH_DISTANCE_METERS
           ) {
 
@@ -1035,19 +1036,22 @@
           }
 
 
-          candidates.push({
+          paths.push({
 
-            latitude:
-              midpoint.lat,
-
-            longitude:
-              midpoint.lon,
-
-            distance:
-              distance,
+            geometry:
+              element.geometry,
 
             highway:
-              highway
+              highway,
+
+            distance:
+              closest.distance,
+
+            closestIndex:
+              closest.index,
+
+            tags:
+              tags
 
           });
 
@@ -1056,88 +1060,245 @@
       );
 
 
-      return candidates;
+      /*
+        Closest first.
+      */
+
+      paths.sort(
+
+        function(a,b) {
+
+          return (
+            a.distance -
+            b.distance
+          );
+
+        }
+
+      );
+
+
+      return paths;
 
     }
 
 
 
     /* =====================================================
-       GET MIDPOINT
+       CLOSEST POINT
        ===================================================== */
 
-    function getGeometryMidpoint(
-      geometry
+    function getClosestPointOnWay(
+
+      geometry,
+
+      latitude,
+
+      longitude
+
     ) {
 
-      if (
-        !geometry ||
-        geometry.length === 0
-      ) {
 
-        return null;
-
-      }
+      let best = null;
 
 
-      /*
-        Use the middle OSM node.
+      geometry.forEach(
 
-        Unlike Math.random(),
-        this is repeatable.
-      */
-
-      const index =
-        Math.floor(
-          geometry.length / 2
-        );
+        function(point,index) {
 
 
-      const point =
-        geometry[index];
+          const distance =
+            getDistanceMeters(
+
+              latitude,
+
+              longitude,
+
+              point.lat,
+
+              point.lon
+
+            );
 
 
-      if (
-        !point ||
-        typeof point.lat !== "number" ||
-        typeof point.lon !== "number"
-      ) {
+          if (
 
-        return null;
+            best === null ||
 
-      }
+            distance <
+            best.distance
+
+          ) {
 
 
-      return point;
+            best = {
+
+              distance:
+                distance,
+
+              index:
+                index
+
+            };
+
+          }
+
+        }
+
+      );
+
+
+      return best;
 
     }
 
 
 
     /* =====================================================
-       CHOOSE COIN LOCATIONS
+       MAIN TRAIL
        ===================================================== */
 
-    function chooseCoinLocations(
-      candidates
+    function buildMainTrail(
+
+      path,
+
+      playerLatitude,
+
+      playerLongitude
+
     ) {
 
-      const selected = [];
+
+      const geometry =
+        path.geometry;
+
+
+      let index =
+        path.closestIndex;
 
 
       /*
-        Coins need space between them.
+        Determine direction.
       */
 
-      const MIN_SEPARATION = 60;
+      let direction =
+        1;
 
+
+      if (
+        index >=
+        geometry.length - 1
+      ) {
+
+        direction =
+          -1;
+
+      } else if (
+        index <= 0
+      ) {
+
+        direction =
+          1;
+
+      } else {
+
+
+        const next =
+          geometry[
+            index + 1
+          ];
+
+
+        const previous =
+          geometry[
+            index - 1
+          ];
+
+
+        const nextDistance =
+          getDistanceMeters(
+
+            playerLatitude,
+            playerLongitude,
+
+            next.lat,
+            next.lon
+
+          );
+
+
+        const previousDistance =
+          getDistanceMeters(
+
+            playerLatitude,
+            playerLongitude,
+
+            previous.lat,
+            previous.lon
+
+          );
+
+
+        if (
+          previousDistance >
+          nextDistance
+        ) {
+
+          direction =
+            -1;
+
+        }
+
+      }
+
+
+      return makeTrail(
+
+        geometry,
+
+        index,
+
+        direction,
+
+        MAIN_COINS,
+
+        MAIN_SPACING
+
+      );
+
+    }
+
+
+
+    /* =====================================================
+       FIND BRANCH
+       ===================================================== */
+
+    function findBranchPath(
+
+      paths,
+
+      mainPath,
+
+      mainTrail
+
+    ) {
+
+
+      /*
+        Search for another way
+        whose geometry comes close
+        to the main path.
+
+        This approximates a branch.
+      */
 
       for (
 
-        let i = 0;
+        let i = 1;
 
         i <
-        candidates.length;
+        paths.length;
 
         i++
 
@@ -1145,50 +1306,333 @@
 
 
         const candidate =
-          candidates[i];
+          paths[i];
 
 
-        let tooClose =
+        /*
+          Don't use the same highway
+          segment.
+        */
+
+        if (
+          candidate.geometry ===
+          mainPath.geometry
+        ) {
+
+          continue;
+
+        }
+
+
+        /*
+          Check whether the candidate
+          comes close to the main trail.
+        */
+
+        let connected =
           false;
 
 
         for (
 
-          let j = 0;
+          let a = 0;
 
-          j <
-          selected.length;
+          a <
+          candidate.geometry.length;
 
-          j++
+          a++
 
         ) {
 
 
-          const existing =
-            selected[j];
+          const point =
+            candidate.geometry[a];
 
 
-          const distance =
-            getDistanceMeters(
+          for (
 
-              candidate.latitude,
+            let b = 0;
 
-              candidate.longitude,
+            b <
+            mainTrail.length;
 
-              existing.latitude,
+            b++
 
-              existing.longitude
+          ) {
 
-            );
+
+            const trailPoint =
+              mainTrail[b];
+
+
+            const distance =
+              getDistanceMeters(
+
+                point.lat,
+                point.lon,
+
+                trailPoint.lat,
+                trailPoint.lon
+
+              );
+
+
+            /*
+              About 80 meters counts
+              as a possible branch.
+            */
+
+            if (
+              distance <= 80
+            ) {
+
+              connected =
+                true;
+
+              break;
+
+            }
+
+          }
+
+
+          if (connected) {
+            break;
+          }
+
+        }
+
+
+        if (connected) {
+
+          return candidate;
+
+        }
+
+      }
+
+
+      return null;
+
+    }
+
+
+
+    /* =====================================================
+       BUILD BRANCH TRAIL
+       ===================================================== */
+
+    function buildBranchTrail(
+      branch
+    ) {
+
+
+      const geometry =
+        branch.geometry;
+
+
+      if (
+        geometry.length < 2
+      ) {
+
+        return [];
+
+      }
+
+
+      /*
+        Start at one end of the branch
+        and walk toward the other end.
+
+        This makes mini paths naturally
+        extend down roads/paths.
+      */
+
+      const fromStart =
+        geometry[0];
+
+
+      const fromEnd =
+        geometry[
+          geometry.length - 1
+        ];
+
+
+      /*
+        Prefer the longer direction.
+      */
+
+      let startIndex =
+        0;
+
+
+      let direction =
+        1;
+
+
+      if (
+        branch.distance <
+        100
+      ) {
+
+
+        /*
+          If the branch is near the player,
+          use its farther end.
+        */
+
+        const startDistance =
+          branch.distance;
+
+
+        const endDistance =
+          getDistanceMeters(
+
+            lastLatitude,
+            lastLongitude,
+
+            fromEnd.lat,
+            fromEnd.lon
+
+          );
+
+
+        if (
+          endDistance <
+          startDistance
+        ) {
+
+          startIndex =
+            geometry.length - 1;
+
+          direction =
+            -1;
+
+        }
+
+      }
+
+
+      return makeTrail(
+
+        geometry,
+
+        startIndex,
+
+        direction,
+
+        BRANCH_COINS,
+
+        BRANCH_SPACING
+
+      );
+
+    }
+
+
+
+    /* =====================================================
+       MAKE TRAIL
+       ===================================================== */
+
+    function makeTrail(
+
+      geometry,
+
+      startIndex,
+
+      direction,
+
+      numberOfCoins,
+
+      spacing
+
+    ) {
+
+
+      const trail = [];
+
+
+      let accumulated =
+        0;
+
+
+      let lastPoint =
+        geometry[startIndex];
+
+
+      for (
+
+        let step = 1;
+
+        step <
+        geometry.length;
+
+        step++
+
+      ) {
+
+
+        const index =
+          startIndex +
+          step *
+          direction;
+
+
+        if (
+          index < 0 ||
+          index >= geometry.length
+        ) {
+
+          break;
+
+        }
+
+
+        const point =
+          geometry[index];
+
+
+        const distance =
+          getDistanceMeters(
+
+            lastPoint.lat,
+            lastPoint.lon,
+
+            point.lat,
+            point.lon
+
+          );
+
+
+        accumulated +=
+          distance;
+
+
+        if (
+          accumulated >=
+          spacing
+        ) {
+
+
+          trail.push({
+
+            lat:
+              point.lat,
+
+            lon:
+              point.lon
+
+          });
+
+
+          accumulated = 0;
 
 
           if (
-            distance <
-            MIN_SEPARATION
+            trail.length >=
+            numberOfCoins
           ) {
-
-            tooClose =
-              true;
 
             break;
 
@@ -1197,34 +1641,108 @@
         }
 
 
-        if (
-          !tooClose
-        ) {
-
-          selected.push(
-            candidate
-          );
-
-        }
-
-
-        /*
-          We have enough.
-        */
-
-        if (
-          selected.length >=
-          NUMBER_OF_COINS
-        ) {
-
-          break;
-
-        }
+        lastPoint =
+          point;
 
       }
 
 
-      return selected;
+      /*
+        Try the other direction if
+        the way was too short.
+      */
+
+      if (
+        trail.length === 0
+      ) {
+
+
+        let reverse =
+          [];
+
+
+        let accumulated2 =
+          0;
+
+
+        let last =
+          geometry[startIndex];
+
+
+        for (
+
+          let index =
+            startIndex - direction;
+
+          index >= 0 &&
+          index < geometry.length;
+
+          index -= direction
+
+        ) {
+
+
+          const point =
+            geometry[index];
+
+
+          accumulated2 +=
+            getDistanceMeters(
+
+              last.lat,
+              last.lon,
+
+              point.lat,
+              point.lon
+
+            );
+
+
+          if (
+            accumulated2 >=
+            spacing
+          ) {
+
+
+            reverse.push({
+
+              lat:
+                point.lat,
+
+              lon:
+                point.lon
+
+            });
+
+
+            accumulated2 = 0;
+
+
+            if (
+              reverse.length >=
+              numberOfCoins
+            ) {
+
+              break;
+
+            }
+
+          }
+
+
+          last =
+            point;
+
+        }
+
+
+        trail =
+          reverse;
+
+      }
+
+
+      return trail;
 
     }
 
@@ -1243,6 +1761,46 @@
     ) {
 
 
+      /*
+        Prevent coins from being
+        placed directly on top of
+        each other.
+      */
+
+      for (
+        let i = 0;
+        i < coins.length;
+        i++
+      ) {
+
+
+        const existing =
+          coins[i];
+
+
+        const distance =
+          getDistanceMeters(
+
+            latitude,
+            longitude,
+
+            existing.latitude,
+            existing.longitude
+
+          );
+
+
+        if (
+          distance < 25
+        ) {
+
+          return;
+
+        }
+
+      }
+
+
       const coinIcon =
         L.divIcon({
 
@@ -1252,10 +1810,10 @@
             '<div class="coin">🪙</div>',
 
           iconSize:
-            [34, 34],
+            [34,34],
 
           iconAnchor:
-            [17, 17]
+            [17,17]
 
         });
 
@@ -1265,9 +1823,7 @@
 
           [
             latitude,
-
             longitude
-
           ],
 
           {
@@ -1306,6 +1862,7 @@
 
     function removeUncollectedCoins() {
 
+
       const remaining = [];
 
 
@@ -1318,9 +1875,11 @@
             coin.collected
           ) {
 
+
             remaining.push(
               coin
             );
+
 
           } else {
 
@@ -1352,7 +1911,7 @@
 
 
     /* =====================================================
-       CHECK COLLECTION
+       COLLECTION
        ===================================================== */
 
     function checkCoinCollection(
@@ -1382,11 +1941,9 @@
             getDistanceMeters(
 
               latitude,
-
               longitude,
 
               coin.latitude,
-
               coin.longitude
 
             );
@@ -1412,7 +1969,7 @@
 
 
     /* =====================================================
-       COLLECT COIN
+       COLLECT
        ===================================================== */
 
     function collectCoin(
@@ -1604,8 +2161,8 @@
 
 
         /*
-          Reload coins using the
-          new mode.
+          Rebuild paths using
+          the new mode.
         */
 
         if (
@@ -1616,7 +2173,7 @@
 
         ) {
 
-          loadCoinsFromOSM(
+          loadGamePaths(
 
             lastLatitude,
 
@@ -1639,6 +2196,7 @@
     function locationError(
       error
     ) {
+
 
       console.log(
         "GPS error:",
@@ -1695,6 +2253,7 @@
         "❌ GPS isn't available.";
 
     }
+
 
   </script>
 
