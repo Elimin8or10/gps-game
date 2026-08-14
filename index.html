@@ -1,271 +1,414 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8">
 
-<title>GPS Game</title>
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+>
+
+<title>GPS Coin Game</title>
 
 <link
-rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
 
 <style>
 
-/* =====================================================
+/* =========================================================
    GLOBAL
-===================================================== */
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
 
 html,
 body {
-
   margin: 0;
   padding: 0;
-
   width: 100%;
   height: 100%;
-
   overflow: hidden;
-
   background: #080b0f;
-
   font-family: Arial, sans-serif;
-
 }
 
+button,
+input {
+  font-family: inherit;
+}
 
-/* =====================================================
-   MAP
-===================================================== */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
 
 #map {
-
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-
 }
 
 
-/* =====================================================
+/* =========================================================
    LOADING SCREEN
-===================================================== */
+   ========================================================= */
 
 #loadingScreen {
-
   position: fixed;
-
   inset: 0;
-
   z-index: 99999;
 
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
   background:
-
     radial-gradient(
       circle at center,
-      #18232d 0%,
-      #0b1015 45%,
-      #05070a 100%
+      #18212b 0%,
+      #080b0f 65%
     );
 
   color: white;
 
-  transition:
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
+  padding: 25px;
+
+  transition:
     opacity 0.6s ease,
     visibility 0.6s ease;
-
 }
-
 
 #loadingScreen.hidden {
-
   opacity: 0;
-
   visibility: hidden;
-
   pointer-events: none;
-
 }
-
 
 .loadingContent {
-
-  width: min(90%, 360px);
-
+  width: 100%;
+  max-width: 420px;
   text-align: center;
+}
+
+.gameLogo {
+  font-size: 52px;
+  margin-bottom: 8px;
+
+  animation:
+    logoFloat 2s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) scale(1.05);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
 
 }
 
+.loadingTitle {
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
 
-.loadingLogo {
+.loadingSubtitle {
+  color: #9ba7b3;
+  margin-bottom: 30px;
+}
 
-  width: 86px;
-  height: 86px;
+.loadingSpinner {
+  width: 55px;
+  height: 55px;
 
   margin: 0 auto 25px;
 
   border-radius: 50%;
 
-  display: flex;
+  border:
+    4px solid rgba(255,255,255,0.12);
 
+  border-top-color: #00aaff;
+
+  animation:
+    spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+.loadingText {
+  color: #cbd5df;
+  margin-bottom: 25px;
+}
+
+.modeChoice {
+  display: none;
+}
+
+.modeChoice.show {
+  display: block;
+}
+
+.modeQuestion {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.modeButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.modeSelect {
+  flex: 1;
+
+  border: 1px solid rgba(255,255,255,0.12);
+
+  border-radius: 16px;
+
+  padding: 18px 12px;
+
+  color: white;
+
+  background: #171d24;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s,
+    background 0.15s,
+    border 0.15s;
+}
+
+.modeSelect:active {
+  transform: scale(0.96);
+}
+
+.modeSelect:hover {
+  background: #202a34;
+}
+
+.modeSelect.selected {
+  border-color: #00aaff;
+  box-shadow:
+    0 0 20px rgba(0,170,255,0.25);
+}
+
+.modeIcon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.modeName {
+  font-weight: bold;
+  font-size: 17px;
+}
+
+.modeDescription {
+  display: block;
+  color: #8f9ba7;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.startButton {
+  width: 100%;
+
+  margin-top: 18px;
+
+  padding: 16px;
+
+  border: none;
+  border-radius: 15px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #008cff,
+      #00c6ff
+    );
+
+  font-size: 18px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 30px rgba(0,150,255,0.3);
+}
+
+.startButton:active {
+  transform: scale(0.97);
+}
+
+
+/* =========================================================
+   AUTH
+   ========================================================= */
+
+#authScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #18212b,
+      #080b0f 70%
+    );
+
+  color: white;
+
+  display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 42px;
+  padding: 20px;
+}
 
-  background:
+.authBox {
+  width: 100%;
+  max-width: 390px;
 
-    radial-gradient(
-      circle at 35% 35%,
-      #fffbd0,
-      #ffd700 35%,
-      #e69d00 75%,
-      #9b5d00
-    );
+  background: rgba(20,26,33,0.96);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  border-radius: 22px;
+
+  padding: 25px;
 
   box-shadow:
-
-    0 0 15px #ffd700,
-    0 0 40px rgba(255,200,0,0.7),
-    0 0 90px rgba(255,170,0,0.35);
-
-  animation:
-
-    loadingCoin 1.5s infinite ease-in-out;
-
+    0 20px 60px rgba(0,0,0,0.6);
 }
 
-
-@keyframes loadingCoin {
-
-  0% {
-
-    transform:
-      scale(1)
-      rotate(0deg);
-
-  }
-
-  50% {
-
-    transform:
-      scale(1.1)
-      rotate(8deg);
-
-  }
-
-  100% {
-
-    transform:
-      scale(1)
-      rotate(0deg);
-
-  }
-
+.authLogo {
+  text-align: center;
+  font-size: 45px;
+  margin-bottom: 5px;
 }
 
-
-.loadingTitle {
-
-  font-size: 28px;
-
-  font-weight: 800;
-
-  letter-spacing: 1px;
-
-  margin-bottom: 8px;
-
+.authTitle {
+  text-align: center;
+  font-size: 27px;
+  font-weight: 900;
 }
 
-
-.loadingSubtitle {
-
-  color: #9ca8b3;
-
-  font-size: 15px;
-
-  margin-bottom: 28px;
-
+.authSubtitle {
+  text-align: center;
+  color: #8f9ba7;
+  margin:
+    8px 0 22px;
 }
 
-
-.loadingBar {
-
-  height: 6px;
-
+.authInput {
   width: 100%;
 
-  overflow: hidden;
+  padding: 14px;
 
-  border-radius: 20px;
+  margin-bottom: 10px;
 
-  background: rgba(255,255,255,0.1);
+  color: white;
 
+  background: #0e1318;
+
+  border:
+    1px solid #2b343d;
+
+  border-radius: 12px;
+
+  outline: none;
+
+  font-size: 16px;
+}
+
+.authInput:focus {
+  border-color: #00aaff;
+}
+
+.authButton {
+  width: 100%;
+
+  padding: 14px;
+
+  margin-top: 5px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #008cff;
+
+  color: white;
+
+  font-weight: bold;
+  font-size: 16px;
+
+  cursor: pointer;
+}
+
+.authSwitch {
+  margin-top: 18px;
+
+  text-align: center;
+
+  color: #8f9ba7;
+
+  font-size: 14px;
+}
+
+.authSwitch button {
+  border: none;
+  background: none;
+
+  color: #00aaff;
+
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.authMessage {
+  min-height: 20px;
+
+  margin-top: 12px;
+
+  text-align: center;
+
+  font-size: 14px;
 }
 
 
-.loadingBarInner {
-
-  width: 35%;
-
-  height: 100%;
-
-  border-radius: 20px;
-
-  background: #ffd000;
-
-  box-shadow:
-
-    0 0 12px #ffd000;
-
-  animation:
-
-    loadingBar 1.3s infinite ease-in-out;
-
-}
-
-
-@keyframes loadingBar {
-
-  0% {
-
-    transform: translateX(-130%);
-
-  }
-
-  100% {
-
-    transform: translateX(400%);
-
-  }
-
-}
-
-
-.loadingStatus {
-
-  margin-top: 15px;
-
-  font-size: 13px;
-
-  color: #d7dde2;
-
-}
-
-
-/* =====================================================
+/* =========================================================
    HUD
-===================================================== */
+   ========================================================= */
 
 #hud {
-
   position: absolute;
 
   top: 15px;
@@ -275,18 +418,14 @@ body {
   z-index: 1000;
 
   display: flex;
-
   gap: 8px;
 
-  font-family: Arial, sans-serif;
-
+  pointer-events: none;
 }
 
-
 .hudBox {
-
   background:
-    rgba(10,15,20,0.95);
+    rgba(10,15,20,0.94);
 
   color: white;
 
@@ -299,35 +438,117 @@ body {
 
   font-weight: bold;
 
+  pointer-events: auto;
 }
-
 
 #coinsDisplay {
-
   flex: 1;
-
 }
 
-
+#shopButton,
 #modeButton,
-#shopButton {
-
+#accountButton {
   cursor: pointer;
-
   user-select: none;
-
 }
 
 
-/* =====================================================
+/* =========================================================
+   ACCOUNT MENU
+   ========================================================= */
+
+#accountOverlay {
+  display: none;
+
+  position: fixed;
+  inset: 0;
+
+  z-index: 5000;
+
+  background: rgba(0,0,0,0.7);
+
+  padding: 20px;
+}
+
+.accountBox {
+  max-width: 400px;
+
+  margin:
+    80px auto;
+
+  background: #151a20;
+
+  color: white;
+
+  border-radius: 20px;
+
+  padding: 22px;
+}
+
+.accountHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accountHeader h2 {
+  margin: 0;
+}
+
+.closeButton {
+  border: none;
+
+  background: #333;
+
+  color: white;
+
+  border-radius: 10px;
+
+  padding: 9px 13px;
+
+  font-size: 18px;
+}
+
+.accountInfo {
+  margin-top: 20px;
+
+  background: #20262d;
+
+  padding: 15px;
+
+  border-radius: 14px;
+
+  line-height: 1.7;
+}
+
+.signOutButton {
+  width: 100%;
+
+  margin-top: 15px;
+
+  padding: 13px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #d93636;
+
+  color: white;
+
+  font-weight: bold;
+}
+
+
+/* =========================================================
    STATUS
-===================================================== */
+   ========================================================= */
 
 #status {
-
   position: absolute;
 
   bottom: 20px;
+
   left: 15px;
   right: 15px;
 
@@ -344,49 +565,20 @@ body {
 
   text-align: center;
 
-  font-family: Arial, sans-serif;
+  font-weight: bold;
 
   box-shadow:
-    0 3px 15px rgba(0,0,0,0.35);
+    0 3px 12px rgba(0,0,0,0.4);
 
+  pointer-events: none;
 }
 
 
-/* =====================================================
-   LEAFLET CONTROLS
-===================================================== */
-
-/*
-  Move zoom buttons to bottom-right so they
-  never overlap the top HUD.
-*/
-
-.leaflet-control-zoom {
-
-  margin-bottom: 95px !important;
-
-  margin-right: 12px !important;
-
-}
-
-
-.leaflet-control-zoom a {
-
-  background: rgba(10,15,20,0.95) !important;
-
-  color: white !important;
-
-  border-color: #333 !important;
-
-}
-
-
-/* =====================================================
+/* =========================================================
    PLAYER
-===================================================== */
+   ========================================================= */
 
 .player {
-
   width: 22px;
   height: 22px;
 
@@ -395,28 +587,24 @@ body {
   border-radius: 50%;
 
   box-shadow:
-
     0 0 8px var(--player-color),
     0 0 18px var(--player-color),
     0 0 30px var(--player-color);
 
   background:
     var(--player-color);
-
 }
 
 
-/* =====================================================
+/* =========================================================
    COINS
-===================================================== */
+   ========================================================= */
 
 .coin {
-
   width: 28px;
   height: 28px;
 
   background:
-
     radial-gradient(
       circle at 35% 35%,
       #fffbd0 0%,
@@ -431,13 +619,11 @@ body {
   border-radius: 50%;
 
   box-shadow:
-
     0 0 8px #ffd700,
     0 0 18px #ffb000,
     0 0 28px rgba(255,190,0,0.7);
 
   display: flex;
-
   align-items: center;
   justify-content: center;
 
@@ -445,9 +631,7 @@ body {
 
   animation:
     coinPulse 1.4s infinite;
-
 }
-
 
 @keyframes coinPulse {
 
@@ -466,19 +650,18 @@ body {
 }
 
 
-/* =====================================================
+/* =========================================================
    SHOP
-===================================================== */
+   ========================================================= */
 
 #shopOverlay {
-
   display: none;
 
-  position: absolute;
+  position: fixed;
 
   inset: 0;
 
-  z-index: 2000;
+  z-index: 4000;
 
   background:
     rgba(0,0,0,0.75);
@@ -486,20 +669,15 @@ body {
   overflow-y: auto;
 
   padding: 20px;
-
-  box-sizing: border-box;
-
 }
 
-
 #shop {
-
   max-width: 500px;
 
-  margin: 30px auto;
+  margin:
+    30px auto;
 
-  background:
-    #151a20;
+  background: #151a20;
 
   color: white;
 
@@ -509,56 +687,31 @@ body {
 
   box-shadow:
     0 10px 40px rgba(0,0,0,0.7);
-
 }
-
 
 #shopHeader {
-
   display: flex;
 
-  justify-content: space-between;
+  justify-content:
+    space-between;
 
-  align-items: center;
+  align-items:
+    center;
 
   margin-bottom: 20px;
-
 }
-
 
 #shopHeader h2 {
-
   margin: 0;
-
 }
-
-
-#closeShop {
-
-  background: #333;
-
-  color: white;
-
-  border: none;
-
-  border-radius: 10px;
-
-  padding: 9px 13px;
-
-  font-size: 18px;
-
-  cursor: pointer;
-
-}
-
 
 #shopBalance {
-
   background:
     rgba(255,215,0,0.12);
 
   border:
-    1px solid rgba(255,215,0,0.4);
+    1px solid
+    rgba(255,215,0,0.4);
 
   border-radius: 12px;
 
@@ -569,14 +722,10 @@ body {
   margin-bottom: 15px;
 
   font-weight: bold;
-
 }
 
-
 .shopItem {
-
-  background:
-    #20262d;
+  background: #20262d;
 
   border-radius: 15px;
 
@@ -589,12 +738,9 @@ body {
   align-items: center;
 
   gap: 15px;
-
 }
 
-
 .skinPreview {
-
   width: 42px;
   height: 42px;
 
@@ -606,39 +752,27 @@ body {
     0 0 14px currentColor;
 
   flex-shrink: 0;
-
 }
-
 
 .skinInfo {
-
   flex: 1;
-
 }
 
-
 .skinName {
-
   font-weight: bold;
 
   font-size: 17px;
 
   margin-bottom: 4px;
-
 }
 
-
 .skinPrice {
-
   color: #ffd700;
 
   font-size: 14px;
-
 }
 
-
 .shopButton {
-
   border: none;
 
   border-radius: 10px;
@@ -652,64 +786,58 @@ body {
   font-weight: bold;
 
   cursor: pointer;
-
 }
 
-
 .shopButton:disabled {
-
   opacity: 0.5;
 
   cursor: default;
-
 }
 
 
-/* =====================================================
-   MOBILE
-===================================================== */
+/* =========================================================
+   LEAFLET FIX
+   ========================================================= */
+
+/*
+  This is the important fix for the zoom buttons.
+
+  Leaflet's default control is moved down,
+  below the HUD.
+*/
+
+.leaflet-top.leaflet-left {
+  top: 82px;
+}
+
+.leaflet-control-zoom {
+  margin-top: 0 !important;
+}
 
 @media (max-width: 600px) {
 
-  #hud {
-
-    top: 10px;
-
-    left: 10px;
-    right: 10px;
-
-    gap: 6px;
-
+  .leaflet-top.leaflet-left {
+    top: 82px;
   }
 
+  #hud {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
 
   .hudBox {
+    padding:
+      9px 8px;
 
-    padding: 9px 9px;
-
-    font-size: 13px;
-
+    font-size:
+      12px;
   }
-
 
   #status {
-
-    bottom: 15px;
-
+    bottom: 12px;
     left: 10px;
     right: 10px;
-
-    font-size: 13px;
-
-  }
-
-
-  .leaflet-control-zoom {
-
-    margin-bottom: 90px !important;
-
-    margin-right: 10px !important;
-
   }
 
 }
@@ -722,15 +850,128 @@ body {
 <body>
 
 
-<!-- =====================================================
+<!-- =======================================================
+     AUTH SCREEN
+     ======================================================== -->
+
+<div id="authScreen">
+
+  <div class="authBox">
+
+    <div class="authLogo">
+      🪙
+    </div>
+
+    <div class="authTitle">
+      GPS Coin Game
+    </div>
+
+    <div class="authSubtitle">
+      Explore. Collect. Level up.
+    </div>
+
+
+    <div id="loginForm">
+
+      <input
+        id="loginEmail"
+        class="authInput"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+      >
+
+      <input
+        id="loginPassword"
+        class="authInput"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+
+      <button
+        id="loginButton"
+        class="authButton"
+      >
+        SIGN IN
+      </button>
+
+      <div class="authSwitch">
+        Don't have an account?
+        <button id="showSignup">
+          Create one
+        </button>
+      </div>
+
+    </div>
+
+
+    <div
+      id="signupForm"
+      style="display:none;"
+    >
+
+      <input
+        id="signupUsername"
+        class="authInput"
+        type="text"
+        placeholder="Username"
+        maxlength="20"
+        autocomplete="username"
+      >
+
+      <input
+        id="signupEmail"
+        class="authInput"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+      >
+
+      <input
+        id="signupPassword"
+        class="authInput"
+        type="password"
+        placeholder="Password"
+        autocomplete="new-password"
+      >
+
+      <button
+        id="signupButton"
+        class="authButton"
+      >
+        CREATE ACCOUNT
+      </button>
+
+      <div class="authSwitch">
+        Already have an account?
+        <button id="showLogin">
+          Sign in
+        </button>
+      </div>
+
+    </div>
+
+
+    <div
+      id="authMessage"
+      class="authMessage"
+    ></div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
      LOADING SCREEN
-===================================================== -->
+     ======================================================== -->
 
 <div id="loadingScreen">
 
   <div class="loadingContent">
 
-    <div class="loadingLogo">
+    <div class="gameLogo">
       🪙
     </div>
 
@@ -739,20 +980,84 @@ body {
     </div>
 
     <div class="loadingSubtitle">
-      Turning the real world into a game...
+      Turn the real world into a game.
     </div>
 
-    <div class="loadingBar">
-
-      <div class="loadingBarInner"></div>
-
-    </div>
 
     <div
-      id="loadingStatus"
-      class="loadingStatus"
+      id="spinner"
+      class="loadingSpinner"
+    ></div>
+
+    <div
+      id="loadingText"
+      class="loadingText"
     >
-      Finding your location...
+      Preparing your adventure...
+    </div>
+
+
+    <div
+      id="modeChoice"
+      class="modeChoice"
+    >
+
+      <div class="modeQuestion">
+        Choose your game mode
+      </div>
+
+
+      <div class="modeButtons">
+
+        <button
+          id="publicMode"
+          class="modeSelect selected"
+        >
+
+          <span class="modeIcon">
+            🌎
+          </span>
+
+          <span class="modeName">
+            PUBLIC
+          </span>
+
+          <span class="modeDescription">
+            Safe mapped paths
+          </span>
+
+        </button>
+
+
+        <button
+          id="unlimitedMode"
+          class="modeSelect"
+        >
+
+          <span class="modeIcon">
+            🔓
+          </span>
+
+          <span class="modeName">
+            UNLIMITED
+          </span>
+
+          <span class="modeDescription">
+            More mapped roads
+          </span>
+
+        </button>
+
+      </div>
+
+
+      <button
+        id="startGameButton"
+        class="startButton"
+      >
+        START ADVENTURE
+      </button>
+
     </div>
 
   </div>
@@ -760,9 +1065,9 @@ body {
 </div>
 
 
-<!-- =====================================================
-     HUD
-===================================================== -->
+<!-- =======================================================
+     GAME HUD
+     ======================================================== -->
 
 <div id="hud">
 
@@ -787,28 +1092,67 @@ body {
     🌎 PUBLIC
   </div>
 
+  <div
+    class="hudBox"
+    id="accountButton"
+  >
+    👤
+  </div>
+
 </div>
 
-
-<!-- =====================================================
-     STATUS
-===================================================== -->
 
 <div id="status">
-  📍 Finding your location...
+  📍 Waiting for GPS...
 </div>
 
-
-<!-- =====================================================
-     MAP
-===================================================== -->
 
 <div id="map"></div>
 
 
-<!-- =====================================================
+<!-- =======================================================
+     ACCOUNT
+     ======================================================== -->
+
+<div id="accountOverlay">
+
+  <div class="accountBox">
+
+    <div class="accountHeader">
+
+      <h2>
+        👤 Account
+      </h2>
+
+      <button
+        id="closeAccount"
+        class="closeButton"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div
+      id="accountInfo"
+      class="accountInfo"
+    ></div>
+
+    <button
+      id="signOutButton"
+      class="signOutButton"
+    >
+      SIGN OUT
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
      SHOP
-===================================================== -->
+     ======================================================== -->
 
 <div id="shopOverlay">
 
@@ -820,15 +1164,20 @@ body {
         🛒 Player Shop
       </h2>
 
-      <button id="closeShop">
+      <button
+        id="closeShop"
+        class="closeButton"
+      >
         ✕
       </button>
 
     </div>
 
+
     <div id="shopBalance">
       🪙 Coins: 0
     </div>
+
 
     <div id="shopItems"></div>
 
@@ -838,190 +1187,77 @@ body {
 
 
 <script
-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 </script>
 
 
 <script>
 
-/* =====================================================
-   SAVE DATA
-===================================================== */
+/* =========================================================
+   SUPABASE
+   ========================================================= */
 
-const SAVE_KEY = "gpsGameSave";
+const SUPABASE_URL =
+  "https://yrcitnuuskcbiuryyytu.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_REmdL8nVsuxhOsRMTZlGFg_YILsQIVK";
+
+const {
+  createClient
+} = supabase;
+
+const supabaseClient =
+  createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
 
-const DEFAULT_SAVE = {
+/* =========================================================
+   GAME DATA
+   ========================================================= */
+
+const DEFAULT_PLAYER = {
 
   coins: 0,
 
-  unlockedSkins: [
+  xp: 0,
+
+  level: 1,
+
+  unlocked_skins: [
     "blue"
   ],
 
-  equippedSkin: "blue",
+  equipped_skin:
+    "blue",
 
-  collectedCoins: []
+  collected_coins: []
 
 };
 
 
-let save = loadSave();
-
-
-function loadSave() {
-
-  try {
-
-    const stored =
-      localStorage.getItem(
-        SAVE_KEY
-      );
-
-
-    if (!stored) {
-
-      return {
-        ...DEFAULT_SAVE
-      };
-
-    }
-
-
-    const parsed =
-      JSON.parse(stored);
-
-
-    return {
-
-      ...DEFAULT_SAVE,
-
-      ...parsed
-
-    };
-
-
-  } catch (error) {
-
-    console.log(
-      "Save error:",
-      error
-    );
-
-
-    return {
-      ...DEFAULT_SAVE
-    };
-
-  }
-
-}
-
-
-function saveGame() {
-
-  try {
-
-    localStorage.setItem(
-
-      SAVE_KEY,
-
-      JSON.stringify(save)
-
-    );
-
-  } catch (error) {
-
-    console.log(
-      "Could not save:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   SKINS
-===================================================== */
-
-const SKINS = {
-
-  blue: {
-
-    name: "Blue",
-
-    color: "#00aaff",
-
-    price: 0
-
-  },
-
-  red: {
-
-    name: "Red",
-
-    color: "#ff3030",
-
-    price: 50
-
-  },
-
-  green: {
-
-    name: "Green",
-
-    color: "#22dd55",
-
-    price: 100
-
-  },
-
-  purple: {
-
-    name: "Purple",
-
-    color: "#aa55ff",
-
-    price: 150
-
-  },
-
-  gold: {
-
-    name: "Gold",
-
-    color: "#ffd000",
-
-    price: 250
-
-  },
-
-  pink: {
-
-    name: "Pink",
-
-    color: "#ff4fa3",
-
-    price: 350
-
-  }
-
+let playerData = {
+  ...DEFAULT_PLAYER
 };
 
 
-/* =====================================================
-   GAME VARIABLES
-===================================================== */
+let currentUser = null;
 
 let map = null;
 
-let player = null;
+let playerMarker = null;
 
 let coins = [];
 
-let gameMode = "PUBLIC";
+let gameMode =
+  "PUBLIC";
 
 let currentLatitude = null;
 
@@ -1029,27 +1265,31 @@ let currentLongitude = null;
 
 let loadingTrail = false;
 
+let gameStarted = false;
 
-/* =====================================================
+
+/* =========================================================
    SETTINGS
-===================================================== */
+   ========================================================= */
 
-const SEARCH_RADIUS = 800;
+const SEARCH_RADIUS =
+  1200;
 
-const COIN_SPACING = 65;
+const COIN_SPACING =
+  65;
 
-const MAIN_COINS = 5;
+const MAIN_COINS =
+  8;
 
-const BRANCH_COINS = 3;
+const BRANCH_COINS =
+  4;
 
-const COLLECTION_DISTANCE = 15;
+const COLLECTION_DISTANCE =
+  18;
 
-const REFRESH_DISTANCE = 200;
+const REFRESH_DISTANCE =
+  150;
 
-
-/*
-  Overpass servers.
-*/
 
 const OVERPASS_SERVERS = [
 
@@ -1060,137 +1300,892 @@ const OVERPASS_SERVERS = [
 ];
 
 
-/* =====================================================
-   LOADING SCREEN
-===================================================== */
+/* =========================================================
+   SKINS
+   ========================================================= */
 
-function setLoadingText(text) {
+const SKINS = {
+
+  blue: {
+    name: "Blue",
+    color: "#00aaff",
+    price: 0
+  },
+
+  red: {
+    name: "Red",
+    color: "#ff3030",
+    price: 50
+  },
+
+  green: {
+    name: "Green",
+    color: "#22dd55",
+    price: 100
+  },
+
+  purple: {
+    name: "Purple",
+    color: "#aa55ff",
+    price: 150
+  },
+
+  gold: {
+    name: "Gold",
+    color: "#ffd000",
+    price: 250
+  },
+
+  pink: {
+    name: "Pink",
+    color: "#ff4fa3",
+    price: 350
+  }
+
+};
+
+
+/* =========================================================
+   AUTH MESSAGE
+   ========================================================= */
+
+function authMessage(
+  message,
+  error = false
+) {
 
   const element =
     document.getElementById(
-      "loadingStatus"
+      "authMessage"
     );
 
-  if (element) {
+  element.innerText =
+    message;
 
-    element.innerText = text;
+  element.style.color =
+    error
+      ? "#ff6666"
+      : "#55dd88";
+
+}
+
+
+/* =========================================================
+   SHOW LOGIN
+   ========================================================= */
+
+document.getElementById(
+  "showLogin"
+).addEventListener(
+  "click",
+  () => {
+
+    document.getElementById(
+      "signupForm"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "loginForm"
+    ).style.display =
+      "block";
+
+    authMessage("");
+
+  }
+);
+
+
+/* =========================================================
+   SHOW SIGNUP
+   ========================================================= */
+
+document.getElementById(
+  "showSignup"
+).addEventListener(
+  "click",
+  () => {
+
+    document.getElementById(
+      "loginForm"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "signupForm"
+    ).style.display =
+      "block";
+
+    authMessage("");
+
+  }
+);
+
+
+/* =========================================================
+   SIGN UP
+   ========================================================= */
+
+document.getElementById(
+  "signupButton"
+).addEventListener(
+  "click",
+  async () => {
+
+    const username =
+      document.getElementById(
+        "signupUsername"
+      ).value.trim();
+
+    const email =
+      document.getElementById(
+        "signupEmail"
+      ).value.trim();
+
+    const password =
+      document.getElementById(
+        "signupPassword"
+      ).value;
+
+
+    if (!username) {
+
+      authMessage(
+        "Enter a username.",
+        true
+      );
+
+      return;
+
+    }
+
+
+    if (username.length < 3) {
+
+      authMessage(
+        "Username must be at least 3 characters.",
+        true
+      );
+
+      return;
+
+    }
+
+
+    if (!email) {
+
+      authMessage(
+        "Enter your email.",
+        true
+      );
+
+      return;
+
+    }
+
+
+    if (password.length < 6) {
+
+      authMessage(
+        "Password must be at least 6 characters.",
+        true
+      );
+
+      return;
+
+    }
+
+
+    const button =
+      document.getElementById(
+        "signupButton"
+      );
+
+    button.disabled =
+      true;
+
+    button.innerText =
+      "CREATING...";
+
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.signUp({
+
+          email,
+
+          password,
+
+          options: {
+
+            data: {
+              username
+            }
+
+          }
+
+        });
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      /*
+        If email confirmation is enabled,
+        Supabase sends the email here.
+      */
+
+      if (
+        data.user &&
+        !data.session
+      ) {
+
+        authMessage(
+          "Account created! Check your email to confirm your account."
+        );
+
+      } else {
+
+        authMessage(
+          "Account created!"
+        );
+
+      }
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      authMessage(
+        error.message,
+        true
+      );
+
+    }
+
+
+    button.disabled =
+      false;
+
+    button.innerText =
+      "CREATE ACCOUNT";
+
+  }
+);
+
+
+/* =========================================================
+   SIGN IN
+   ========================================================= */
+
+document.getElementById(
+  "loginButton"
+).addEventListener(
+  "click",
+  signIn
+);
+
+
+async function signIn() {
+
+  const email =
+    document.getElementById(
+      "loginEmail"
+    ).value.trim();
+
+  const password =
+    document.getElementById(
+      "loginPassword"
+    ).value;
+
+
+  if (!email || !password) {
+
+    authMessage(
+      "Enter your email and password.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "loginButton"
+    );
+
+  button.disabled =
+    true;
+
+  button.innerText =
+    "SIGNING IN...";
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signInWithPassword({
+
+        email,
+
+        password
+
+      });
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    authMessage(
+      "Signed in!"
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    authMessage(
+      error.message,
+      true
+    );
+
+  }
+
+
+  button.disabled =
+    false;
+
+  button.innerText =
+    "SIGN IN";
+
+}
+
+
+/* =========================================================
+   AUTH STATE
+   ========================================================= */
+
+async function checkAuth() {
+
+  const {
+    data
+  } =
+    await supabaseClient.auth.getSession();
+
+
+  if (
+    data.session
+  ) {
+
+    currentUser =
+      data.session.user;
+
+    await loadPlayer();
+
+  } else {
+
+    showAuth();
 
   }
 
 }
 
 
-function hideLoadingScreen() {
+supabaseClient.auth.onAuthStateChange(
+  async (
+    event,
+    session
+  ) => {
+
+    if (
+      session &&
+      session.user
+    ) {
+
+      currentUser =
+        session.user;
+
+      await loadPlayer();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   SHOW AUTH
+   ========================================================= */
+
+function showAuth() {
+
+  document.getElementById(
+    "authScreen"
+  ).style.display =
+    "flex";
+
+}
+
+
+/* =========================================================
+   HIDE AUTH
+   ========================================================= */
+
+function hideAuth() {
+
+  document.getElementById(
+    "authScreen"
+  ).style.display =
+    "none";
+
+}
+
+
+/* =========================================================
+   LOAD PLAYER FROM SUPABASE
+   ========================================================= */
+
+async function loadPlayer() {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  try {
+
+    let {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("players")
+        .select("*")
+        .eq(
+          "id",
+          currentUser.id
+        )
+        .maybeSingle();
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    /*
+      Normally your database trigger
+      creates this automatically.
+    */
+
+    if (!data) {
+
+      const {
+        data: created,
+        error: createError
+      } =
+        await supabaseClient
+          .from("players")
+          .insert({
+
+            id:
+              currentUser.id,
+
+            username:
+              currentUser.user_metadata?.username ||
+              currentUser.email?.split("@")[0]
+
+          })
+          .select()
+          .single();
+
+
+      if (createError) {
+        throw createError;
+      }
+
+
+      data =
+        created;
+
+    }
+
+
+    playerData = {
+
+      ...DEFAULT_PLAYER,
+
+      ...data
+
+    };
+
+
+    /*
+      Make sure arrays exist.
+    */
+
+    if (
+      !Array.isArray(
+        playerData.unlocked_skins
+      )
+    ) {
+
+      playerData.unlocked_skins =
+        ["blue"];
+
+    }
+
+
+    if (
+      !Array.isArray(
+        playerData.collected_coins
+      )
+    ) {
+
+      playerData.collected_coins =
+        [];
+
+    }
+
+
+    updateCoinDisplay();
+
+    hideAuth();
+
+    showLoadingScreen();
+
+  } catch (error) {
+
+    console.error(
+      "Player loading error:",
+      error
+    );
+
+    authMessage(
+      "Couldn't load your player data: " +
+      error.message,
+      true
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SAVE PLAYER
+   ========================================================= */
+
+async function savePlayer() {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("players")
+      .update({
+
+        coins:
+          playerData.coins,
+
+        xp:
+          playerData.xp,
+
+        level:
+          playerData.level,
+
+        unlocked_skins:
+          playerData.unlocked_skins,
+
+        equipped_skin:
+          playerData.equipped_skin,
+
+        collected_coins:
+          playerData.collected_coins,
+
+        updated_at:
+          new Date().toISOString()
+
+      })
+      .eq(
+        "id",
+        currentUser.id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Cloud save error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   LOADING SCREEN
+   ========================================================= */
+
+function showLoadingScreen() {
 
   const screen =
     document.getElementById(
       "loadingScreen"
     );
 
-  if (!screen) {
-    return;
-  }
-
-  screen.classList.add(
+  screen.classList.remove(
     "hidden"
+  );
+
+
+  document.getElementById(
+    "modeChoice"
+  ).classList.remove(
+    "show"
+  );
+
+
+  document.getElementById(
+    "spinner"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "loadingText"
+  ).innerText =
+    "Preparing your adventure...";
+
+
+  setTimeout(
+    () => {
+
+      document.getElementById(
+        "spinner"
+      ).style.display =
+        "none";
+
+      document.getElementById(
+        "loadingText"
+      ).innerText =
+        "Your adventure is ready.";
+
+      document.getElementById(
+        "modeChoice"
+      ).classList.add(
+        "show"
+      );
+
+    },
+    900
   );
 
 }
 
 
-/* =====================================================
-   HUD
-===================================================== */
+/* =========================================================
+   MODE BUTTONS
+   ========================================================= */
+
+document.getElementById(
+  "publicMode"
+).addEventListener(
+  "click",
+  () => {
+
+    gameMode =
+      "PUBLIC";
+
+    document.getElementById(
+      "publicMode"
+    ).classList.add(
+      "selected"
+    );
+
+    document.getElementById(
+      "unlimitedMode"
+    ).classList.remove(
+      "selected"
+    );
+
+  }
+);
+
+
+document.getElementById(
+  "unlimitedMode"
+).addEventListener(
+  "click",
+  () => {
+
+    gameMode =
+      "UNLIMITED";
+
+    document.getElementById(
+      "unlimitedMode"
+    ).classList.add(
+      "selected"
+    );
+
+    document.getElementById(
+      "publicMode"
+    ).classList.remove(
+      "selected"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   START ADVENTURE
+   ========================================================= */
+
+document.getElementById(
+  "startGameButton"
+).addEventListener(
+  "click",
+  () => {
+
+    document.getElementById(
+      "loadingScreen"
+    ).classList.add(
+      "hidden"
+    );
+
+    document.getElementById(
+      "modeButton"
+    ).innerText =
+      gameMode === "PUBLIC"
+        ? "🌎 PUBLIC"
+        : "🔓 UNLIMITED";
+
+
+    if (
+      "geolocation" in navigator
+    ) {
+
+      setStatus(
+        "📍 Finding your location..."
+      );
+
+
+      navigator.geolocation.watchPosition(
+
+        updateLocation,
+
+        locationError,
+
+        {
+
+          enableHighAccuracy:
+            true,
+
+          maximumAge:
+            2000,
+
+          timeout:
+            15000
+
+        }
+
+      );
+
+    } else {
+
+      setStatus(
+        "❌ GPS isn't available."
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   UPDATE COIN DISPLAY
+   ========================================================= */
 
 function updateCoinDisplay() {
 
   document.getElementById(
     "coinsDisplay"
   ).innerText =
-
     "🪙 Coins: " +
-    save.coins;
+    playerData.coins;
 
 }
 
 
-updateCoinDisplay();
+/* =========================================================
+   START MAP
+   ========================================================= */
 
-
-/* =====================================================
-   START GAME
-===================================================== */
-
-function startGame(
-
+function startMap(
   latitude,
   longitude
-
 ) {
 
-  setLoadingText(
-    "Loading your map..."
-  );
+  if (map) {
+    return;
+  }
 
-
-  /*
-    IMPORTANT:
-
-    zoomControl:false prevents Leaflet
-    from putting the buttons in the top-right.
-  */
 
   map =
     L.map(
       "map",
       {
-        zoomControl: false
+        zoomControl: true
       }
     ).setView(
-
       [
         latitude,
         longitude
       ],
-
       17
-
     );
 
 
-  /*
-    Put zoom buttons at bottom-right.
-  */
-
-  L.control.zoom({
-
-    position:
-      "bottomright"
-
-  }).addTo(map);
-
-
   L.tileLayer(
-
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-
     {
 
       attribution:
         "© OpenStreetMap contributors",
 
-      maxZoom: 19
+      maxZoom:
+        20
 
     }
-
   ).addTo(map);
 
 
   createPlayer(
-
     latitude,
     longitude
-
   );
 
 
@@ -1202,133 +2197,30 @@ function startGame(
 
 
   /*
-    Start loading the trail.
+    Wait until Leaflet has finished
+    rendering before loading paths.
   */
 
-  loadTrail(
+  setTimeout(
+    () => {
 
-    latitude,
-    longitude
+      map.invalidateSize();
 
-  );
-
-}
-
-
-/* =====================================================
-   CREATE PLAYER
-===================================================== */
-
-function createPlayer(
-
-  latitude,
-  longitude
-
-) {
-
-  const skin =
-    SKINS[
-      save.equippedSkin
-    ] ||
-    SKINS.blue;
-
-
-  const playerIcon =
-    L.divIcon({
-
-      className: "",
-
-      html:
-
-        '<div class="player" ' +
-
-        'style="--player-color:' +
-
-        skin.color +
-
-        '"></div>',
-
-      iconSize:
-        [28,28],
-
-      iconAnchor:
-        [14,14]
-
-    });
-
-
-  player =
-    L.marker(
-
-      [
+      loadTrail(
         latitude,
         longitude
-      ],
+      );
 
-      {
-
-        icon:
-          playerIcon
-
-      }
-
-    ).addTo(map);
-
-}
-
-
-/* =====================================================
-   UPDATE PLAYER SKIN
-===================================================== */
-
-function updatePlayerSkin() {
-
-  if (!player) {
-    return;
-  }
-
-
-  const skin =
-    SKINS[
-      save.equippedSkin
-    ] ||
-    SKINS.blue;
-
-
-  const icon =
-    L.divIcon({
-
-      className: "",
-
-      html:
-
-        '<div class="player" ' +
-
-        'style="--player-color:' +
-
-        skin.color +
-
-        '"></div>',
-
-      iconSize:
-        [28,28],
-
-      iconAnchor:
-        [14,14]
-
-    });
-
-
-  player.setIcon(
-    icon
+    },
+    300
   );
 
 }
 
 
-/* =====================================================
-   GPS
-===================================================== */
+/* =========================================================
+   GPS UPDATE
+   ========================================================= */
 
 function updateLocation(
   position
@@ -1343,11 +2235,9 @@ function updateLocation(
 
   if (!map) {
 
-    startGame(
-
+    startMap(
       latitude,
       longitude
-
     );
 
     return;
@@ -1355,39 +2245,33 @@ function updateLocation(
   }
 
 
-  player.setLatLng([
+  if (playerMarker) {
 
-    latitude,
-    longitude
+    playerMarker.setLatLng([
+      latitude,
+      longitude
+    ]);
 
-  ]);
+  }
 
 
   checkCoinCollection(
-
     latitude,
     longitude
-
   );
 
 
   if (
-
     currentLatitude !== null &&
-
     currentLongitude !== null
-
   ) {
 
     const distance =
       distanceMeters(
-
         currentLatitude,
         currentLongitude,
-
         latitude,
         longitude
-
       );
 
 
@@ -1404,10 +2288,8 @@ function updateLocation(
 
 
       loadTrail(
-
         latitude,
         longitude
-
       );
 
     }
@@ -1417,15 +2299,106 @@ function updateLocation(
 }
 
 
-/* =====================================================
-   LOAD TRAIL
-===================================================== */
+/* =========================================================
+   CREATE PLAYER
+   ========================================================= */
 
-async function loadTrail(
-
+function createPlayer(
   latitude,
   longitude
+) {
 
+  const skin =
+    SKINS[
+      playerData.equipped_skin
+    ] ||
+    SKINS.blue;
+
+
+  const icon =
+    L.divIcon({
+
+      className: "",
+
+      html:
+        `<div
+          class="player"
+          style="--player-color:${skin.color}"
+        ></div>`,
+
+      iconSize:
+        [28,28],
+
+      iconAnchor:
+        [14,14]
+
+    });
+
+
+  playerMarker =
+    L.marker(
+      [
+        latitude,
+        longitude
+      ],
+      {
+        icon
+      }
+    ).addTo(map);
+
+}
+
+
+/* =========================================================
+   UPDATE PLAYER SKIN
+   ========================================================= */
+
+function updatePlayerSkin() {
+
+  if (!playerMarker) {
+    return;
+  }
+
+
+  const skin =
+    SKINS[
+      playerData.equipped_skin
+    ] ||
+    SKINS.blue;
+
+
+  playerMarker.setIcon(
+
+    L.divIcon({
+
+      className: "",
+
+      html:
+        `<div
+          class="player"
+          style="--player-color:${skin.color}"
+        ></div>`,
+
+      iconSize:
+        [28,28],
+
+      iconAnchor:
+        [14,14]
+
+    })
+
+  );
+
+}
+
+
+/* =========================================================
+   LOAD PATH
+   ========================================================= */
+
+async function loadTrail(
+  latitude,
+  longitude
 ) {
 
   if (loadingTrail) {
@@ -1433,47 +2406,31 @@ async function loadTrail(
   }
 
 
-  loadingTrail = true;
-
-
-  setLoadingText(
-    "Finding nearby paths..."
-  );
+  loadingTrail =
+    true;
 
 
   setStatus(
-    "🗺️ Finding a path..."
+    "🗺️ Finding nearby paths..."
   );
 
-
-  /*
-    Remove old uncollected coins.
-  */
 
   removeUncollectedCoins();
 
 
   const latOffset =
-    SEARCH_RADIUS /
-    111320;
+    SEARCH_RADIUS / 111320;
 
 
   const lonOffset =
-
     SEARCH_RADIUS /
-
     (
-
       111320 *
-
       Math.cos(
-
         latitude *
         Math.PI /
         180
-
       )
-
     );
 
 
@@ -1481,16 +2438,13 @@ async function loadTrail(
     latitude -
     latOffset;
 
-
   const north =
     latitude +
     latOffset;
 
-
   const west =
     longitude -
     lonOffset;
-
 
   const east =
     longitude +
@@ -1498,123 +2452,65 @@ async function loadTrail(
 
 
   /*
-    Query only relevant pedestrian
-    paths instead of every highway.
+    This query asks Overpass for ways AND
+    their geometry.
 
-    This makes Overpass considerably
-    less likely to time out.
+    Public mode gets walking-friendly paths.
+
+    Unlimited mode gets almost all usable
+    mapped roads while still avoiding highways.
   */
 
-  let query;
+  let highwayFilter;
 
 
-  if (gameMode === "PUBLIC") {
+  if (
+    gameMode ===
+    "PUBLIC"
+  ) {
 
-    query = `
-
-      [out:json]
-      [timeout:25];
-
-      (
-        way["highway"="footway"]
-          (${south},${west},${north},${east});
-
-        way["highway"="path"]
-          (${south},${west},${north},${east});
-
-        way["highway"="pedestrian"]
-          (${south},${west},${north},${east});
-
-        way["highway"="steps"]
-          (${south},${west},${north},${east});
-
-        way["highway"="cycleway"]
-          (${south},${west},${north},${east});
-
-        way["highway"="bridleway"]
-          (${south},${west},${north},${east});
-
-        way["highway"="living_street"]
-          (${south},${west},${north},${east});
-      );
-
-      out tags geom;
-
-    `;
+    highwayFilter =
+      `
+        ["highway"~"footway|path|pedestrian|steps|cycleway|bridleway|living_street|residential"]
+      `;
 
   } else {
 
-    query = `
-
-      [out:json]
-      [timeout:25];
-
-      (
-        way["highway"]
-          (${south},${west},${north},${east});
-      );
-
-      out tags geom;
-
-    `;
+    highwayFilter =
+      `
+        ["highway"]
+      `;
 
   }
 
 
-  let data = null;
+  const query = `
+
+    [out:json][timeout:30];
+
+    way
+      ${highwayFilter}
+      (${south},${west},${north},${east});
+
+    out geom;
+
+  `;
 
 
-  /*
-    Try each Overpass server.
-  */
+  let data =
+    null;
+
 
   for (
-
-    let i = 0;
-
-    i <
-    OVERPASS_SERVERS.length;
-
-    i++
-
+    const server of
+    OVERPASS_SERVERS
   ) {
 
     try {
 
-      setLoadingText(
-
-        i === 0
-
-          ? "Connecting to the map network..."
-
-          : "Trying another map server..."
-
-      );
-
-
-      const controller =
-        new AbortController();
-
-
-      const timeout =
-        setTimeout(
-
-          function() {
-
-            controller.abort();
-
-          },
-
-          15000
-
-        );
-
-
       const response =
         await fetch(
-
-          OVERPASS_SERVERS[i],
-
+          server,
           {
 
             method:
@@ -1631,50 +2527,31 @@ async function loadTrail(
               "data=" +
               encodeURIComponent(
                 query
-              ),
-
-            signal:
-              controller.signal
+              )
 
           }
-
         );
 
 
-      clearTimeout(
-        timeout
-      );
-
-
       if (!response.ok) {
-
         throw new Error(
           "HTTP " +
           response.status
         );
-
       }
 
 
       data =
         await response.json();
 
-
-      if (data) {
-
-        break;
-
-      }
-
+      break;
 
     } catch (error) {
 
       console.log(
-
         "Overpass server failed:",
-
+        server,
         error
-
       );
 
     }
@@ -1682,53 +2559,23 @@ async function loadTrail(
   }
 
 
-  /*
-    Completely failed.
-  */
-
   if (!data) {
+
+    setStatus(
+      "⚠️ Path service unavailable. Try again."
+    );
 
     loadingTrail =
       false;
-
-
-    setLoadingText(
-      "Map data couldn't be loaded."
-    );
-
-
-    setStatus(
-      "⚠️ Path server unavailable. Try again."
-    );
-
-
-    /*
-      Hide loading screen after
-      failure so the player isn't trapped.
-    */
-
-    setTimeout(
-
-      hideLoadingScreen,
-
-      700
-
-    );
-
 
     return;
 
   }
 
 
-  setLoadingText(
-    "Building your trail..."
-  );
-
-
   const ways =
     filterWays(
-      data.elements || []
+      data.elements
     );
 
 
@@ -1736,75 +2583,12 @@ async function loadTrail(
     ways.length === 0
   ) {
 
-    loadingTrail =
-      false;
-
-
-    setLoadingText(
-      "No paths found nearby."
-    );
-
-
     setStatus(
-
-      gameMode === "PUBLIC"
-
-        ? "🔎 No suitable public paths nearby."
-
-        : "🔎 No mapped paths nearby."
-
+      "🔎 No suitable paths nearby."
     );
-
-
-    setTimeout(
-
-      hideLoadingScreen,
-
-      900
-
-    );
-
-
-    return;
-
-  }
-
-
-  const start =
-    findClosestNetworkPoint(
-
-      ways,
-
-      latitude,
-      longitude
-
-    );
-
-
-  if (!start) {
 
     loadingTrail =
       false;
-
-
-    setLoadingText(
-      "Couldn't find a nearby trail."
-    );
-
-
-    setStatus(
-      "🔎 Couldn't find a nearby path."
-    );
-
-
-    setTimeout(
-
-      hideLoadingScreen,
-
-      900
-
-    );
-
 
     return;
 
@@ -1812,34 +2596,48 @@ async function loadTrail(
 
 
   /*
-    If the closest path is extremely far
-    away, tell the player.
+    Find the nearest point on the
+    actual road network.
   */
 
-  if (start.distance > SEARCH_RADIUS) {
+  const start =
+    findClosestNetworkPoint(
+      ways,
+      latitude,
+      longitude
+    );
+
+
+  if (!start) {
+
+    setStatus(
+      "🔎 Couldn't find a nearby path."
+    );
 
     loadingTrail =
       false;
 
+    return;
 
-    setLoadingText(
-      "No nearby trail."
-    );
+  }
 
+
+  /*
+    If the nearest mapped path is
+    too far away, don't generate coins.
+  */
+
+  if (
+    start.distance >
+    150
+  ) {
 
     setStatus(
-      "🔎 No path close enough."
+      "🚶 Move closer to a mapped path."
     );
 
-
-    setTimeout(
-
-      hideLoadingScreen,
-
-      900
-
-    );
-
+    loadingTrail =
+      false;
 
     return;
 
@@ -1848,136 +2646,103 @@ async function loadTrail(
 
   const mainRoute =
     buildNetworkRoute(
-
       ways,
-
       start,
-
       MAIN_COINS
-
     );
 
 
   const branchRoute =
     findNetworkBranch(
-
       ways,
-
       mainRoute,
-
       start
-
     );
 
 
-  mainRoute.forEach(
+  let created =
+    0;
 
-    function(point) {
+
+  mainRoute.forEach(
+    point => {
+
+      const before =
+        coins.length;
 
       createCoin(
-
         point.lat,
         point.lon
-
       );
 
-    }
+      if (
+        coins.length >
+        before
+      ) {
+        created++;
+      }
 
+    }
   );
 
 
   branchRoute.forEach(
+    point => {
 
-    function(point) {
+      const before =
+        coins.length;
 
       createCoin(
-
         point.lat,
         point.lon
-
       );
 
-    }
+      if (
+        coins.length >
+        before
+      ) {
+        created++;
+      }
 
+    }
   );
 
 
-  const total =
-    mainRoute.length +
-    branchRoute.length;
+  setStatus(
+    created > 0
+      ? "🎮 " +
+        created +
+        " coins discovered!"
+      : "🔎 Keep exploring for new coins."
+  );
 
 
   loadingTrail =
     false;
 
-
-  if (total > 0) {
-
-    setLoadingText(
-      "Trail ready. Go collect!"
-    );
-
-
-    setStatus(
-
-      "🎮 " +
-      total +
-      " coins on real mapped paths"
-
-    );
-
-  } else {
-
-    setLoadingText(
-      "Path found, but it's too short."
-    );
-
-
-    setStatus(
-      "🔎 Path found, but it's too short."
-    );
-
-  }
-
-
-  /*
-    Give the loading animation a moment
-    to feel intentional instead of flashing.
-  */
-
-  setTimeout(
-
-    hideLoadingScreen,
-
-    650
-
-  );
-
 }
 
 
-/* =====================================================
+/* =========================================================
    FILTER WAYS
-===================================================== */
+   ========================================================= */
 
 function filterWays(
   elements
 ) {
 
-  const result = [];
+  const result =
+    [];
 
 
   elements.forEach(
-
-    function(element) {
+    element => {
 
       if (
         element.type !==
         "way"
       ) {
-
         return;
-
       }
 
 
@@ -1985,14 +2750,13 @@ function filterWays(
         !element.geometry ||
         element.geometry.length < 2
       ) {
-
         return;
-
       }
 
 
       const tags =
-        element.tags || {};
+        element.tags ||
+        {};
 
 
       const highway =
@@ -2010,28 +2774,45 @@ function filterWays(
         ).toLowerCase();
 
 
+      if (
+        access === "private" ||
+        access === "no" ||
+        access === "permit" ||
+        access === "customers"
+      ) {
+        return;
+      }
+
+
       /*
-        Never use explicitly private paths
-        in PUBLIC mode.
+        Never create game paths
+        on major highways.
       */
 
+      const forbidden = [
+
+        "motorway",
+        "motorway_link",
+        "trunk",
+        "trunk_link",
+        "primary",
+        "primary_link"
+
+      ];
+
+
       if (
-        gameMode === "PUBLIC" &&
-        (
-          access === "private" ||
-          access === "no" ||
-          access === "permit" ||
-          access === "customers"
+        forbidden.includes(
+          highway
         )
       ) {
-
         return;
-
       }
 
 
       if (
-        gameMode === "PUBLIC"
+        gameMode ===
+        "PUBLIC"
       ) {
 
         const allowed = [
@@ -2042,7 +2823,8 @@ function filterWays(
           "steps",
           "cycleway",
           "bridleway",
-          "living_street"
+          "living_street",
+          "residential"
 
         ];
 
@@ -2052,38 +2834,7 @@ function filterWays(
             highway
           )
         ) {
-
           return;
-
-        }
-
-      }
-
-
-      if (
-        gameMode === "UNLIMITED"
-      ) {
-
-        const forbidden = [
-
-          "motorway",
-          "motorway_link",
-          "trunk",
-          "trunk_link",
-          "primary",
-          "primary_link"
-
-        ];
-
-
-        if (
-          forbidden.includes(
-            highway
-          )
-        ) {
-
-          return;
-
         }
 
       }
@@ -2097,13 +2848,11 @@ function filterWays(
         geometry:
           element.geometry,
 
-        tags:
-          tags
+        tags
 
       });
 
     }
-
   );
 
 
@@ -2112,74 +2861,56 @@ function filterWays(
 }
 
 
-/* =====================================================
+/* =========================================================
    CLOSEST NETWORK POINT
-===================================================== */
+   ========================================================= */
 
 function findClosestNetworkPoint(
-
   ways,
   latitude,
   longitude
-
 ) {
 
-  let best = null;
+  let best =
+    null;
 
 
   ways.forEach(
-
-    function(way) {
+    way => {
 
       way.geometry.forEach(
-
-        function(point,index) {
+        (point, index) => {
 
           const distance =
             distanceMeters(
-
               latitude,
               longitude,
-
               point.lat,
               point.lon
-
             );
 
 
           if (
-
-            best === null ||
-
+            !best ||
             distance <
             best.distance
-
           ) {
 
             best = {
 
-              way:
-                way,
-
-              index:
-                index,
-
-              distance:
-                distance,
-
-              point:
-                point
+              way,
+              index,
+              distance,
+              point
 
             };
 
           }
 
         }
-
       );
 
     }
-
   );
 
 
@@ -2188,151 +2919,123 @@ function findClosestNetworkPoint(
 }
 
 
-/* =====================================================
-   BUILD NETWORK ROUTE
-===================================================== */
+/* =========================================================
+   BUILD ROUTE
+   ========================================================= */
 
 function buildNetworkRoute(
-
   ways,
   start,
   numberOfCoins
-
 ) {
 
-  const route = [];
-
-
-  const geometry =
-    start.way.geometry;
-
-
-  let direction = 1;
-
-
-  if (
-    start.index >=
-    geometry.length - 1
-  ) {
-
-    direction = -1;
-
-  }
+  const route =
+    [];
 
 
   let currentWay =
     start.way;
 
-
   let currentIndex =
     start.index;
 
 
-  let currentDirection =
-    direction;
-
-
-  let accumulated = 0;
+  let direction =
+    currentIndex <
+    currentWay.geometry.length - 1
+      ? 1
+      : -1;
 
 
   let lastPoint =
     start.point;
 
 
+  let accumulated =
+    0;
+
+
   const visited =
     new Set();
 
 
-  while (
-
-    route.length <
-    numberOfCoins
-
+  for (
+    let safety = 0;
+    safety < 100;
+    safety++
   ) {
 
-    const visitKey =
+    if (
+      route.length >=
+      numberOfCoins
+    ) {
+      break;
+    }
 
+
+    const key =
       currentWay.id +
       ":" +
       currentIndex +
       ":" +
-      currentDirection;
+      direction;
 
 
     if (
-      visited.has(
-        visitKey
-      )
+      visited.has(key)
     ) {
-
       break;
-
     }
 
 
-    visited.add(
-      visitKey
-    );
+    visited.add(key);
 
 
     const nextIndex =
-
       currentIndex +
-      currentDirection;
+      direction;
 
 
     if (
-
       nextIndex < 0 ||
-
       nextIndex >=
       currentWay.geometry.length
-
     ) {
 
       const endpoint =
-
         currentWay.geometry[
-
-          currentDirection === 1
-
+          direction === 1
             ? currentWay.geometry.length - 1
-
             : 0
-
         ];
 
 
-      const nextWay =
+      const next =
         findConnectedWay(
-
           ways,
-
           endpoint,
-
           currentWay.id
-
         );
 
 
-      if (!nextWay) {
-
+      if (!next) {
         break;
-
       }
 
 
       currentWay =
-        nextWay.way;
-
+        next.way;
 
       currentIndex =
-        nextWay.index;
+        next.index;
 
+      direction =
+        next.direction;
 
-      currentDirection =
-        nextWay.direction;
-
+      lastPoint =
+        currentWay.geometry[
+          currentIndex
+        ];
 
       continue;
 
@@ -2346,15 +3049,11 @@ function buildNetworkRoute(
 
 
     accumulated +=
-
       distanceMeters(
-
         lastPoint.lat,
         lastPoint.lon,
-
         point.lat,
         point.lon
-
       );
 
 
@@ -2374,14 +3073,14 @@ function buildNetworkRoute(
       });
 
 
-      accumulated = 0;
+      accumulated =
+        0;
 
     }
 
 
     lastPoint =
       point;
-
 
     currentIndex =
       nextIndex;
@@ -2394,40 +3093,36 @@ function buildNetworkRoute(
 }
 
 
-/* =====================================================
-   CONNECTED WAY
-===================================================== */
+/* =========================================================
+   FIND CONNECTED WAY
+   ========================================================= */
 
 function findConnectedWay(
-
   ways,
   endpoint,
   currentWayId
-
 ) {
 
-  let best = null;
+  let best =
+    null;
 
-  let bestDistance = 30;
+  let bestDistance =
+    40;
 
 
   ways.forEach(
-
-    function(way) {
+    way => {
 
       if (
         way.id ===
         currentWayId
       ) {
-
         return;
-
       }
 
 
       const first =
         way.geometry[0];
-
 
       const last =
         way.geometry[
@@ -2437,46 +3132,33 @@ function findConnectedWay(
 
       const d1 =
         distanceMeters(
-
           endpoint.lat,
           endpoint.lon,
-
           first.lat,
           first.lon
-
         );
 
 
       const d2 =
         distanceMeters(
-
           endpoint.lat,
           endpoint.lon,
-
           last.lat,
           last.lon
-
         );
 
 
       if (
-        d1 <=
-        bestDistance
+        d1 <= bestDistance
       ) {
 
         best = {
 
-          way:
-            way,
-
-          index:
-            0,
-
-          direction:
-            1
+          way,
+          index: 0,
+          direction: 1
 
         };
-
 
         bestDistance =
           d1;
@@ -2485,23 +3167,19 @@ function findConnectedWay(
 
 
       if (
-        d2 <=
-        bestDistance
+        d2 <= bestDistance
       ) {
 
         best = {
 
-          way:
-            way,
+          way,
 
           index:
             way.geometry.length - 1,
 
-          direction:
-            -1
+          direction: -1
 
         };
-
 
         bestDistance =
           d2;
@@ -2509,7 +3187,6 @@ function findConnectedWay(
       }
 
     }
-
   );
 
 
@@ -2518,70 +3195,44 @@ function findConnectedWay(
 }
 
 
-/* =====================================================
-   FIND BRANCH
-===================================================== */
+/* =========================================================
+   BRANCH
+   ========================================================= */
 
 function findNetworkBranch(
-
   ways,
   mainRoute,
   start
-
 ) {
 
   if (
-    mainRoute.length < 2
+    mainRoute.length <
+    2
   ) {
-
     return [];
-
   }
 
 
   for (
-
-    let r = 1;
-
-    r <
-    mainRoute.length;
-
-    r++
-
+    const routePoint of
+    mainRoute
   ) {
 
-    const routePoint =
-      mainRoute[r];
-
-
     for (
-
-      let i = 0;
-
-      i <
-      ways.length;
-
-      i++
-
+      const way of
+      ways
     ) {
-
-      const way =
-        ways[i];
-
 
       if (
         way.id ===
         start.way.id
       ) {
-
         continue;
-
       }
 
 
       const first =
         way.geometry[0];
-
 
       const last =
         way.geometry[
@@ -2591,55 +3242,45 @@ function findNetworkBranch(
 
       const firstDistance =
         distanceMeters(
-
           routePoint.lat,
           routePoint.lon,
-
           first.lat,
           first.lon
-
         );
 
 
       const lastDistance =
         distanceMeters(
-
           routePoint.lat,
           routePoint.lon,
-
           last.lat,
           last.lon
-
         );
 
 
       if (
-        firstDistance <= 30
+        firstDistance <=
+        40
       ) {
 
         return buildBranch(
-
           way,
           0,
           1
-
         );
 
       }
 
 
       if (
-        lastDistance <= 30
+        lastDistance <=
+        40
       ) {
 
         return buildBranch(
-
           way,
-
           way.geometry.length - 1,
-
           -1
-
         );
 
       }
@@ -2654,57 +3295,48 @@ function findNetworkBranch(
 }
 
 
-/* =====================================================
+/* =========================================================
    BUILD BRANCH
-===================================================== */
+   ========================================================= */
 
 function buildBranch(
-
   way,
   startIndex,
   direction
-
 ) {
 
-  const result = [];
+  const result =
+    [];
 
 
-  let accumulated = 0;
+  let accumulated =
+    0;
 
 
   let lastPoint =
-    way.geometry[startIndex];
+    way.geometry[
+      startIndex
+    ];
 
 
   for (
-
     let step = 1;
-
-    step <
-    way.geometry.length;
-
+    step < way.geometry.length;
     step++
-
   ) {
 
     const index =
-
       startIndex +
       step *
       direction;
 
 
     if (
-
       index < 0 ||
-
       index >=
       way.geometry.length
-
     ) {
-
       break;
-
     }
 
 
@@ -2713,15 +3345,11 @@ function buildBranch(
 
 
     accumulated +=
-
       distanceMeters(
-
         lastPoint.lat,
         lastPoint.lon,
-
         point.lat,
         point.lon
-
       );
 
 
@@ -2741,16 +3369,15 @@ function buildBranch(
       });
 
 
-      accumulated = 0;
+      accumulated =
+        0;
 
 
       if (
         result.length >=
         BRANCH_COINS
       ) {
-
         break;
-
       }
 
     }
@@ -2767,74 +3394,51 @@ function buildBranch(
 }
 
 
-/* =====================================================
+/* =========================================================
    CREATE COIN
-===================================================== */
+   ========================================================= */
 
 function createCoin(
-
   latitude,
   longitude
-
 ) {
 
   const id =
     makeCoinId(
-
       latitude,
       longitude
-
     );
 
 
   if (
-    save.collectedCoins.includes(
+    playerData.collected_coins.includes(
       id
     )
   ) {
-
     return;
-
   }
 
 
   for (
-
-    let i = 0;
-
-    i <
-    coins.length;
-
-    i++
-
+    const existing of
+    coins
   ) {
 
-    const existing =
-      coins[i];
-
-
     if (
-
       distanceMeters(
-
         latitude,
         longitude,
-
         existing.latitude,
         existing.longitude
-
       ) < 20
-
     ) {
-
       return;
-
     }
 
   }
 
 
-  const coinIcon =
+  const icon =
     L.divIcon({
 
       className: "",
@@ -2853,35 +3457,25 @@ function createCoin(
 
   const marker =
     L.marker(
-
       [
         latitude,
         longitude
       ],
-
       {
-
-        icon:
-          coinIcon
-
+        icon
       }
-
     ).addTo(map);
 
 
   coins.push({
 
-    id:
-      id,
+    id,
 
-    marker:
-      marker,
+    marker,
 
-    latitude:
-      latitude,
+    latitude,
 
-    longitude:
-      longitude,
+    longitude,
 
     collected:
       false
@@ -2891,15 +3485,13 @@ function createCoin(
 }
 
 
-/* =====================================================
+/* =========================================================
    COIN ID
-===================================================== */
+   ========================================================= */
 
 function makeCoinId(
-
   latitude,
   longitude
-
 ) {
 
   return (
@@ -2919,18 +3511,18 @@ function makeCoinId(
 }
 
 
-/* =====================================================
+/* =========================================================
    REMOVE UNCOLLECTED
-===================================================== */
+   ========================================================= */
 
 function removeUncollectedCoins() {
 
-  const remaining = [];
+  const remaining =
+    [];
 
 
   coins.forEach(
-
-    function(coin) {
+    coin => {
 
       if (
         coin.collected
@@ -2958,7 +3550,6 @@ function removeUncollectedCoins() {
       }
 
     }
-
   );
 
 
@@ -2968,39 +3559,31 @@ function removeUncollectedCoins() {
 }
 
 
-/* =====================================================
-   COLLECTION
-===================================================== */
+/* =========================================================
+   CHECK COLLECTION
+   ========================================================= */
 
 function checkCoinCollection(
-
   latitude,
   longitude
-
 ) {
 
   coins.forEach(
-
-    function(coin) {
+    coin => {
 
       if (
         coin.collected
       ) {
-
         return;
-
       }
 
 
       const distance =
         distanceMeters(
-
           latitude,
           longitude,
-
           coin.latitude,
           coin.longitude
-
         );
 
 
@@ -3016,17 +3599,16 @@ function checkCoinCollection(
       }
 
     }
-
   );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    COLLECT COIN
-===================================================== */
+   ========================================================= */
 
-function collectCoin(
+async function collectCoin(
   coin
 ) {
 
@@ -3048,62 +3630,88 @@ function collectCoin(
 
 
   if (
-    !save.collectedCoins.includes(
+    !playerData.collected_coins.includes(
       coin.id
     )
   ) {
 
-    save.collectedCoins.push(
+    playerData.collected_coins.push(
       coin.id
     );
 
   }
 
 
-  save.coins +=
+  playerData.coins +=
     10;
 
 
-  saveGame();
+  playerData.xp +=
+    10;
+
+
+  /*
+    Every 100 XP = level up.
+  */
+
+  const newLevel =
+    Math.floor(
+      playerData.xp / 100
+    ) + 1;
+
+
+  if (
+    newLevel >
+    playerData.level
+  ) {
+
+    playerData.level =
+      newLevel;
+
+
+    setStatus(
+      "🎉 LEVEL " +
+      playerData.level +
+      "!"
+    );
+
+  } else {
+
+    setStatus(
+      "🪙 COIN COLLECTED! +10"
+    );
+
+  }
 
 
   updateCoinDisplay();
 
-
-  setStatus(
-    "🪙 COIN COLLECTED! +10"
-  );
+  await savePlayer();
 
 
   setTimeout(
-
-    function() {
+    () => {
 
       setStatus(
         "🎮 KEEP EXPLORING"
       );
 
     },
-
     2000
-
   );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    DISTANCE
-===================================================== */
+   ========================================================= */
 
 function distanceMeters(
-
   lat1,
   lon1,
-
   lat2,
   lon2
-
 ) {
 
   const R =
@@ -3123,34 +3731,27 @@ function distanceMeters(
 
 
   const dLat =
-
     (
       lat2 -
       lat1
     ) *
-
     Math.PI /
     180;
 
 
   const dLon =
-
     (
       lon2 -
       lon1
     ) *
-
     Math.PI /
     180;
 
 
   const a =
-
     Math.sin(
       dLat / 2
-    ) ** 2
-
-    +
+    ) ** 2 +
 
     Math.cos(p1) *
     Math.cos(p2) *
@@ -3161,15 +3762,10 @@ function distanceMeters(
 
 
   const c =
-
     2 *
-
     Math.atan2(
-
       Math.sqrt(a),
-
       Math.sqrt(1 - a)
-
     );
 
 
@@ -3178,9 +3774,9 @@ function distanceMeters(
 }
 
 
-/* =====================================================
+/* =========================================================
    STATUS
-===================================================== */
+   ========================================================= */
 
 function setStatus(
   text
@@ -3194,9 +3790,9 @@ function setStatus(
 }
 
 
-/* =====================================================
+/* =========================================================
    SHOP
-===================================================== */
+   ========================================================= */
 
 function openShop() {
 
@@ -3221,14 +3817,33 @@ function closeShop() {
 }
 
 
+document.getElementById(
+  "shopButton"
+).addEventListener(
+  "click",
+  openShop
+);
+
+
+document.getElementById(
+  "closeShop"
+).addEventListener(
+  "click",
+  closeShop
+);
+
+
+/* =========================================================
+   RENDER SHOP
+   ========================================================= */
+
 function renderShop() {
 
   document.getElementById(
     "shopBalance"
   ).innerText =
-
     "🪙 Coins: " +
-    save.coins;
+    playerData.coins;
 
 
   const container =
@@ -3244,21 +3859,20 @@ function renderShop() {
   Object.keys(
     SKINS
   ).forEach(
-
-    function(id) {
+    id => {
 
       const skin =
         SKINS[id];
 
 
       const unlocked =
-        save.unlockedSkins.includes(
+        playerData.unlocked_skins.includes(
           id
         );
 
 
       const equipped =
-        save.equippedSkin ===
+        playerData.equipped_skin ===
         id;
 
 
@@ -3314,7 +3928,9 @@ function renderShop() {
         );
 
 
-      if (equipped) {
+      if (
+        equipped
+      ) {
 
         button.innerText =
           "EQUIPPED";
@@ -3322,30 +3938,25 @@ function renderShop() {
         button.disabled =
           true;
 
-
-      } else if (unlocked) {
+      } else if (
+        unlocked
+      ) {
 
         button.innerText =
           "EQUIP";
 
 
-        button.addEventListener(
-
-          "click",
-
-          function() {
+        button.onclick =
+          () => {
 
             equipSkin(
               id
             );
 
-          }
-
-        );
-
+          };
 
       } else if (
-        save.coins >=
+        playerData.coins >=
         skin.price
       ) {
 
@@ -3353,20 +3964,14 @@ function renderShop() {
           "BUY";
 
 
-        button.addEventListener(
-
-          "click",
-
-          function() {
+        button.onclick =
+          () => {
 
             buySkin(
               id
             );
 
-          }
-
-        );
-
+          };
 
       } else {
 
@@ -3384,17 +3989,16 @@ function renderShop() {
       );
 
     }
-
   );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    BUY SKIN
-===================================================== */
+   ========================================================= */
 
-function buySkin(
+async function buySkin(
   id
 ) {
 
@@ -3408,198 +4012,235 @@ function buySkin(
 
 
   if (
-    save.unlockedSkins.includes(
+    playerData.unlocked_skins.includes(
       id
     )
   ) {
-
     return;
-
   }
 
 
   if (
-    save.coins <
+    playerData.coins <
     skin.price
   ) {
-
     return;
-
   }
 
 
-  save.coins -=
+  playerData.coins -=
     skin.price;
 
 
-  save.unlockedSkins.push(
+  playerData.unlocked_skins.push(
     id
   );
 
 
-  save.equippedSkin =
+  playerData.equipped_skin =
     id;
-
-
-  saveGame();
 
 
   updateCoinDisplay();
 
-
   updatePlayerSkin();
-
 
   renderShop();
 
+  await savePlayer();
+
 
   setStatus(
-
     "🎨 " +
     skin.name +
     " unlocked!"
-
   );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    EQUIP SKIN
-===================================================== */
+   ========================================================= */
 
-function equipSkin(
+async function equipSkin(
   id
 ) {
 
   if (
-    !save.unlockedSkins.includes(
+    !playerData.unlocked_skins.includes(
       id
     )
   ) {
-
     return;
-
   }
 
 
-  save.equippedSkin =
+  playerData.equipped_skin =
     id;
-
-
-  saveGame();
 
 
   updatePlayerSkin();
 
-
   renderShop();
+
+  await savePlayer();
 
 
   setStatus(
-
     "🎨 " +
     SKINS[id].name +
     " equipped!"
-
   );
 
 }
 
 
-/* =====================================================
-   SHOP EVENTS
-===================================================== */
+/* =========================================================
+   ACCOUNT
+   ========================================================= */
 
 document.getElementById(
-  "shopButton"
+  "accountButton"
 ).addEventListener(
-
   "click",
-
-  openShop
-
+  openAccount
 );
 
 
+function openAccount() {
+
+  const email =
+    currentUser?.email ||
+    "Unknown";
+
+
+  const username =
+    playerData.username ||
+    currentUser?.user_metadata?.username ||
+    "Player";
+
+
+  document.getElementById(
+    "accountInfo"
+  ).innerHTML = `
+
+    <strong>
+      Username:
+    </strong>
+    ${escapeHTML(username)}
+    <br>
+
+    <strong>
+      Email:
+    </strong>
+    ${escapeHTML(email)}
+    <br>
+
+    <strong>
+      Level:
+    </strong>
+    ${playerData.level}
+    <br>
+
+    <strong>
+      XP:
+    </strong>
+    ${playerData.xp}
+    <br>
+
+    <strong>
+      Coins:
+    </strong>
+    ${playerData.coins}
+
+  `;
+
+
+  document.getElementById(
+    "accountOverlay"
+  ).style.display =
+    "block";
+
+}
+
+
 document.getElementById(
-  "closeShop"
+  "closeAccount"
 ).addEventListener(
-
   "click",
+  () => {
 
-  closeShop
+    document.getElementById(
+      "accountOverlay"
+    ).style.display =
+      "none";
 
+  }
 );
 
 
-/* =====================================================
+/* =========================================================
+   SIGN OUT
+   ========================================================= */
+
+document.getElementById(
+  "signOutButton"
+).addEventListener(
+  "click",
+  async () => {
+
+    await supabaseClient.auth.signOut();
+
+    location.reload();
+
+  }
+);
+
+
+/* =========================================================
    MODE SWITCH
-===================================================== */
+   ========================================================= */
 
 document.getElementById(
   "modeButton"
 ).addEventListener(
-
   "click",
+  () => {
 
-  function() {
-
-    if (
-      gameMode ===
-      "PUBLIC"
-    ) {
-
-      gameMode =
-        "UNLIMITED";
+    gameMode =
+      gameMode === "PUBLIC"
+        ? "UNLIMITED"
+        : "PUBLIC";
 
 
-      document.getElementById(
-        "modeButton"
-      ).innerText =
-        "🔓 UNLIMITED";
-
-
-    } else {
-
-      gameMode =
-        "PUBLIC";
-
-
-      document.getElementById(
-        "modeButton"
-      ).innerText =
-        "🌎 PUBLIC";
-
-    }
+    document.getElementById(
+      "modeButton"
+    ).innerText =
+      gameMode === "PUBLIC"
+        ? "🌎 PUBLIC"
+        : "🔓 UNLIMITED";
 
 
     if (
-
       currentLatitude !== null &&
-
       currentLongitude !== null
-
     ) {
 
       loadTrail(
-
         currentLatitude,
-
         currentLongitude
-
       );
 
     }
 
   }
-
 );
 
 
-/* =====================================================
+/* =========================================================
    GPS ERROR
-===================================================== */
+   ========================================================= */
 
 function locationError(
   error
@@ -3611,90 +4252,66 @@ function locationError(
   );
 
 
-  setLoadingText(
-    "Location permission is required."
-  );
+  if (
+    error.code === 1
+  ) {
 
+    setStatus(
+      "📍 Please allow location access to play."
+    );
 
-  setStatus(
-    "❌ Couldn't get your location. Check GPS permissions."
-  );
+  } else {
 
+    setStatus(
+      "❌ Couldn't get your location."
+    );
 
-  /*
-    Don't leave the player staring
-    at an infinite loading screen.
-  */
-
-  setTimeout(
-
-    hideLoadingScreen,
-
-    1000
-
-  );
+  }
 
 }
 
 
-/* =====================================================
-   START GPS
-===================================================== */
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
 
-if (
-  "geolocation" in navigator
+function escapeHTML(
+  value
 ) {
 
-  setLoadingText(
-    "Finding your location..."
-  );
-
-
-  navigator.geolocation.watchPosition(
-
-    updateLocation,
-
-    locationError,
-
-    {
-
-      enableHighAccuracy:
-        true,
-
-      maximumAge:
-        2000,
-
-      timeout:
-        10000
-
-    }
-
-  );
-
-
-} else {
-
-  setLoadingText(
-    "GPS isn't available."
-  );
-
-
-  setStatus(
-    "❌ GPS isn't available."
-  );
-
-
-  setTimeout(
-
-    hideLoadingScreen,
-
-    1000
-
-  );
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 
 }
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+checkAuth();
 
 </script>
 
 </body>
+
 </html>
