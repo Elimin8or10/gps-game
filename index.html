@@ -28,16 +28,11 @@
       height: 100%;
     }
 
-    /* =========================
-       HUD
-       ========================= */
-
     #hud {
       position: absolute;
       top: 15px;
       left: 15px;
       right: 15px;
-
       z-index: 1000;
 
       display: flex;
@@ -47,16 +42,14 @@
     }
 
     .hudBox {
-      background: rgba(10,15,20,0.94);
-
+      background: rgba(10, 15, 20, 0.94);
       color: white;
 
       padding: 10px 14px;
 
       border-radius: 12px;
 
-      box-shadow:
-        0 3px 12px rgba(0,0,0,0.4);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.4);
 
       font-weight: bold;
     }
@@ -69,10 +62,6 @@
       cursor: pointer;
       user-select: none;
     }
-
-    /* =========================
-       STATUS
-       ========================= */
 
     #status {
       position: absolute;
@@ -96,10 +85,6 @@
       text-align: center;
     }
 
-    /* =========================
-       PLAYER
-       ========================= */
-
     .player {
       width: 22px;
       height: 22px;
@@ -114,10 +99,6 @@
         0 0 8px #00aaff,
         0 0 18px #00aaff;
     }
-
-    /* =========================
-       COINS
-       ========================= */
 
     .coin {
       width: 28px;
@@ -172,9 +153,6 @@
 
 <body>
 
-
-  <!-- HUD -->
-
   <div id="hud">
 
     <div
@@ -194,28 +172,22 @@
   </div>
 
 
-  <!-- STATUS -->
-
   <div id="status">
     📍 Finding your location...
   </div>
 
 
-  <!-- MAP -->
-
   <div id="map"></div>
 
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
   <script>
 
 
     /* =====================================================
-       GAME VARIABLES
+       GAME STATE
        ===================================================== */
 
     let map = null;
@@ -228,46 +200,29 @@
 
     let gameMode = "PUBLIC";
 
-    let lastLatitude = null;
+    let currentLatitude = null;
 
-    let lastLongitude = null;
+    let currentLongitude = null;
 
-    let loadingCoins = false;
+    let loadingTrail = false;
 
 
     /* =====================================================
        SETTINGS
        ===================================================== */
 
-    const SEARCH_DISTANCE_METERS = 700;
+    const SEARCH_RADIUS = 800;
 
-    const COLLECTION_DISTANCE = 15;
-
-    const COIN_VALUE = 10;
-
-    const COIN_REFRESH_DISTANCE = 150;
-
-    /*
-      Main trail.
-    */
+    const COIN_SPACING = 65;
 
     const MAIN_COINS = 5;
 
-    const MAIN_SPACING = 70;
-
-    /*
-      Mini branch.
-    */
-
     const BRANCH_COINS = 3;
 
-    const BRANCH_SPACING = 60;
+    const COLLECTION_DISTANCE = 15;
 
+    const REFRESH_DISTANCE = 200;
 
-
-    /* =====================================================
-       OVERPASS SERVERS
-       ===================================================== */
 
     const OVERPASS_SERVERS = [
 
@@ -278,22 +233,11 @@
     ];
 
 
-
     /* =====================================================
        START GAME
        ===================================================== */
 
-    function startGame(
-      latitude,
-      longitude
-    ) {
-
-
-      /*
-        IMPORTANT:
-
-        Map centers only ONCE.
-      */
+    function startGame(latitude, longitude) {
 
       map =
         L.map("map").setView(
@@ -308,27 +252,17 @@
         );
 
 
-      /*
-        OSM tiles.
-      */
-
       L.tileLayer(
 
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 
         {
-
           attribution:
             "© OpenStreetMap contributors"
-
         }
 
       ).addTo(map);
 
-
-      /*
-        Player.
-      */
 
       const playerIcon =
         L.divIcon({
@@ -339,10 +273,10 @@
             '<div class="player"></div>',
 
           iconSize:
-            [28,28],
+            [28, 28],
 
           iconAnchor:
-            [14,14]
+            [14, 14]
 
         });
 
@@ -356,27 +290,21 @@
           ],
 
           {
-
             icon:
               playerIcon
-
           }
 
         ).addTo(map);
 
 
-      lastLatitude =
+      currentLatitude =
         latitude;
 
-      lastLongitude =
+      currentLongitude =
         longitude;
 
 
-      /*
-        Generate paths.
-      */
-
-      loadGamePaths(
+      loadTrail(
 
         latitude,
 
@@ -387,36 +315,27 @@
     }
 
 
-
     /* =====================================================
-       GPS
+       GPS UPDATE
+
+       IMPORTANT:
+       NO map.setView()
        ===================================================== */
 
-    function updateLocation(
-      position
-    ) {
-
+    function updateLocation(position) {
 
       const latitude =
         position.coords.latitude;
-
 
       const longitude =
         position.coords.longitude;
 
 
-      /*
-        First GPS reading.
-      */
-
       if (!map) {
 
         startGame(
-
           latitude,
-
           longitude
-
         );
 
         return;
@@ -424,79 +343,56 @@
       }
 
 
-      /*
-        Move player only.
-
-        NO map.setView().
-      */
-
       player.setLatLng([
 
         latitude,
-
         longitude
 
       ]);
 
 
-      /*
-        Check coins.
-      */
-
       checkCoinCollection(
 
         latitude,
-
         longitude
 
       );
 
 
-      /*
-        Refresh trails after
-        moving 150 meters.
-      */
-
       if (
 
-        lastLatitude !== null &&
+        currentLatitude !== null &&
 
-        lastLongitude !== null
+        currentLongitude !== null
 
       ) {
 
+        const distance =
+          distanceMeters(
 
-        const moved =
-          getDistanceMeters(
-
-            lastLatitude,
-
-            lastLongitude,
+            currentLatitude,
+            currentLongitude,
 
             latitude,
-
             longitude
 
           );
 
 
         if (
-          moved >=
-          COIN_REFRESH_DISTANCE
+          distance >=
+          REFRESH_DISTANCE
         ) {
 
-
-          lastLatitude =
+          currentLatitude =
             latitude;
 
-          lastLongitude =
+          currentLongitude =
             longitude;
 
-
-          loadGamePaths(
+          loadTrail(
 
             latitude,
-
             longitude
 
           );
@@ -508,52 +404,38 @@
     }
 
 
-
     /* =====================================================
-       LOAD OSM
+       LOAD OSM ROAD/PATH NETWORK
        ===================================================== */
 
-    async function loadGamePaths(
+    async function loadTrail(
 
       latitude,
-
       longitude
 
     ) {
 
-
-      if (loadingCoins) {
+      if (loadingTrail) {
         return;
       }
 
-
-      loadingCoins = true;
-
-
-      document.getElementById(
-        "status"
-      ).innerText =
-        "🗺️ Looking for paths...";
+      loadingTrail = true;
 
 
-      /*
-        Remove old coins.
-      */
+      setStatus(
+        "🗺️ Building a path..."
+      );
+
 
       removeUncollectedCoins();
 
 
-      /*
-        Bounding box.
-      */
-
       const latOffset =
-        SEARCH_DISTANCE_METERS /
-        111320;
+        SEARCH_RADIUS / 111320;
 
 
       const lonOffset =
-        SEARCH_DISTANCE_METERS /
+        SEARCH_RADIUS /
         (
           111320 *
           Math.cos(
@@ -568,16 +450,13 @@
         latitude -
         latOffset;
 
-
       const north =
         latitude +
         latOffset;
 
-
       const west =
         longitude -
         lonOffset;
-
 
       const east =
         longitude +
@@ -585,16 +464,18 @@
 
 
       /*
-        OSM query.
+        Get OSM ways and their complete geometry.
+
+        We are intentionally getting the geometry,
+        not just random nearby points.
       */
 
       const query = `
 
         [out:json]
-        [timeout:15];
+        [timeout:20];
 
-        way
-          ["highway"]
+        way["highway"]
           (${south},${west},${north},${east});
 
         out tags geom;
@@ -605,24 +486,13 @@
       let data = null;
 
 
-      /*
-        Try servers.
-      */
-
       for (
-
         let i = 0;
-
-        i <
-        OVERPASS_SERVERS.length;
-
+        i < OVERPASS_SERVERS.length;
         i++
-
       ) {
 
-
         try {
-
 
           const response =
             await fetch(
@@ -668,12 +538,10 @@
 
           break;
 
-
         } catch (error) {
 
-
           console.log(
-            "OSM error:",
+            "Overpass error:",
             error
           );
 
@@ -684,14 +552,11 @@
 
       if (!data) {
 
+        setStatus(
+          "⚠️ Couldn't load map data."
+        );
 
-        document.getElementById(
-          "status"
-        ).innerText =
-          "⚠️ Couldn't load map data.";
-
-
-        loadingCoins = false;
+        loadingTrail = false;
 
         return;
 
@@ -699,38 +564,32 @@
 
 
       /*
-        Find usable ways.
+        Convert OSM ways into network segments.
       */
 
-      const paths =
-        getUsablePaths(
+      const ways =
+        filterWays(
 
-          data,
-
-          latitude,
-
-          longitude
+          data.elements
 
         );
 
 
       if (
-        paths.length === 0
+        ways.length === 0
       ) {
 
-
-        document.getElementById(
-          "status"
-        ).innerText =
+        setStatus(
 
           gameMode === "PUBLIC"
 
             ? "🔎 No suitable public paths nearby."
 
-            : "🔎 No mapped paths nearby.";
+            : "🔎 No mapped paths nearby."
 
+        );
 
-        loadingCoins = false;
+        loadingTrail = false;
 
         return;
 
@@ -738,13 +597,14 @@
 
 
       /*
-        Build main trail.
+        Find the closest actual point
+        on the OSM network.
       */
 
-      const mainTrail =
-        buildMainTrail(
+      const start =
+        findClosestNetworkPoint(
 
-          paths[0],
+          ways,
 
           latitude,
 
@@ -753,48 +613,66 @@
         );
 
 
+      if (!start) {
+
+        setStatus(
+          "🔎 Couldn't find a nearby path."
+        );
+
+        loadingTrail = false;
+
+        return;
+
+      }
+
+
       /*
-        Find branch paths.
+        Build the main route by following
+        connected OSM geometry.
       */
 
-      const branch =
-        findBranchPath(
+      const mainRoute =
+        buildNetworkRoute(
 
-          paths,
+          ways,
 
-          paths[0],
+          start,
 
-          mainTrail
+          MAIN_COINS
 
         );
 
 
       /*
-        Build branch trail.
+        Find a branch off the route.
+
+        This is a REAL network branch,
+        not merely a nearby line.
       */
 
-      const branchTrail =
-        branch
+      const branchRoute =
+        findNetworkBranch(
 
-          ? buildBranchTrail(
-              branch
-            )
+          ways,
 
-          : [];
+          mainRoute,
+
+          start
+
+        );
 
 
       /*
-        Add main coins.
+        Put coins on main route.
       */
 
-      mainTrail.forEach(
+      mainRoute.forEach(
 
         function(point) {
 
           createCoin(
 
             point.lat,
-
             point.lon
 
           );
@@ -805,17 +683,16 @@
 
 
       /*
-        Add branch coins.
+        Put coins on branch.
       */
 
-      branchTrail.forEach(
+      branchRoute.forEach(
 
         function(point) {
 
           createCoin(
 
             point.lat,
-
             point.lon
 
           );
@@ -826,54 +703,51 @@
 
 
       const total =
-        mainTrail.length +
-        branchTrail.length;
+        mainRoute.length +
+        branchRoute.length;
 
 
-      document.getElementById(
-        "status"
-      ).innerText =
+      if (total === 0) {
 
-        "🎮 " +
-        total +
-        " coins • explore the paths!";
+        setStatus(
+          "🔎 Path found, but it was too short for coins."
+        );
+
+      } else {
+
+        setStatus(
+
+          "🎮 " +
+          total +
+          " coins on real mapped paths"
+
+        );
+
+      }
 
 
-      loadingCoins = false;
+      loadingTrail = false;
 
     }
 
 
-
     /* =====================================================
-       USABLE PATHS
+       FILTER OSM WAYS
        ===================================================== */
 
-    function getUsablePaths(
+    function filterWays(elements) {
 
-      data,
-
-      playerLatitude,
-
-      playerLongitude
-
-    ) {
+      const result = [];
 
 
-      const paths = [];
-
-
-      data.elements.forEach(
+      elements.forEach(
 
         function(element) {
-
 
           if (
             element.type !== "way"
           ) {
-
             return;
-
           }
 
 
@@ -881,9 +755,7 @@
             !element.geometry ||
             element.geometry.length < 2
           ) {
-
             return;
-
           }
 
 
@@ -907,13 +779,15 @@
 
 
           /*
-            PUBLIC mode.
+            PUBLIC MODE
+
+            Only use ways intended
+            for walking/cycling/etc.
           */
 
           if (
             gameMode === "PUBLIC"
           ) {
-
 
             if (
 
@@ -932,7 +806,7 @@
             }
 
 
-            const publicWays = [
+            const allowed = [
 
               "footway",
 
@@ -946,13 +820,13 @@
 
               "bridleway",
 
-              "corridor"
+              "living_street"
 
             ];
 
 
             if (
-              !publicWays.includes(
+              !allowed.includes(
                 highway
               )
             ) {
@@ -965,17 +839,18 @@
 
 
           /*
-            UNLIMITED mode.
+            UNLIMITED MODE
 
-            Still avoid major roads.
+            Private roads can be used.
+
+            Major highways are still excluded.
           */
 
           if (
             gameMode === "UNLIMITED"
           ) {
 
-
-            const dangerous = [
+            const forbidden = [
 
               "motorway",
 
@@ -993,7 +868,7 @@
 
 
             if (
-              dangerous.includes(
+              forbidden.includes(
                 highway
               )
             ) {
@@ -1005,50 +880,13 @@
           }
 
 
-          /*
-            Closest point.
-          */
+          result.push({
 
-          const closest =
-            getClosestPointOnWay(
-
-              element.geometry,
-
-              playerLatitude,
-
-              playerLongitude
-
-            );
-
-
-          if (!closest) {
-            return;
-          }
-
-
-          if (
-            closest.distance >
-            SEARCH_DISTANCE_METERS
-          ) {
-
-            return;
-
-          }
-
-
-          paths.push({
+            id:
+              element.id,
 
             geometry:
               element.geometry,
-
-            highway:
-              highway,
-
-            distance:
-              closest.distance,
-
-            closestIndex:
-              closest.index,
 
             tags:
               tags
@@ -1060,17 +898,76 @@
       );
 
 
-      /*
-        Closest first.
-      */
+      return result;
 
-      paths.sort(
+    }
 
-        function(a,b) {
 
-          return (
-            a.distance -
-            b.distance
+    /* =====================================================
+       FIND CLOSEST NETWORK POINT
+       ===================================================== */
+
+    function findClosestNetworkPoint(
+
+      ways,
+
+      latitude,
+      longitude
+
+    ) {
+
+      let best = null;
+
+
+      ways.forEach(
+
+        function(way) {
+
+          way.geometry.forEach(
+
+            function(point, index) {
+
+              const distance =
+                distanceMeters(
+
+                  latitude,
+                  longitude,
+
+                  point.lat,
+                  point.lon
+
+                );
+
+
+              if (
+
+                best === null ||
+
+                distance <
+                best.distance
+
+              ) {
+
+                best = {
+
+                  way:
+                    way,
+
+                  index:
+                    index,
+
+                  distance:
+                    distance,
+
+                  point:
+                    point
+
+                };
+
+              }
+
+            }
+
           );
 
         }
@@ -1078,68 +975,413 @@
       );
 
 
-      return paths;
+      return best;
 
     }
 
 
-
     /* =====================================================
-       CLOSEST POINT
+       BUILD NETWORK ROUTE
        ===================================================== */
 
-    function getClosestPointOnWay(
+    function buildNetworkRoute(
 
-      geometry,
+      ways,
 
-      latitude,
+      start,
 
-      longitude
+      numberOfCoins
+
+    ) {
+
+      const route = [];
+
+
+      /*
+        Start at the closest way.
+
+        Determine which direction to follow.
+      */
+
+      const geometry =
+        start.way.geometry;
+
+
+      let direction = 1;
+
+
+      if (
+        start.index >=
+        geometry.length - 1
+      ) {
+
+        direction = -1;
+
+      } else if (
+        start.index > 0
+      ) {
+
+        const before =
+          geometry[
+            start.index - 1
+          ];
+
+        const after =
+          geometry[
+            start.index + 1
+          ];
+
+
+        const beforeDistance =
+          distanceMeters(
+
+            start.point.lat,
+            start.point.lon,
+
+            before.lat,
+            before.lon
+
+          );
+
+
+        const afterDistance =
+          distanceMeters(
+
+            start.point.lat,
+            start.point.lon,
+
+            after.lat,
+            after.lon
+
+          );
+
+
+        /*
+          Pick the direction that goes
+          farther away from the player.
+        */
+
+        if (
+          beforeDistance >
+          afterDistance
+        ) {
+
+          direction = -1;
+
+        }
+
+      }
+
+
+      /*
+        Follow connected ways.
+      */
+
+      let currentWay =
+        start.way;
+
+      let currentIndex =
+        start.index;
+
+      let currentDirection =
+        direction;
+
+
+      let previousWayId =
+        null;
+
+
+      let accumulated =
+        0;
+
+
+      let lastPoint =
+        start.point;
+
+
+      const visited =
+        new Set();
+
+
+      while (
+        route.length <
+        numberOfCoins
+      ) {
+
+
+        /*
+          Prevent infinite loops.
+        */
+
+        const visitKey =
+          currentWay.id +
+          ":" +
+          currentIndex +
+          ":" +
+          currentDirection;
+
+
+        if (
+          visited.has(
+            visitKey
+          )
+        ) {
+
+          break;
+
+        }
+
+
+        visited.add(
+          visitKey
+        );
+
+
+        const nextIndex =
+          currentIndex +
+          currentDirection;
+
+
+        /*
+          We've reached the end
+          of this OSM way.
+
+          Find a connected way.
+        */
+
+        if (
+
+          nextIndex < 0 ||
+
+          nextIndex >=
+          currentWay.geometry.length
+
+        ) {
+
+
+          const endpoint =
+
+            currentWay.geometry[
+              currentDirection === 1
+
+                ? currentWay.geometry.length - 1
+
+                : 0
+            ];
+
+
+          const nextWay =
+            findConnectedWay(
+
+              ways,
+
+              endpoint,
+
+              currentWay.id,
+
+              visited
+
+            );
+
+
+          if (!nextWay) {
+
+            break;
+
+          }
+
+
+          currentWay =
+            nextWay.way;
+
+          currentIndex =
+            nextWay.index;
+
+          currentDirection =
+            nextWay.direction;
+
+          continue;
+
+        }
+
+
+        const point =
+          currentWay.geometry[
+            nextIndex
+          ];
+
+
+        const segment =
+          distanceMeters(
+
+            lastPoint.lat,
+            lastPoint.lon,
+
+            point.lat,
+            point.lon
+
+          );
+
+
+        accumulated +=
+          segment;
+
+
+        if (
+          accumulated >=
+          COIN_SPACING
+        ) {
+
+
+          route.push({
+
+            lat:
+              point.lat,
+
+            lon:
+              point.lon
+
+          });
+
+
+          accumulated = 0;
+
+        }
+
+
+        lastPoint =
+          point;
+
+        currentIndex =
+          nextIndex;
+
+      }
+
+
+      return route;
+
+    }
+
+
+    /* =====================================================
+       FIND CONNECTED WAY
+       ===================================================== */
+
+    function findConnectedWay(
+
+      ways,
+
+      endpoint,
+
+      currentWayId,
+
+      visited
 
     ) {
 
 
       let best = null;
 
-
-      geometry.forEach(
-
-        function(point,index) {
+      let bestDistance =
+        30;
 
 
-          const distance =
-            getDistanceMeters(
+      ways.forEach(
 
-              latitude,
+        function(way) {
 
-              longitude,
+          if (
+            way.id ===
+            currentWayId
+          ) {
+            return;
+          }
 
-              point.lat,
 
-              point.lon
+          /*
+            Look at BOTH ends of each way.
+
+            A connection occurs when
+            endpoints are close together.
+          */
+
+          const first =
+            way.geometry[0];
+
+          const last =
+            way.geometry[
+              way.geometry.length - 1
+            ];
+
+
+          const firstDistance =
+            distanceMeters(
+
+              endpoint.lat,
+              endpoint.lon,
+
+              first.lat,
+              first.lon
+
+            );
+
+
+          const lastDistance =
+            distanceMeters(
+
+              endpoint.lat,
+              endpoint.lon,
+
+              last.lat,
+              last.lon
 
             );
 
 
           if (
-
-            best === null ||
-
-            distance <
-            best.distance
-
+            firstDistance <=
+            bestDistance
           ) {
-
 
             best = {
 
-              distance:
-                distance,
+              way:
+                way,
 
               index:
-                index
+                0,
+
+              direction:
+                1
 
             };
+
+            bestDistance =
+              firstDistance;
+
+          }
+
+
+          if (
+            lastDistance <=
+            bestDistance
+          ) {
+
+            best = {
+
+              way:
+                way,
+
+              index:
+                way.geometry.length - 1,
+
+              direction:
+                -1
+
+            };
+
+            bestDistance =
+              lastDistance;
 
           }
 
@@ -1153,286 +1395,23 @@
     }
 
 
-
     /* =====================================================
-       MAIN TRAIL
+       FIND A REAL NETWORK BRANCH
        ===================================================== */
 
-    function buildMainTrail(
+    function findNetworkBranch(
 
-      path,
+      ways,
 
-      playerLatitude,
+      mainRoute,
 
-      playerLongitude
+      start
 
     ) {
-
-
-      const geometry =
-        path.geometry;
-
-
-      let index =
-        path.closestIndex;
-
-
-      /*
-        Determine direction.
-      */
-
-      let direction =
-        1;
-
 
       if (
-        index >=
-        geometry.length - 1
-      ) {
-
-        direction =
-          -1;
-
-      } else if (
-        index <= 0
-      ) {
-
-        direction =
-          1;
-
-      } else {
-
-
-        const next =
-          geometry[
-            index + 1
-          ];
-
-
-        const previous =
-          geometry[
-            index - 1
-          ];
-
-
-        const nextDistance =
-          getDistanceMeters(
-
-            playerLatitude,
-            playerLongitude,
-
-            next.lat,
-            next.lon
-
-          );
-
-
-        const previousDistance =
-          getDistanceMeters(
-
-            playerLatitude,
-            playerLongitude,
-
-            previous.lat,
-            previous.lon
-
-          );
-
-
-        if (
-          previousDistance >
-          nextDistance
-        ) {
-
-          direction =
-            -1;
-
-        }
-
-      }
-
-
-      return makeTrail(
-
-        geometry,
-
-        index,
-
-        direction,
-
-        MAIN_COINS,
-
-        MAIN_SPACING
-
-      );
-
-    }
-
-
-
-    /* =====================================================
-       FIND BRANCH
-       ===================================================== */
-
-    function findBranchPath(
-
-      paths,
-
-      mainPath,
-
-      mainTrail
-
-    ) {
-
-
-      /*
-        Search for another way
-        whose geometry comes close
-        to the main path.
-
-        This approximates a branch.
-      */
-
-      for (
-
-        let i = 1;
-
-        i <
-        paths.length;
-
-        i++
-
-      ) {
-
-
-        const candidate =
-          paths[i];
-
-
-        /*
-          Don't use the same highway
-          segment.
-        */
-
-        if (
-          candidate.geometry ===
-          mainPath.geometry
-        ) {
-
-          continue;
-
-        }
-
-
-        /*
-          Check whether the candidate
-          comes close to the main trail.
-        */
-
-        let connected =
-          false;
-
-
-        for (
-
-          let a = 0;
-
-          a <
-          candidate.geometry.length;
-
-          a++
-
-        ) {
-
-
-          const point =
-            candidate.geometry[a];
-
-
-          for (
-
-            let b = 0;
-
-            b <
-            mainTrail.length;
-
-            b++
-
-          ) {
-
-
-            const trailPoint =
-              mainTrail[b];
-
-
-            const distance =
-              getDistanceMeters(
-
-                point.lat,
-                point.lon,
-
-                trailPoint.lat,
-                trailPoint.lon
-
-              );
-
-
-            /*
-              About 80 meters counts
-              as a possible branch.
-            */
-
-            if (
-              distance <= 80
-            ) {
-
-              connected =
-                true;
-
-              break;
-
-            }
-
-          }
-
-
-          if (connected) {
-            break;
-          }
-
-        }
-
-
-        if (connected) {
-
-          return candidate;
-
-        }
-
-      }
-
-
-      return null;
-
-    }
-
-
-
-    /* =====================================================
-       BUILD BRANCH TRAIL
-       ===================================================== */
-
-    function buildBranchTrail(
-      branch
-    ) {
-
-
-      const geometry =
-        branch.geometry;
-
-
-      if (
-        geometry.length < 2
+        mainRoute.length <
+        2
       ) {
 
         return [];
@@ -1441,124 +1420,166 @@
 
 
       /*
-        Start at one end of the branch
-        and walk toward the other end.
-
-        This makes mini paths naturally
-        extend down roads/paths.
+        Find a way connected to
+        a point along the main route
+        but NOT simply continuing
+        the same way.
       */
 
-      const fromStart =
-        geometry[0];
+      for (
 
+        let r = 1;
 
-      const fromEnd =
-        geometry[
-          geometry.length - 1
-        ];
+        r <
+        mainRoute.length;
 
+        r++
 
-      /*
-        Prefer the longer direction.
-      */
-
-      let startIndex =
-        0;
-
-
-      let direction =
-        1;
-
-
-      if (
-        branch.distance <
-        100
       ) {
 
 
-        /*
-          If the branch is near the player,
-          use its farther end.
-        */
-
-        const startDistance =
-          branch.distance;
+        const routePoint =
+          mainRoute[r];
 
 
-        const endDistance =
-          getDistanceMeters(
+        for (
 
-            lastLatitude,
-            lastLongitude,
+          let i = 0;
 
-            fromEnd.lat,
-            fromEnd.lon
+          i <
+          ways.length;
 
-          );
+          i++
 
-
-        if (
-          endDistance <
-          startDistance
         ) {
 
-          startIndex =
-            geometry.length - 1;
 
-          direction =
-            -1;
+          const way =
+            ways[i];
+
+
+          /*
+            Skip the starting way.
+
+            We want an actual branch.
+          */
+
+          if (
+            way.id ===
+            start.way.id
+          ) {
+
+            continue;
+
+          }
+
+
+          const first =
+            way.geometry[0];
+
+          const last =
+            way.geometry[
+              way.geometry.length - 1
+            ];
+
+
+          const firstDistance =
+            distanceMeters(
+
+              routePoint.lat,
+              routePoint.lon,
+
+              first.lat,
+              first.lon
+
+            );
+
+
+          const lastDistance =
+            distanceMeters(
+
+              routePoint.lat,
+              routePoint.lon,
+
+              last.lat,
+              last.lon
+
+            );
+
+
+          /*
+            30 meters is close enough
+            to count as a mapped connection.
+
+            This accommodates small OSM
+            geometry differences.
+          */
+
+          if (
+            firstDistance <= 30
+          ) {
+
+            return buildBranch(
+
+              way,
+
+              0,
+
+              1
+
+            );
+
+          }
+
+
+          if (
+            lastDistance <= 30
+          ) {
+
+            return buildBranch(
+
+              way,
+
+              way.geometry.length - 1,
+
+              -1
+
+            );
+
+          }
 
         }
 
       }
 
 
-      return makeTrail(
-
-        geometry,
-
-        startIndex,
-
-        direction,
-
-        BRANCH_COINS,
-
-        BRANCH_SPACING
-
-      );
+      return [];
 
     }
 
 
-
     /* =====================================================
-       MAKE TRAIL
+       BUILD BRANCH
        ===================================================== */
 
-    function makeTrail(
+    function buildBranch(
 
-      geometry,
+      way,
 
       startIndex,
 
-      direction,
-
-      numberOfCoins,
-
-      spacing
+      direction
 
     ) {
 
+      const result = [];
 
-      const trail = [];
 
-
-      let accumulated =
-        0;
+      let accumulated = 0;
 
 
       let lastPoint =
-        geometry[startIndex];
+        way.geometry[startIndex];
 
 
       for (
@@ -1566,7 +1587,7 @@
         let step = 1;
 
         step <
-        geometry.length;
+        way.geometry.length;
 
         step++
 
@@ -1581,7 +1602,10 @@
 
         if (
           index < 0 ||
-          index >= geometry.length
+
+          index >=
+          way.geometry.length
+
         ) {
 
           break;
@@ -1590,11 +1614,11 @@
 
 
         const point =
-          geometry[index];
+          way.geometry[index];
 
 
-        const distance =
-          getDistanceMeters(
+        accumulated +=
+          distanceMeters(
 
             lastPoint.lat,
             lastPoint.lon,
@@ -1605,17 +1629,13 @@
           );
 
 
-        accumulated +=
-          distance;
-
-
         if (
           accumulated >=
-          spacing
+          COIN_SPACING
         ) {
 
 
-          trail.push({
+          result.push({
 
             lat:
               point.lat,
@@ -1630,8 +1650,8 @@
 
 
           if (
-            trail.length >=
-            numberOfCoins
+            result.length >=
+            BRANCH_COINS
           ) {
 
             break;
@@ -1647,105 +1667,9 @@
       }
 
 
-      /*
-        Try the other direction if
-        the way was too short.
-      */
-
-      if (
-        trail.length === 0
-      ) {
-
-
-        let reverse =
-          [];
-
-
-        let accumulated2 =
-          0;
-
-
-        let last =
-          geometry[startIndex];
-
-
-        for (
-
-          let index =
-            startIndex - direction;
-
-          index >= 0 &&
-          index < geometry.length;
-
-          index -= direction
-
-        ) {
-
-
-          const point =
-            geometry[index];
-
-
-          accumulated2 +=
-            getDistanceMeters(
-
-              last.lat,
-              last.lon,
-
-              point.lat,
-              point.lon
-
-            );
-
-
-          if (
-            accumulated2 >=
-            spacing
-          ) {
-
-
-            reverse.push({
-
-              lat:
-                point.lat,
-
-              lon:
-                point.lon
-
-            });
-
-
-            accumulated2 = 0;
-
-
-            if (
-              reverse.length >=
-              numberOfCoins
-            ) {
-
-              break;
-
-            }
-
-          }
-
-
-          last =
-            point;
-
-        }
-
-
-        trail =
-          reverse;
-
-      }
-
-
-      return trail;
+      return result;
 
     }
-
 
 
     /* =====================================================
@@ -1755,16 +1679,13 @@
     function createCoin(
 
       latitude,
-
       longitude
 
     ) {
 
 
       /*
-        Prevent coins from being
-        placed directly on top of
-        each other.
+        Don't stack coins.
       */
 
       for (
@@ -1778,8 +1699,9 @@
           coins[i];
 
 
-        const distance =
-          getDistanceMeters(
+        if (
+
+          distanceMeters(
 
             latitude,
             longitude,
@@ -1787,11 +1709,8 @@
             existing.latitude,
             existing.longitude
 
-          );
+          ) < 20
 
-
-        if (
-          distance < 25
         ) {
 
           return;
@@ -1827,10 +1746,8 @@
           ],
 
           {
-
             icon:
               coinIcon
-
           }
 
         ).addTo(map);
@@ -1855,13 +1772,11 @@
     }
 
 
-
     /* =====================================================
-       REMOVE OLD COINS
+       REMOVE UNCOLLECTED COINS
        ===================================================== */
 
     function removeUncollectedCoins() {
-
 
       const remaining = [];
 
@@ -1870,19 +1785,15 @@
 
         function(coin) {
 
-
           if (
             coin.collected
           ) {
-
 
             remaining.push(
               coin
             );
 
-
           } else {
-
 
             if (
               map.hasLayer(
@@ -1909,36 +1820,30 @@
     }
 
 
-
     /* =====================================================
-       COLLECTION
+       CHECK COLLECTION
        ===================================================== */
 
     function checkCoinCollection(
 
       latitude,
-
       longitude
 
     ) {
-
 
       coins.forEach(
 
         function(coin) {
 
-
           if (
             coin.collected
           ) {
-
             return;
-
           }
 
 
           const distance =
-            getDistanceMeters(
+            distanceMeters(
 
               latitude,
               longitude,
@@ -1967,7 +1872,6 @@
     }
 
 
-
     /* =====================================================
        COLLECT
        ===================================================== */
@@ -1975,7 +1879,6 @@
     function collectCoin(
       coin
     ) {
-
 
       coin.collected =
         true;
@@ -1995,7 +1898,7 @@
 
 
       coinCount +=
-        COIN_VALUE;
+        10;
 
 
       document.getElementById(
@@ -2006,21 +1909,18 @@
         coinCount;
 
 
-      document.getElementById(
-        "status"
-      ).innerText =
-
-        "🪙 COIN COLLECTED! +10";
+      setStatus(
+        "🪙 COIN COLLECTED! +10"
+      );
 
 
       setTimeout(
 
         function() {
 
-          document.getElementById(
-            "status"
-          ).innerText =
-            "🎮 KEEP EXPLORING";
+          setStatus(
+            "🎮 KEEP EXPLORING"
+          );
 
         },
 
@@ -2031,42 +1931,40 @@
     }
 
 
-
     /* =====================================================
-       DISTANCE
+       DISTANCE CALCULATOR
        ===================================================== */
 
-    function getDistanceMeters(
+    function distanceMeters(
 
-      latitude1,
-      longitude1,
+      lat1,
+      lon1,
 
-      latitude2,
-      longitude2
+      lat2,
+      lon2
 
     ) {
-
 
       const R =
         6371000;
 
 
-      const lat1 =
-        latitude1 *
+      const p1 =
+        lat1 *
         Math.PI /
         180;
 
 
-      const lat2 =
-        latitude2 *
+      const p2 =
+        lat2 *
         Math.PI /
         180;
 
 
       const dLat =
         (
-          latitude2 -
-          latitude1
+          lat2 -
+          lat1
         ) *
         Math.PI /
         180;
@@ -2074,8 +1972,8 @@
 
       const dLon =
         (
-          longitude2 -
-          longitude1
+          lon2 -
+          lon1
         ) *
         Math.PI /
         180;
@@ -2089,9 +1987,8 @@
 
         +
 
-        Math.cos(lat1) *
-
-        Math.cos(lat2) *
+        Math.cos(p1) *
+        Math.cos(p2) *
 
         Math.sin(
           dLon / 2
@@ -2099,9 +1996,7 @@
 
 
       const c =
-
         2 *
-
         Math.atan2(
 
           Math.sqrt(a),
@@ -2116,9 +2011,22 @@
     }
 
 
+    /* =====================================================
+       STATUS
+       ===================================================== */
+
+    function setStatus(text) {
+
+      document.getElementById(
+        "status"
+      ).innerText =
+        text;
+
+    }
+
 
     /* =====================================================
-       MODE SWITCH
+       MODE BUTTON
        ===================================================== */
 
     document.getElementById(
@@ -2131,7 +2039,8 @@
 
 
         if (
-          gameMode === "PUBLIC"
+          gameMode ===
+          "PUBLIC"
         ) {
 
 
@@ -2160,24 +2069,19 @@
         }
 
 
-        /*
-          Rebuild paths using
-          the new mode.
-        */
-
         if (
 
-          lastLatitude !== null &&
+          currentLatitude !== null &&
 
-          lastLongitude !== null
+          currentLongitude !== null
 
         ) {
 
-          loadGamePaths(
+          loadTrail(
 
-            lastLatitude,
+            currentLatitude,
 
-            lastLongitude
+            currentLongitude
 
           );
 
@@ -2188,15 +2092,11 @@
     );
 
 
-
     /* =====================================================
        GPS ERROR
        ===================================================== */
 
-    function locationError(
-      error
-    ) {
-
+    function locationError(error) {
 
       console.log(
         "GPS error:",
@@ -2204,13 +2104,11 @@
       );
 
 
-      document.getElementById(
-        "status"
-      ).innerText =
-        "❌ Couldn't get your location.";
+      setStatus(
+        "❌ Couldn't get your location."
+      );
 
     }
-
 
 
     /* =====================================================
@@ -2246,11 +2144,9 @@
 
     } else {
 
-
-      document.getElementById(
-        "status"
-      ).innerText =
-        "❌ GPS isn't available.";
+      setStatus(
+        "❌ GPS isn't available."
+      );
 
     }
 
