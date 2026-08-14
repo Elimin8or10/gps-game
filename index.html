@@ -24,106 +24,996 @@
       height: 100%;
     }
 
-    #status {
+    /* =========================
+       GAME HUD
+       ========================= */
+
+    #hud {
       position: absolute;
       top: 15px;
       left: 15px;
       right: 15px;
       z-index: 1000;
-      background: rgba(10, 15, 20, 0.9);
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
+
+      display: flex;
+      gap: 10px;
+
       font-family: Arial, sans-serif;
+    }
+
+    .hudBox {
+      background: rgba(10, 15, 20, 0.92);
+      color: white;
+
+      padding: 10px 14px;
+
+      border-radius: 12px;
+
+      box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.4);
+
+      font-weight: bold;
+    }
+
+    #coins {
+      flex: 1;
+    }
+
+    #mode {
+      cursor: pointer;
+      user-select: none;
+    }
+
+
+    /* =========================
+       STATUS
+       ========================= */
+
+    #status {
+      position: absolute;
+
+      bottom: 20px;
+      left: 15px;
+      right: 15px;
+
+      z-index: 1000;
+
+      background: rgba(10, 15, 20, 0.9);
+
+      color: white;
+
+      padding: 12px;
+
+      border-radius: 12px;
+
+      font-family: Arial, sans-serif;
+
       text-align: center;
     }
+
+
+    /* =========================
+       PLAYER
+       ========================= */
 
     .player {
       width: 22px;
       height: 22px;
+
       background: #00aaff;
+
       border: 3px solid white;
+
       border-radius: 50%;
-      box-shadow: 0 0 15px #00aaff;
+
+      box-shadow:
+        0 0 8px #00aaff,
+        0 0 18px #00aaff;
     }
+
+
+    /* =========================
+       COIN
+       ========================= */
+
+    .coin {
+      width: 28px;
+      height: 28px;
+
+      background: radial-gradient(
+        circle at 35% 35%,
+        #fffbd0 0%,
+        #ffe44d 25%,
+        #ffd000 55%,
+        #f0a000 80%,
+        #c87800 100%
+      );
+
+      border: 3px solid #fff4a3;
+
+      border-radius: 50%;
+
+      box-shadow:
+        0 0 8px #ffd700,
+        0 0 18px #ffb000,
+        0 0 28px rgba(255, 190, 0, 0.7);
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 17px;
+
+      animation: coinPulse 1.4s infinite;
+    }
+
+    @keyframes coinPulse {
+
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.12);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+
+    }
+
   </style>
 </head>
 
+
 <body>
 
-  <div id="status">📍 Finding your location...</div>
+  <!-- =========================
+       HUD
+       ========================= -->
+
+  <div id="hud">
+
+    <div
+      class="hudBox"
+      id="coins"
+    >
+      🪙 Coins: 0
+    </div>
+
+    <div
+      class="hudBox"
+      id="mode"
+    >
+      🌎 PUBLIC
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       STATUS
+       ========================= -->
+
+  <div id="status">
+    📍 Finding your location...
+  </div>
+
+
+  <!-- =========================
+       MAP
+       ========================= -->
+
   <div id="map"></div>
+
+
+  <!-- =========================
+       LEAFLET
+       ========================= -->
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+
   <script>
-    let map;
-    let player;
+
+    /* =====================================================
+       GAME VARIABLES
+       ===================================================== */
+
+    let map = null;
+
+    let player = null;
+
+    let coins = [];
+
+    let coinCount = 0;
+
+    let gameMode = "PUBLIC";
+
+
+    /*
+      Distance required to collect a coin.
+      15 meters is the current test value.
+    */
+
+    const COLLECTION_DISTANCE = 15;
+
+
+    /*
+      How many coins we create for testing.
+    */
+
+    const NUMBER_OF_COINS = 6;
+
+
+    /*
+      Value of each coin.
+    */
+
+    const COIN_VALUE = 10;
+
+
+
+    /* =====================================================
+       START GAME
+       ===================================================== */
 
     function startGame(latitude, longitude) {
 
-      map = L.map("map").setView([latitude, longitude], 17);
+
+      /*
+        Create the map.
+
+        IMPORTANT:
+        This is the ONLY automatic map centering.
+
+        We do NOT call setView() when the player moves.
+      */
+
+      map = L.map("map").setView(
+        [latitude, longitude],
+        17
+      );
+
+
+      /*
+        OpenStreetMap
+      */
 
       L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
-          attribution: "© OpenStreetMap contributors"
+          attribution:
+            "© OpenStreetMap contributors"
         }
       ).addTo(map);
 
+
+
+      /* =================================================
+         PLAYER MARKER
+         ================================================= */
+
       const playerIcon = L.divIcon({
+
         className: "",
-        html: '<div class="player"></div>',
-        iconSize: [28, 28],
-        iconAnchor: [14, 14]
+
+        html:
+          '<div class="player"></div>',
+
+        iconSize:
+          [28, 28],
+
+        iconAnchor:
+          [14, 14]
+
       });
 
+
       player = L.marker(
+
         [latitude, longitude],
-        { icon: playerIcon }
+
+        {
+          icon: playerIcon
+        }
+
       ).addTo(map);
 
-      document.getElementById("status").innerText =
+
+
+      /*
+        Update status.
+      */
+
+      document.getElementById(
+        "status"
+      ).innerText =
         "🎮 YOU ARE HERE";
 
-      map.setView([latitude, longitude], 17);
+
+
+      /*
+        Create our temporary test coins.
+      */
+
+      createTestCoins(
+        latitude,
+        longitude
+      );
+
     }
+
+
+
+    /* =====================================================
+       GPS UPDATE
+       ===================================================== */
 
     function updateLocation(position) {
 
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+
+      const latitude =
+        position.coords.latitude;
+
+
+      const longitude =
+        position.coords.longitude;
+
+
+
+      /*
+        If the map doesn't exist yet,
+        create it.
+      */
 
       if (!map) {
-        startGame(latitude, longitude);
+
+        startGame(
+          latitude,
+          longitude
+        );
+
         return;
       }
 
-      player.setLatLng([latitude, longitude]);
-      map.setView([latitude, longitude]);
+
+
+      /*
+        Move ONLY the player marker.
+
+        IMPORTANT:
+
+        There is NO map.setView() here.
+
+        This is what keeps the map
+        from snapping back to the player.
+      */
+
+      player.setLatLng([
+        latitude,
+        longitude
+      ]);
+
+
+
+
+      /*
+        Check for nearby coins.
+      */
+
+      checkCoinCollection(
+        latitude,
+        longitude
+      );
+
     }
 
-    function locationError(error) {
-      document.getElementById("status").innerText =
-        "❌ Couldn't get your location.";
-    }
 
-    if ("geolocation" in navigator) {
 
-      navigator.geolocation.watchPosition(
-        updateLocation,
-        locationError,
+    /* =====================================================
+       CREATE TEST COINS
+       ===================================================== */
+
+    function createTestCoins(
+      latitude,
+      longitude
+    ) {
+
+
+      /*
+        Temporary test positions.
+
+        These are distances in meters.
+
+        north = meters north
+        east  = meters east
+      */
+
+      const locations = [
+
         {
-          enableHighAccuracy: true,
-          maximumAge: 2000,
-          timeout: 10000
+          north: 80,
+          east: 0
+        },
+
+        {
+          north: -100,
+          east: 0
+        },
+
+        {
+          north: 0,
+          east: 120
+        },
+
+        {
+          north: 0,
+          east: -150
+        },
+
+        {
+          north: 100,
+          east: 100
+        },
+
+        {
+          north: -130,
+          east: -80
+        }
+
+      ];
+
+
+
+      locations.forEach(
+        function(location) {
+
+
+          const position =
+            offsetLocation(
+
+              latitude,
+
+              longitude,
+
+              location.north,
+
+              location.east
+
+            );
+
+
+          createCoin(
+
+            position[0],
+
+            position[1]
+
+          );
+
         }
       );
 
-    } else {
-      document.getElementById("status").innerText =
-        "❌ GPS isn't available.";
     }
+
+
+
+    /* =====================================================
+       CONVERT METERS TO GPS COORDINATES
+       ===================================================== */
+
+    function offsetLocation(
+
+      latitude,
+
+      longitude,
+
+      northMeters,
+
+      eastMeters
+
+    ) {
+
+
+      /*
+        Approximate number of meters
+        in one degree of latitude.
+      */
+
+      const metersPerDegreeLatitude =
+        111320;
+
+
+
+      /*
+        Longitude changes slightly depending
+        on latitude.
+      */
+
+      const metersPerDegreeLongitude =
+
+        111320 *
+
+        Math.cos(
+          latitude *
+          Math.PI /
+          180
+        );
+
+
+
+      const newLatitude =
+
+        latitude +
+
+        (
+          northMeters /
+          metersPerDegreeLatitude
+        );
+
+
+
+      const newLongitude =
+
+        longitude +
+
+        (
+          eastMeters /
+          metersPerDegreeLongitude
+        );
+
+
+
+      return [
+
+        newLatitude,
+
+        newLongitude
+
+      ];
+
+    }
+
+
+
+    /* =====================================================
+       CREATE COIN
+       ===================================================== */
+
+    function createCoin(
+      latitude,
+      longitude
+    ) {
+
+
+      const coinIcon = L.divIcon({
+
+        className: "",
+
+        html:
+          '<div class="coin">🪙</div>',
+
+        iconSize:
+          [34, 34],
+
+        iconAnchor:
+          [17, 17]
+
+      });
+
+
+
+      const marker = L.marker(
+
+        [
+          latitude,
+          longitude
+        ],
+
+        {
+          icon: coinIcon
+        }
+
+      ).addTo(map);
+
+
+
+      /*
+        Store the coin.
+      */
+
+      coins.push({
+
+        marker: marker,
+
+        latitude: latitude,
+
+        longitude: longitude,
+
+        collected: false
+
+      });
+
+    }
+
+
+
+    /* =====================================================
+       CHECK COIN COLLECTION
+       ===================================================== */
+
+    function checkCoinCollection(
+
+      playerLatitude,
+
+      playerLongitude
+
+    ) {
+
+
+      coins.forEach(
+
+        function(coin) {
+
+
+          /*
+            Ignore coins that were already collected.
+          */
+
+          if (
+            coin.collected
+          ) {
+
+            return;
+
+          }
+
+
+
+          /*
+            Calculate distance.
+          */
+
+          const distance =
+
+            getDistanceMeters(
+
+              playerLatitude,
+
+              playerLongitude,
+
+              coin.latitude,
+
+              coin.longitude
+
+            );
+
+
+
+          /*
+            Close enough?
+          */
+
+          if (
+
+            distance <=
+
+            COLLECTION_DISTANCE
+
+          ) {
+
+            collectCoin(
+              coin
+            );
+
+          }
+
+        }
+
+      );
+
+    }
+
+
+
+    /* =====================================================
+       COLLECT COIN
+       ===================================================== */
+
+    function collectCoin(coin) {
+
+
+      /*
+        Mark as collected.
+      */
+
+      coin.collected = true;
+
+
+
+      /*
+        Remove from map.
+      */
+
+      map.removeLayer(
+        coin.marker
+      );
+
+
+
+      /*
+        Add reward.
+      */
+
+      coinCount +=
+        COIN_VALUE;
+
+
+
+      /*
+        Update HUD.
+      */
+
+      document.getElementById(
+        "coins"
+      ).innerText =
+
+        "🪙 Coins: " +
+        coinCount;
+
+
+
+      /*
+        Collection message.
+      */
+
+      document.getElementById(
+        "status"
+      ).innerText =
+
+        "🪙 COIN COLLECTED! +10";
+
+
+
+      /*
+        Return to normal status.
+      */
+
+      setTimeout(
+
+        function() {
+
+          document.getElementById(
+            "status"
+          ).innerText =
+            "🎮 YOU ARE HERE";
+
+        },
+
+        2000
+
+      );
+
+    }
+
+
+
+    /* =====================================================
+       DISTANCE CALCULATION
+       ===================================================== */
+
+    function getDistanceMeters(
+
+      latitude1,
+
+      longitude1,
+
+      latitude2,
+
+      longitude2
+
+    ) {
+
+
+      const earthRadius =
+        6371000;
+
+
+
+      const lat1 =
+
+        latitude1 *
+        Math.PI /
+        180;
+
+
+
+      const lat2 =
+
+        latitude2 *
+        Math.PI /
+        180;
+
+
+
+      const deltaLatitude =
+
+        (
+          latitude2 -
+          latitude1
+        ) *
+        Math.PI /
+        180;
+
+
+
+      const deltaLongitude =
+
+        (
+          longitude2 -
+          longitude1
+        ) *
+        Math.PI /
+        180;
+
+
+
+      const a =
+
+        Math.sin(
+          deltaLatitude / 2
+        ) *
+
+        Math.sin(
+          deltaLatitude / 2
+        )
+
+        +
+
+        Math.cos(lat1) *
+
+        Math.cos(lat2) *
+
+        Math.sin(
+          deltaLongitude / 2
+        ) *
+
+        Math.sin(
+          deltaLongitude / 2
+        );
+
+
+
+      const c =
+
+        2 *
+
+        Math.atan2(
+
+          Math.sqrt(a),
+
+          Math.sqrt(1 - a)
+
+        );
+
+
+
+      return earthRadius * c;
+
+    }
+
+
+
+    /* =====================================================
+       PUBLIC / UNLIMITED MODE
+       ===================================================== */
+
+    document.getElementById(
+      "mode"
+    ).addEventListener(
+
+      "click",
+
+      function() {
+
+
+        if (
+          gameMode === "PUBLIC"
+        ) {
+
+
+          gameMode =
+            "UNLIMITED";
+
+
+          document.getElementById(
+            "mode"
+          ).innerText =
+            "🔓 UNLIMITED";
+
+
+        } else {
+
+
+          gameMode =
+            "PUBLIC";
+
+
+          document.getElementById(
+            "mode"
+          ).innerText =
+            "🌎 PUBLIC";
+
+        }
+
+      }
+
+    );
+
+
+
+    /* =====================================================
+       GPS ERROR
+       ===================================================== */
+
+    function locationError(error) {
+
+
+      document.getElementById(
+        "status"
+      ).innerText =
+
+        "❌ Couldn't get your location.";
+
+    }
+
+
+
+    /* =====================================================
+       START GPS
+       ===================================================== */
+
+    if (
+      "geolocation" in navigator
+    ) {
+
+
+      navigator.geolocation.watchPosition(
+
+        updateLocation,
+
+        locationError,
+
+        {
+
+          enableHighAccuracy:
+            true,
+
+          maximumAge:
+            2000,
+
+          timeout:
+            10000
+
+        }
+
+      );
+
+
+    } else {
+
+
+      document.getElementById(
+        "status"
+      ).innerText =
+
+        "❌ GPS isn't available.";
+
+    }
+
   </script>
 
 </body>
