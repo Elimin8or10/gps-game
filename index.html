@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
   <title>GPS Game</title>
 
   <link
@@ -10,6 +13,7 @@
   />
 
   <style>
+
     html, body {
       margin: 0;
       padding: 0;
@@ -24,8 +28,9 @@
       height: 100%;
     }
 
+
     /* =========================
-       GAME HUD
+       HUD
        ========================= */
 
     #hud {
@@ -33,6 +38,7 @@
       top: 15px;
       left: 15px;
       right: 15px;
+
       z-index: 1000;
 
       display: flex;
@@ -42,7 +48,8 @@
     }
 
     .hudBox {
-      background: rgba(10, 15, 20, 0.92);
+      background: rgba(10, 15, 20, 0.94);
+
       color: white;
 
       padding: 10px 14px;
@@ -78,7 +85,7 @@
 
       z-index: 1000;
 
-      background: rgba(10, 15, 20, 0.9);
+      background: rgba(10, 15, 20, 0.94);
 
       color: white;
 
@@ -165,10 +172,12 @@
     }
 
   </style>
+
 </head>
 
 
 <body>
+
 
   <!-- =========================
        HUD
@@ -218,6 +227,7 @@
 
   <script>
 
+
     /* =====================================================
        GAME VARIABLES
        ===================================================== */
@@ -232,24 +242,58 @@
 
     let gameMode = "PUBLIC";
 
+    let lastLatitude = null;
+
+    let lastLongitude = null;
+
+    let loadingCoins = false;
+
 
     /*
-      Distance required to collect a coin.
-      15 meters is the current test value.
+      Player must be within this distance
+      to collect a coin.
     */
 
     const COLLECTION_DISTANCE = 15;
 
 
     /*
-      How many coins we create for testing.
+      Number of coins to try to create.
     */
 
-    const NUMBER_OF_COINS = 6;
+    const NUMBER_OF_COINS = 8;
 
 
     /*
-      Value of each coin.
+      How far around the player we search.
+
+      0.003 degrees is roughly 300 meters
+      north/south.
+    */
+
+    const SEARCH_RADIUS_DEGREES = 0.003;
+
+
+    /*
+      OpenStreetMap Overpass server.
+
+      This is a public Overpass API instance.
+    */
+
+    const OVERPASS_URL =
+      "https://overpass-api.de/api/interpreter";
+
+
+    /*
+      Prevent repeatedly querying OSM
+      every time GPS updates.
+    */
+
+    const COIN_REFRESH_DISTANCE = 100;
+
+
+    /*
+      Coin reward.
     */
 
     const COIN_VALUE = 10;
@@ -260,16 +304,21 @@
        START GAME
        ===================================================== */
 
-    function startGame(latitude, longitude) {
+    function startGame(
+      latitude,
+      longitude
+    ) {
 
 
       /*
-        Create the map.
-
         IMPORTANT:
-        This is the ONLY automatic map centering.
 
-        We do NOT call setView() when the player moves.
+        This is the ONLY setView() call.
+
+        It centers the map when the game starts.
+
+        We NEVER call setView() from
+        updateLocation().
       */
 
       map = L.map("map").setView(
@@ -279,21 +328,24 @@
 
 
       /*
-        OpenStreetMap
+        OpenStreetMap map tiles.
       */
 
       L.tileLayer(
+
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
         {
           attribution:
             "© OpenStreetMap contributors"
         }
+
       ).addTo(map);
 
 
 
       /* =================================================
-         PLAYER MARKER
+         PLAYER
          ================================================= */
 
       const playerIcon = L.divIcon({
@@ -314,7 +366,10 @@
 
       player = L.marker(
 
-        [latitude, longitude],
+        [
+          latitude,
+          longitude
+        ],
 
         {
           icon: playerIcon
@@ -325,21 +380,32 @@
 
 
       /*
+        Save current location.
+      */
+
+      lastLatitude =
+        latitude;
+
+      lastLongitude =
+        longitude;
+
+
+
+      /*
         Update status.
       */
 
       document.getElementById(
         "status"
       ).innerText =
-        "🎮 YOU ARE HERE";
-
+        "🗺️ Finding nearby locations...";
 
 
       /*
-        Create our temporary test coins.
+        Load real OSM-based coins.
       */
 
-      createTestCoins(
+      loadCoinsFromOSM(
         latitude,
         longitude
       );
@@ -365,8 +431,7 @@
 
 
       /*
-        If the map doesn't exist yet,
-        create it.
+        First GPS reading.
       */
 
       if (!map) {
@@ -382,198 +447,583 @@
 
 
       /*
-        Move ONLY the player marker.
+        Move ONLY the player.
 
-        IMPORTANT:
+        NO map.setView() HERE.
 
-        There is NO map.setView() here.
-
-        This is what keeps the map
-        from snapping back to the player.
+        This preserves smooth map scrolling.
       */
 
       player.setLatLng([
+
         latitude,
+
         longitude
+
       ]);
 
 
 
-
       /*
-        Check for nearby coins.
+        Check nearby coins.
       */
 
       checkCoinCollection(
+
         latitude,
+
         longitude
+
       );
 
-    }
-
-
-
-    /* =====================================================
-       CREATE TEST COINS
-       ===================================================== */
-
-    function createTestCoins(
-      latitude,
-      longitude
-    ) {
 
 
       /*
-        Temporary test positions.
-
-        These are distances in meters.
-
-        north = meters north
-        east  = meters east
+        See whether we've moved far enough
+        to load a new set of coins.
       */
 
-      const locations = [
+      if (
 
-        {
-          north: 80,
-          east: 0
-        },
+        lastLatitude !== null &&
 
-        {
-          north: -100,
-          east: 0
-        },
+        lastLongitude !== null
 
-        {
-          north: 0,
-          east: 120
-        },
-
-        {
-          north: 0,
-          east: -150
-        },
-
-        {
-          north: 100,
-          east: 100
-        },
-
-        {
-          north: -130,
-          east: -80
-        }
-
-      ];
+      ) {
 
 
+        const movedDistance =
+          getDistanceMeters(
 
-      locations.forEach(
-        function(location) {
+            lastLatitude,
 
+            lastLongitude,
 
-          const position =
-            offsetLocation(
+            latitude,
 
-              latitude,
+            longitude
 
-              longitude,
-
-              location.north,
-
-              location.east
-
-            );
+          );
 
 
-          createCoin(
+        if (
 
-            position[0],
+          movedDistance >=
 
-            position[1]
+          COIN_REFRESH_DISTANCE
+
+        ) {
+
+
+          lastLatitude =
+            latitude;
+
+          lastLongitude =
+            longitude;
+
+
+          loadCoinsFromOSM(
+
+            latitude,
+
+            longitude
 
           );
 
         }
-      );
+
+      }
 
     }
 
 
 
     /* =====================================================
-       CONVERT METERS TO GPS COORDINATES
+       LOAD COINS FROM OPENSTREETMAP
        ===================================================== */
 
-    function offsetLocation(
+    async function loadCoinsFromOSM(
 
       latitude,
 
-      longitude,
-
-      northMeters,
-
-      eastMeters
+      longitude
 
     ) {
 
 
       /*
-        Approximate number of meters
-        in one degree of latitude.
+        Don't send multiple OSM requests
+        at the same time.
       */
 
-      const metersPerDegreeLatitude =
-        111320;
+      if (loadingCoins) {
+        return;
+      }
+
+
+      loadingCoins = true;
+
+
+      document.getElementById(
+        "status"
+      ).innerText =
+
+        "🗺️ Searching nearby map data...";
 
 
 
       /*
-        Longitude changes slightly depending
-        on latitude.
+        Clear old uncollected coins.
+
+        Collected coins stay gone.
       */
 
-      const metersPerDegreeLongitude =
-
-        111320 *
-
-        Math.cos(
-          latitude *
-          Math.PI /
-          180
-        );
+      removeUncollectedCoins();
 
 
 
-      const newLatitude =
+      /*
+        Build the bounding box.
 
+        Overpass uses:
+
+        south, west, north, east
+      */
+
+      const south =
+        latitude -
+        SEARCH_RADIUS_DEGREES;
+
+      const north =
         latitude +
+        SEARCH_RADIUS_DEGREES;
 
-        (
-          northMeters /
-          metersPerDegreeLatitude
-        );
+      const west =
+        longitude -
+        SEARCH_RADIUS_DEGREES;
 
-
-
-      const newLongitude =
-
+      const east =
         longitude +
+        SEARCH_RADIUS_DEGREES;
 
-        (
-          eastMeters /
-          metersPerDegreeLongitude
+
+
+      /*
+        PUBLIC mode:
+
+        Focus on pedestrian-style features.
+
+        We intentionally do not query
+        normal residential/primary/secondary
+        vehicle roads.
+
+        We also reject several restrictive
+        access tags where present.
+      */
+
+      let query;
+
+
+      if (
+        gameMode === "PUBLIC"
+      ) {
+
+
+        query = `
+
+          [out:json]
+          [timeout:25];
+
+          (
+
+            way["highway"="footway"]
+              ["access"!~"^(private|no|customers|permissive)$"]
+              (${south},${west},${north},${east});
+
+            way["highway"="path"]
+              ["access"!~"^(private|no|customers|permissive)$"]
+              (${south},${west},${north},${east});
+
+            way["highway"="pedestrian"]
+              ["access"!~"^(private|no|customers|permissive)$"]
+              (${south},${west},${north},${east});
+
+            way["highway"="cycleway"]
+              ["access"!~"^(private|no|customers|permissive)$"]
+              (${south},${west},${north},${east});
+
+            way["highway"="steps"]
+              ["access"!~"^(private|no|customers|permissive)$"]
+              (${south},${west},${north},${east});
+
+          );
+
+          out geom;
+
+        `;
+
+
+      } else {
+
+
+        /*
+          UNLIMITED mode:
+
+          Broader selection.
+
+          This may include private roads
+          and other mapped areas.
+
+          It does NOT mean the area is
+          legally accessible.
+        */
+
+        query = `
+
+          [out:json]
+          [timeout:25];
+
+          (
+
+            way["highway"="footway"]
+              (${south},${west},${north},${east});
+
+            way["highway"="path"]
+              (${south},${west},${north},${east});
+
+            way["highway"="pedestrian"]
+              (${south},${west},${north},${east});
+
+            way["highway"="cycleway"]
+              (${south},${west},${north},${east});
+
+            way["highway"="steps"]
+              (${south},${west},${north},${east});
+
+            way["highway"="service"]
+              (${south},${west},${north},${east});
+
+            way["highway"="track"]
+              (${south},${west},${north},${east});
+
+          );
+
+          out geom;
+
+        `;
+
+      }
+
+
+
+      try {
+
+
+        /*
+          Send query to Overpass.
+        */
+
+        const response =
+          await fetch(
+
+            OVERPASS_URL,
+
+            {
+
+              method: "POST",
+
+              body:
+                "data=" +
+                encodeURIComponent(query)
+
+            }
+
+          );
+
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Overpass request failed"
+          );
+
+        }
+
+
+
+        const data =
+          await response.json();
+
+
+
+        /*
+          Convert returned OSM ways
+          into possible coin locations.
+        */
+
+        const locations =
+          extractCoinLocations(
+            data
+          );
+
+
+
+        /*
+          If nothing useful was found,
+          tell the player.
+        */
+
+        if (
+          locations.length === 0
+        ) {
+
+          document.getElementById(
+            "status"
+          ).innerText =
+
+            "🔎 No suitable mapped paths nearby.";
+
+          loadingCoins = false;
+
+          return;
+
+        }
+
+
+
+        /*
+          Shuffle locations so the coins
+          aren't always identical.
+        */
+
+        shuffleArray(
+          locations
         );
 
 
 
-      return [
+        /*
+          Create up to NUMBER_OF_COINS.
+        */
 
-        newLatitude,
+        const amount =
+          Math.min(
 
-        newLongitude
+            NUMBER_OF_COINS,
 
-      ];
+            locations.length
+
+          );
+
+
+
+        for (
+
+          let i = 0;
+
+          i < amount;
+
+          i++
+
+        ) {
+
+
+          createCoin(
+
+            locations[i].latitude,
+
+            locations[i].longitude
+
+          );
+
+        }
+
+
+
+        document.getElementById(
+          "status"
+        ).innerText =
+
+          "🎮 " +
+          amount +
+          " coins nearby!";
+
+
+      } catch (error) {
+
+
+        console.error(
+          "OSM coin error:",
+          error
+        );
+
+
+        document.getElementById(
+          "status"
+        ).innerText =
+
+          "⚠️ Couldn't load nearby map locations.";
+
+
+      }
+
+
+      loadingCoins = false;
+
+    }
+
+
+
+    /* =====================================================
+       EXTRACT COIN LOCATIONS
+       ===================================================== */
+
+    function extractCoinLocations(
+      data
+    ) {
+
+
+      const locations = [];
+
+
+
+      if (
+        !data ||
+        !data.elements
+      ) {
+
+        return locations;
+
+      }
+
+
+
+      data.elements.forEach(
+
+        function(element) {
+
+
+          /*
+            We requested geometry,
+            so ways should have geometry.
+          */
+
+          if (
+
+            element.type !== "way" ||
+
+            !element.geometry ||
+
+            element.geometry.length < 2
+
+          ) {
+
+            return;
+
+          }
+
+
+
+          /*
+            Choose several points along
+            the actual OSM way.
+
+            This is much better than putting
+            a coin at a random GPS location.
+          */
+
+          const geometry =
+            element.geometry;
+
+
+
+          /*
+            Pick the midpoint of the way.
+
+            We can improve this later to
+            distribute coins along longer paths.
+          */
+
+          const middleIndex =
+            Math.floor(
+              geometry.length / 2
+            );
+
+
+          const point =
+            geometry[middleIndex];
+
+
+
+          if (
+            !point ||
+            typeof point.lat !== "number" ||
+            typeof point.lon !== "number"
+          ) {
+
+            return;
+
+          }
+
+
+
+          /*
+            Don't put coins extremely close
+            to the player.
+
+            They should require some walking.
+          */
+
+          if (
+            lastLatitude !== null &&
+            lastLongitude !== null
+          ) {
+
+
+            const distance =
+              getDistanceMeters(
+
+                lastLatitude,
+
+                lastLongitude,
+
+                point.lat,
+
+                point.lon
+
+              );
+
+
+            if (
+              distance < 40
+            ) {
+
+              return;
+
+            }
+
+          }
+
+
+
+          locations.push({
+
+            latitude:
+              point.lat,
+
+            longitude:
+              point.lon
+
+          });
+
+        }
+
+      );
+
+
+
+      return locations;
 
     }
 
@@ -584,58 +1034,129 @@
        ===================================================== */
 
     function createCoin(
+
       latitude,
+
       longitude
+
     ) {
 
 
-      const coinIcon = L.divIcon({
+      const coinIcon =
+        L.divIcon({
 
-        className: "",
+          className: "",
 
-        html:
-          '<div class="coin">🪙</div>',
+          html:
+            '<div class="coin">🪙</div>',
 
-        iconSize:
-          [34, 34],
+          iconSize:
+            [34, 34],
 
-        iconAnchor:
-          [17, 17]
+          iconAnchor:
+            [17, 17]
 
-      });
-
-
-
-      const marker = L.marker(
-
-        [
-          latitude,
-          longitude
-        ],
-
-        {
-          icon: coinIcon
-        }
-
-      ).addTo(map);
+        });
 
 
 
-      /*
-        Store the coin.
-      */
+      const marker =
+        L.marker(
+
+          [
+            latitude,
+            longitude
+          ],
+
+          {
+            icon:
+              coinIcon
+          }
+
+        ).addTo(map);
+
+
 
       coins.push({
 
-        marker: marker,
+        marker:
+          marker,
 
-        latitude: latitude,
+        latitude:
+          latitude,
 
-        longitude: longitude,
+        longitude:
+          longitude,
 
-        collected: false
+        collected:
+          false
 
       });
+
+    }
+
+
+
+    /* =====================================================
+       REMOVE UNCOLLECTED COINS
+       ===================================================== */
+
+    function removeUncollectedCoins() {
+
+
+      const remainingCoins = [];
+
+
+
+      coins.forEach(
+
+        function(coin) {
+
+
+          if (
+            coin.collected
+          ) {
+
+
+            /*
+              Keep collected coins in the
+              array so they don't accidentally
+              get reused.
+            */
+
+            remainingCoins.push(
+              coin
+            );
+
+
+          } else {
+
+
+            /*
+              Remove old visible coin.
+            */
+
+            if (
+              map.hasLayer(
+                coin.marker
+              )
+            ) {
+
+              map.removeLayer(
+                coin.marker
+              );
+
+            }
+
+          }
+
+        }
+
+      );
+
+
+      coins =
+        remainingCoins;
 
     }
 
@@ -659,10 +1180,6 @@
         function(coin) {
 
 
-          /*
-            Ignore coins that were already collected.
-          */
-
           if (
             coin.collected
           ) {
@@ -673,12 +1190,7 @@
 
 
 
-          /*
-            Calculate distance.
-          */
-
           const distance =
-
             getDistanceMeters(
 
               playerLatitude,
@@ -693,14 +1205,9 @@
 
 
 
-          /*
-            Close enough?
-          */
-
           if (
 
             distance <=
-
             COLLECTION_DISTANCE
 
           ) {
@@ -723,24 +1230,31 @@
        COLLECT COIN
        ===================================================== */
 
-    function collectCoin(coin) {
+    function collectCoin(
+      coin
+    ) {
+
+
+      coin.collected =
+        true;
+
 
 
       /*
-        Mark as collected.
+        Remove marker.
       */
 
-      coin.collected = true;
+      if (
+        map.hasLayer(
+          coin.marker
+        )
+      ) {
 
+        map.removeLayer(
+          coin.marker
+        );
 
-
-      /*
-        Remove from map.
-      */
-
-      map.removeLayer(
-        coin.marker
-      );
+      }
 
 
 
@@ -767,7 +1281,7 @@
 
 
       /*
-        Collection message.
+        Show reward.
       */
 
       document.getElementById(
@@ -777,9 +1291,8 @@
         "🪙 COIN COLLECTED! +10";
 
 
-
       /*
-        Return to normal status.
+        Return to normal message.
       */
 
       setTimeout(
@@ -789,7 +1302,7 @@
           document.getElementById(
             "status"
           ).innerText =
-            "🎮 YOU ARE HERE";
+            "🎮 KEEP EXPLORING";
 
         },
 
@@ -824,7 +1337,6 @@
 
 
       const lat1 =
-
         latitude1 *
         Math.PI /
         180;
@@ -832,7 +1344,6 @@
 
 
       const lat2 =
-
         latitude2 *
         Math.PI /
         180;
@@ -901,14 +1412,62 @@
 
 
 
-      return earthRadius * c;
+      return (
+        earthRadius *
+        c
+      );
 
     }
 
 
 
     /* =====================================================
-       PUBLIC / UNLIMITED MODE
+       SHUFFLE ARRAY
+       ===================================================== */
+
+    function shuffleArray(
+      array
+    ) {
+
+
+      for (
+
+        let i =
+          array.length - 1;
+
+        i > 0;
+
+        i--
+
+      ) {
+
+
+        const j =
+          Math.floor(
+            Math.random() *
+            (i + 1)
+          );
+
+
+        const temp =
+          array[i];
+
+
+        array[i] =
+          array[j];
+
+
+        array[j] =
+          temp;
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       PUBLIC / UNLIMITED SWITCH
        ===================================================== */
 
     document.getElementById(
@@ -949,6 +1508,31 @@
 
         }
 
+
+
+        /*
+          Reload nearby coins using
+          the new mode.
+        */
+
+        if (
+
+          lastLatitude !== null &&
+
+          lastLongitude !== null
+
+        ) {
+
+          loadCoinsFromOSM(
+
+            lastLatitude,
+
+            lastLongitude
+
+          );
+
+        }
+
       }
 
     );
@@ -959,7 +1543,9 @@
        GPS ERROR
        ===================================================== */
 
-    function locationError(error) {
+    function locationError(
+      error
+    ) {
 
 
       document.getElementById(
@@ -1013,6 +1599,7 @@
         "❌ GPS isn't available.";
 
     }
+
 
   </script>
 
