@@ -1,28 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>GPS Coin</title>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-
 *{
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
 }
-
 html,body{
   margin:0;
   width:100%;
@@ -31,11 +21,7 @@ html,body{
   font-family:Arial,Helvetica,sans-serif;
   background:#080b10;
 }
-
-button{
-  font:inherit;
-}
-
+button{font:inherit}
 #map{
   position:fixed;
   inset:0;
@@ -44,26 +30,18 @@ button{
   z-index:1;
 }
 
-/* =========================
-   AUTH
-========================= */
-
-#authScreen{
+#authScreen,#modeScreen,#loadingScreen{
   position:fixed;
   inset:0;
-  z-index:10000;
-  display:flex;
   align-items:center;
   justify-content:center;
   padding:20px;
-  background:
-    radial-gradient(
-      circle at center,
-      #172333 0%,
-      #080b10 70%
-    );
   color:white;
+  background:radial-gradient(circle at center,#172333 0%,#080b10 70%);
 }
+#authScreen{z-index:10000;display:flex}
+#modeScreen{z-index:9000;display:none}
+#loadingScreen{z-index:8000;display:none}
 
 .authBox{
   width:min(430px,100%);
@@ -73,21 +51,9 @@ button{
   box-shadow:0 20px 70px rgba(0,0,0,.55);
   text-align:center;
 }
-
-.logo{
-  font-size:60px;
-}
-
-.authBox h1{
-  margin:8px 0 5px;
-  font-size:36px;
-}
-
-.authSub{
-  color:#9ba9b8;
-  margin-bottom:25px;
-}
-
+.logo{font-size:60px}
+.authBox h1{margin:8px 0 5px;font-size:36px}
+.authSub{color:#9ba9b8;margin-bottom:25px}
 #emailInput{
   width:100%;
   padding:15px;
@@ -98,11 +64,6 @@ button{
   outline:none;
   font-size:16px;
 }
-
-#emailInput:focus{
-  border-color:#00aaff;
-}
-
 .bigButton{
   width:100%;
   margin-top:12px;
@@ -112,13 +73,7 @@ button{
   background:#008ee6;
   color:white;
   font-weight:800;
-  cursor:pointer;
 }
-
-.bigButton:active{
-  transform:scale(.98);
-}
-
 #authStatus{
   min-height:22px;
   margin-top:15px;
@@ -126,47 +81,13 @@ button{
   font-size:14px;
 }
 
-/* =========================
-   MODE
-========================= */
-
-#modeScreen{
-  position:fixed;
-  inset:0;
-  z-index:9000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:
-    radial-gradient(
-      circle at center,
-      #172333 0%,
-      #080b10 70%
-    );
-  color:white;
-}
-
 .modeBox{
   width:min(500px,100%);
   text-align:center;
 }
-
-.modeBox h1{
-  font-size:32px;
-  margin:0 0 8px;
-}
-
-.modeBox p{
-  color:#9ba9b8;
-  margin-bottom:22px;
-}
-
-.modeButtons{
-  display:flex;
-  gap:12px;
-}
-
+.modeBox h1{font-size:32px;margin:0 0 8px}
+.modeBox p{color:#9ba9b8;margin-bottom:22px}
+.modeButtons{display:flex;gap:12px}
 .modeChoice{
   flex:1;
   padding:20px 12px;
@@ -174,23 +95,9 @@ button{
   border-radius:18px;
   background:#151e28;
   color:white;
-  cursor:pointer;
 }
-
-.modeChoice:hover{
-  border-color:#00aaff;
-}
-
-.modeIcon{
-  font-size:35px;
-  margin-bottom:8px;
-}
-
-.modeName{
-  font-weight:900;
-  font-size:17px;
-}
-
+.modeIcon{font-size:35px;margin-bottom:8px}
+.modeName{font-weight:900;font-size:17px}
 .modeDescription{
   color:#8d9aaa;
   font-size:12px;
@@ -198,40 +105,12 @@ button{
   line-height:1.4;
 }
 
-/* =========================
-   LOADING
-========================= */
-
-#loadingScreen{
-  position:fixed;
-  inset:0;
-  z-index:8000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:
-    radial-gradient(
-      circle at center,
-      #172333 0%,
-      #080b10 70%
-    );
-  color:white;
-}
-
 .loadingBox{
   width:min(430px,90%);
   text-align:center;
 }
-
-.loadingLogo{
-  font-size:65px;
-}
-
-.loadingTitle{
-  font-size:34px;
-  font-weight:900;
-}
-
+.loadingLogo{font-size:65px}
+.loadingTitle{font-size:34px;font-weight:900}
 .loadingBar{
   height:7px;
   margin-top:25px;
@@ -239,23 +118,17 @@ button{
   background:#202a35;
   overflow:hidden;
 }
-
 #loadingBar{
   width:10%;
   height:100%;
   background:linear-gradient(90deg,#00aaff,#66ddff);
   transition:width .3s;
 }
-
 #loadingText{
   margin-top:13px;
   color:#b9c5d2;
   min-height:22px;
 }
-
-/* =========================
-   HUD
-========================= */
 
 #hud{
   position:fixed;
@@ -266,7 +139,6 @@ button{
   display:flex;
   gap:7px;
 }
-
 .hud{
   min-height:44px;
   padding:10px 13px;
@@ -279,21 +151,12 @@ button{
   box-shadow:0 4px 18px rgba(0,0,0,.35);
   backdrop-filter:blur(10px);
 }
-
 #coinsDisplay{
   flex:1;
   justify-content:flex-start;
   font-weight:bold;
 }
-
-.hudButton{
-  cursor:pointer;
-  font-size:20px;
-}
-
-/* =========================
-   STATUS
-========================= */
+.hudButton{cursor:pointer;font-size:20px}
 
 #status{
   position:fixed;
@@ -310,25 +173,16 @@ button{
   box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
 
-/* =========================
-   PLAYER
-========================= */
-
 .player{
   width:23px;
   height:23px;
   border:3px solid white;
   border-radius:50%;
   background:var(--player-color);
-  box-shadow:
-    0 0 8px var(--player-color),
-    0 0 18px var(--player-color),
-    0 0 30px var(--player-color);
+  box-shadow:0 0 8px var(--player-color),
+             0 0 18px var(--player-color),
+             0 0 30px var(--player-color);
 }
-
-/* =========================
-   COIN
-========================= */
 
 .coin{
   width:29px;
@@ -338,28 +192,11 @@ button{
   justify-content:center;
   border-radius:50%;
   border:3px solid #fff4a3;
-  background:
-    radial-gradient(
-      circle at 35% 35%,
-      #fffbd0,
-      #ffe44d 28%,
-      #ffd000 58%,
-      #d88600
-    );
-  box-shadow:
-    0 0 8px #ffd700,
-    0 0 18px #ffb000,
-    0 0 28px rgba(255,190,0,.7);
+  background:radial-gradient(circle at 35% 35%,#fffbd0,#ffe44d 28%,#ffd000 58%,#d88600);
+  box-shadow:0 0 8px #ffd700,0 0 18px #ffb000,0 0 28px rgba(255,190,0,.7);
   animation:pulse 1.4s infinite;
 }
-
-@keyframes pulse{
-  50%{transform:scale(1.13)}
-}
-
-/* =========================
-   SHOP / ACCOUNT
-========================= */
+@keyframes pulse{50%{transform:scale(1.13)}}
 
 .overlay{
   position:fixed;
@@ -370,7 +207,6 @@ button{
   overflow:auto;
   background:rgba(0,0,0,.8);
 }
-
 .panel{
   width:min(500px,100%);
   margin:35px auto;
@@ -379,13 +215,11 @@ button{
   background:#151a20;
   color:white;
 }
-
 .panelHeader{
   display:flex;
   align-items:center;
   justify-content:space-between;
 }
-
 .close{
   border:0;
   border-radius:10px;
@@ -393,7 +227,6 @@ button{
   background:#333;
   color:white;
 }
-
 .balance{
   margin:15px 0;
   padding:12px;
@@ -402,7 +235,6 @@ button{
   text-align:center;
   font-weight:bold;
 }
-
 .shopItem{
   display:flex;
   align-items:center;
@@ -412,7 +244,6 @@ button{
   border-radius:14px;
   background:#20262d;
 }
-
 .skinPreview{
   width:43px;
   height:43px;
@@ -420,21 +251,13 @@ button{
   border:4px solid white;
   flex-shrink:0;
 }
-
-.skinInfo{
-  flex:1;
-}
-
-.skinName{
-  font-weight:bold;
-}
-
+.skinInfo{flex:1}
+.skinName{font-weight:bold}
 .skinPrice{
   color:#ffd700;
   font-size:13px;
   margin-top:4px;
 }
-
 .action{
   border:0;
   border-radius:9px;
@@ -443,11 +266,7 @@ button{
   color:white;
   font-weight:bold;
 }
-
-.action:disabled{
-  opacity:.45;
-}
-
+.action:disabled{opacity:.45}
 .accountEmail{
   padding:13px;
   border-radius:12px;
@@ -455,7 +274,6 @@ button{
   word-break:break-all;
   color:#b9c5d2;
 }
-
 .accountAction{
   width:100%;
   margin-top:10px;
@@ -466,14 +284,7 @@ button{
   color:white;
   font-weight:bold;
 }
-
-.danger{
-  background:#a83232;
-}
-
-/* =========================
-   TOAST
-========================= */
+.danger{background:#a83232}
 
 #toast{
   position:fixed;
@@ -491,168 +302,81 @@ button{
   transition:.25s;
   white-space:nowrap;
 }
-
 #toast.show{
   opacity:1;
   transform:translate(-50%,0);
 }
-
-.leaflet-top{
-  top:65px;
-}
-
+.leaflet-top{top:65px}
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     SIGN IN
-========================= -->
-
 <div id="authScreen">
-
   <div class="authBox">
-
     <div class="logo">🪙</div>
-
     <h1>GPS COIN</h1>
+    <div class="authSub">Explore. Collect. Level up.</div>
 
-    <div class="authSub">
-      Explore. Collect. Level up.
-    </div>
-
-    <input
-      id="emailInput"
+    <input id="emailInput"
       type="email"
       autocomplete="email"
-      placeholder="Email address"
-    >
+      placeholder="Email address">
 
-    <button
-      id="signInButton"
-      class="bigButton"
-    >
+    <button id="signInButton" class="bigButton">
       SIGN IN
     </button>
 
     <div id="authStatus"></div>
-
   </div>
-
 </div>
 
-<!-- =========================
-     MODE
-========================= -->
-
 <div id="modeScreen">
-
   <div class="modeBox">
-
     <div style="font-size:60px">🪙</div>
-
     <h1>Choose Your Mode</h1>
-
-    <p>
-      Pick how the game should treat mapped roads.
-    </p>
+    <p>Pick how the game should treat mapped roads.</p>
 
     <div class="modeButtons">
-
-      <button
-        id="publicMode"
-        class="modeChoice"
-      >
-
+      <button id="publicMode" class="modeChoice">
         <div class="modeIcon">🌎</div>
-
-        <div class="modeName">
-          PUBLIC
-        </div>
-
+        <div class="modeName">PUBLIC</div>
         <div class="modeDescription">
           Public-access roads and paths.
         </div>
-
       </button>
 
-      <button
-        id="unlimitedMode"
-        class="modeChoice"
-      >
-
+      <button id="unlimitedMode" class="modeChoice">
         <div class="modeIcon">🔓</div>
-
-        <div class="modeName">
-          UNLIMITED
-        </div>
-
+        <div class="modeName">UNLIMITED</div>
         <div class="modeDescription">
           Wider range of mapped roads.
         </div>
-
       </button>
-
     </div>
-
   </div>
-
 </div>
 
-<!-- =========================
-     LOADING
-========================= -->
-
 <div id="loadingScreen">
-
   <div class="loadingBox">
-
     <div class="loadingLogo">🪙</div>
-
-    <div class="loadingTitle">
-      GPS COIN
-    </div>
+    <div class="loadingTitle">GPS COIN</div>
 
     <div class="loadingBar">
       <div id="loadingBar"></div>
     </div>
 
-    <div id="loadingText">
-      Starting GPS...
-    </div>
-
+    <div id="loadingText">Starting GPS...</div>
   </div>
-
 </div>
 
-<!-- =========================
-     HUD
-========================= -->
-
 <div id="hud">
-
-  <div
-    id="coinsDisplay"
-    class="hud"
-  >
+  <div id="coinsDisplay" class="hud">
     🪙 Coins: 0
   </div>
 
-  <div
-    id="shopButton"
-    class="hud hudButton"
-  >
-    🛒
-  </div>
-
-  <div
-    id="accountButton"
-    class="hud hudButton"
-  >
-    👤
-  </div>
-
+  <div id="shopButton" class="hud hudButton">🛒</div>
+  <div id="accountButton" class="hud hudButton">👤</div>
 </div>
 
 <div id="map"></div>
@@ -661,101 +385,50 @@ button{
   Waiting for location...
 </div>
 
-<!-- =========================
-     SHOP
-========================= -->
-
-<div
-  id="shopOverlay"
-  class="overlay"
->
-
+<div id="shopOverlay" class="overlay">
   <div class="panel">
 
     <div class="panelHeader">
-
       <h2>🛒 Player Shop</h2>
-
-      <button
-        id="closeShop"
-        class="close"
-      >
-        ✕
-      </button>
-
+      <button id="closeShop" class="close">✕</button>
     </div>
 
-    <div
-      id="shopBalance"
-      class="balance"
-    >
+    <div id="shopBalance" class="balance">
       🪙 Coins: 0
     </div>
 
     <div id="shopItems"></div>
-
   </div>
-
 </div>
 
-<!-- =========================
-     ACCOUNT
-========================= -->
-
-<div
-  id="accountOverlay"
-  class="overlay"
->
-
+<div id="accountOverlay" class="overlay">
   <div class="panel">
 
     <div class="panelHeader">
-
       <h2>👤 Account</h2>
-
-      <button
-        id="closeAccount"
-        class="close"
-      >
-        ✕
-      </button>
-
+      <button id="closeAccount" class="close">✕</button>
     </div>
 
-    <div
-      id="accountEmail"
-      class="accountEmail"
-    >
+    <div id="accountEmail" class="accountEmail">
       Loading...
     </div>
 
-    <button
-      id="signOutButton"
-      class="accountAction danger"
-    >
+    <button id="signOutButton"
+      class="accountAction danger">
       Sign Out
     </button>
-
   </div>
-
 </div>
 
 <div id="toast"></div>
 
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
 
-/* =========================================================
-   SUPABASE
-========================================================= */
-
 import {
   createClient
-} from
-"https://esm.sh/@supabase/supabase-js@2";
+} from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL =
 "https://yrcitnuuskcbiuryyytu.supabase.co";
@@ -770,34 +443,26 @@ createClient(
 );
 
 
-/* =========================================================
+/* =========================
    CONFIG
-========================================================= */
+========================= */
 
 const OVERPASS_SERVERS = [
-
   "https://overpass-api.de/api/interpreter",
-
   "https://overpass.kumi.systems/api/interpreter",
-
   "https://overpass.private.coffee/api/interpreter"
-
 ];
 
 const SEARCH_RADIUS = 1000;
-
 const ROAD_REFRESH_DISTANCE = 100;
-
 const COIN_SPACING = 55;
-
 const MAX_COINS = 18;
-
 const COLLECTION_DISTANCE = 22;
 
 
-/* =========================================================
+/* =========================
    SKINS
-========================================================= */
+========================= */
 
 const SKINS = {
 
@@ -840,42 +505,27 @@ const SKINS = {
 };
 
 
-/* =========================================================
+/* =========================
    STATE
-========================================================= */
+========================= */
 
 let currentUser = null;
-
 let playerData = null;
-
 let gameMode = null;
-
 let map = null;
-
 let playerMarker = null;
-
 let accuracyCircle = null;
-
 let coins = [];
-
-let roadLines = [];
-
 let watchId = null;
-
 let lastRoadLat = null;
-
 let lastRoadLon = null;
-
 let loadingRoads = false;
-
-let firstLocation = true;
-
 let toastTimer = null;
 
 
-/* =========================================================
+/* =========================
    DOM
-========================================================= */
+========================= */
 
 const authScreen =
 document.getElementById("authScreen");
@@ -917,26 +567,18 @@ const authStatus =
 document.getElementById("authStatus");
 
 
-/* =========================================================
+/* =========================
    HELPERS
-========================================================= */
+========================= */
 
 function setStatus(text){
-
   status.textContent = text;
-
 }
-
 
 function setLoading(text,percent){
-
   loadingText.textContent = text;
-
-  loadingBar.style.width =
-  percent + "%";
-
+  loadingBar.style.width = percent + "%";
 }
-
 
 function showToast(text){
 
@@ -944,32 +586,149 @@ function showToast(text){
   document.getElementById("toast");
 
   toast.textContent = text;
-
   toast.classList.add("show");
 
   if(toastTimer)
     clearTimeout(toastTimer);
 
-  toastTimer =
-  setTimeout(
-    ()=>{
-      toast.classList.remove("show");
-    },
-    2200
-  );
+  toastTimer = setTimeout(()=>{
+    toast.classList.remove("show");
+  },2200);
+}
+
+
+/* =========================
+   COIN PICKUP SOUND
+========================= */
+
+let audioContext = null;
+
+function unlockAudio(){
+
+  try{
+
+    if(!audioContext){
+
+      audioContext =
+      new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
+
+    }
+
+    if(
+      audioContext.state === "suspended"
+    ){
+
+      audioContext.resume();
+
+    }
+
+  }catch(error){
+
+    console.log(
+      "Audio unavailable:",
+      error
+    );
+
+  }
 
 }
 
 
-/* =========================================================
+/*
+ * iPhone requires user interaction
+ * before audio can play.
+ */
+
+document.addEventListener(
+  "touchstart",
+  unlockAudio,
+  {once:false}
+);
+
+document.addEventListener(
+  "click",
+  unlockAudio,
+  {once:false}
+);
+
+
+function playCoinSound(){
+
+  try{
+
+    unlockAudio();
+
+    if(!audioContext)
+      return;
+
+    const now =
+    audioContext.currentTime;
+
+    const oscillator =
+    audioContext.createOscillator();
+
+    const gain =
+    audioContext.createGain();
+
+    oscillator.type = "sine";
+
+    oscillator.frequency.setValueAtTime(
+      880,
+      now
+    );
+
+    oscillator.frequency.setValueAtTime(
+      1320,
+      now + 0.08
+    );
+
+    gain.gain.setValueAtTime(
+      0.0001,
+      now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.25,
+      now + 0.01
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + 0.18
+    );
+
+    oscillator.connect(gain);
+    gain.connect(
+      audioContext.destination
+    );
+
+    oscillator.start(now);
+
+    oscillator.stop(
+      now + 0.2
+    );
+
+  }catch(error){
+
+    console.log(
+      "Coin sound error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
    DISTANCE
-========================================================= */
+========================= */
 
 function distanceMeters(
-  lat1,
-  lon1,
-  lat2,
-  lon2
+  lat1,lon1,lat2,lon2
 ){
 
   const R = 6371000;
@@ -981,10 +740,12 @@ function distanceMeters(
   lat2 * Math.PI / 180;
 
   const dLat =
-  (lat2-lat1) * Math.PI / 180;
+  (lat2-lat1) *
+  Math.PI / 180;
 
   const dLon =
-  (lon2-lon1) * Math.PI / 180;
+  (lon2-lon1) *
+  Math.PI / 180;
 
   const a =
     Math.sin(dLat/2)**2 +
@@ -1002,9 +763,9 @@ function distanceMeters(
 }
 
 
-/* =========================================================
+/* =========================
    AUTH
-========================================================= */
+========================= */
 
 async function checkAuth(){
 
@@ -1017,11 +778,8 @@ async function checkAuth(){
   } =
   await supabase.auth.getSession();
 
-  if(error){
-
+  if(error)
     console.error(error);
-
-  }
 
   if(data.session){
 
@@ -1091,9 +849,7 @@ async function signIn(){
   window.location.origin +
   window.location.pathname;
 
-  const {
-    error
-  } =
+  const {error} =
   await supabase.auth.signInWithOtp({
 
     email,
@@ -1124,9 +880,9 @@ async function signIn(){
 }
 
 
-/* =========================================================
+/* =========================
    AFTER LOGIN
-========================================================= */
+========================= */
 
 async function afterLogin(){
 
@@ -1157,19 +913,16 @@ async function afterLogin(){
 }
 
 
-/* =========================================================
-   PLAYER
-========================================================= */
+/* =========================
+   PLAYER DATA
+========================= */
 
 async function loadPlayer(){
 
   if(!currentUser)
     return;
 
-  let {
-    data,
-    error
-  } =
+  let {data,error} =
   await supabase
   .from("players")
   .select("*")
@@ -1178,11 +931,6 @@ async function loadPlayer(){
 
   if(error)
     throw error;
-
-  /*
-   * If the account exists in Auth but the
-   * player row doesn't, create it automatically.
-   */
 
   if(!data){
 
@@ -1196,12 +944,12 @@ async function loadPlayer(){
       "Player",
 
       coins:0,
-
       xp:0,
-
       level:1,
 
-      unlocked_skins:["blue"],
+      unlocked_skins:[
+        "blue"
+      ],
 
       equipped_skin:"blue",
 
@@ -1219,15 +967,9 @@ async function loadPlayer(){
     if(result.error)
       throw result.error;
 
-    data =
-    result.data;
+    data = result.data;
 
   }
-
-  /*
-   * Protect against older rows missing
-   * newer fields.
-   */
 
   data.coins =
   Number(data.coins || 0);
@@ -1239,62 +981,51 @@ async function loadPlayer(){
   Number(data.level || 1);
 
   data.unlocked_skins =
-  Array.isArray(data.unlocked_skins)
+  Array.isArray(
+    data.unlocked_skins
+  )
   ? data.unlocked_skins
   : ["blue"];
 
   data.collected_coins =
-  Array.isArray(data.collected_coins)
+  Array.isArray(
+    data.collected_coins
+  )
   ? data.collected_coins
   : [];
 
   data.equipped_skin =
-  data.equipped_skin || "blue";
+  data.equipped_skin ||
+  "blue";
 
-  playerData =
-  data;
+  playerData = data;
 
   updateCoinDisplay();
 
 }
 
 
-/* =========================================================
-   SAVE
-========================================================= */
-
 async function savePlayer(){
 
   if(!playerData)
     return;
 
-  const {
-    error
-  } =
+  const {error} =
   await supabase
   .from("players")
   .update({
 
-    coins:
-    playerData.coins,
-
-    xp:
-    playerData.xp,
-
-    level:
-    playerData.level,
-
+    coins:playerData.coins,
+    xp:playerData.xp,
+    level:playerData.level,
     unlocked_skins:
-    playerData.unlocked_skins,
-
+      playerData.unlocked_skins,
     equipped_skin:
-    playerData.equipped_skin,
-
+      playerData.equipped_skin,
     collected_coins:
-    playerData.collected_coins,
-
+      playerData.collected_coins,
     updated_at:
-    new Date().toISOString()
+      new Date().toISOString()
 
   })
   .eq(
@@ -1318,27 +1049,22 @@ async function savePlayer(){
 }
 
 
-/* =========================================================
+/* =========================
    MODE
-========================================================= */
+========================= */
 
 document
 .getElementById("publicMode")
 .addEventListener(
   "click",
-  ()=>{
-    chooseMode("PUBLIC");
-  }
+  ()=>chooseMode("PUBLIC")
 );
-
 
 document
 .getElementById("unlimitedMode")
 .addEventListener(
   "click",
-  ()=>{
-    chooseMode("UNLIMITED");
-  }
+  ()=>chooseMode("UNLIMITED")
 );
 
 
@@ -1357,12 +1083,6 @@ function chooseMode(mode){
     15
   );
 
-  /*
-   * IMPORTANT:
-   * We start the map immediately instead
-   * of waiting for GPS.
-   */
-
   initializeMap();
 
   setLoading(
@@ -1375,20 +1095,14 @@ function chooseMode(mode){
 }
 
 
-/* =========================================================
+/* =========================
    MAP
-========================================================= */
+========================= */
 
 function initializeMap(){
 
   if(map)
     return;
-
-  /*
-   * Temporary world center.
-   * It gets replaced immediately when GPS
-   * returns.
-   */
 
   map =
   L.map("map",{
@@ -1410,9 +1124,9 @@ function initializeMap(){
 }
 
 
-/* =========================================================
+/* =========================
    GPS
-========================================================= */
+========================= */
 
 function startGPS(){
 
@@ -1426,25 +1140,15 @@ function startGPS(){
 
   }
 
-  /*
-   * Use watchPosition continuously.
-   * The map no longer waits for the watcher
-   * before existing.
-   */
-
   watchId =
   navigator.geolocation.watchPosition(
-
     onLocation,
-
     onLocationError,
-
     {
       enableHighAccuracy:true,
       maximumAge:3000,
       timeout:12000
     }
-
   );
 
 }
@@ -1466,10 +1170,6 @@ function onLocation(position){
     55
   );
 
-  /*
-   * Create player immediately.
-   */
-
   if(!playerMarker){
 
     createPlayer(
@@ -1481,8 +1181,6 @@ function onLocation(position){
       [lat,lon],
       17
     );
-
-    firstLocation = false;
 
     loadingScreen.style.display =
     "none";
@@ -1502,34 +1200,26 @@ function onLocation(position){
       [lat,lon]
     );
 
-    if(accuracyCircle)
-      accuracyCircle.setLatLng(
-        [lat,lon]
-      ).setRadius(accuracy);
+    if(accuracyCircle){
+
+      accuracyCircle
+      .setLatLng([lat,lon])
+      .setRadius(accuracy);
+
+    }
 
   }
-
-  /*
-   * Check coins every GPS update.
-   */
 
   collectNearbyCoins(
     lat,
     lon
   );
 
-  /*
-   * Refresh roads frequently while moving.
-   */
-
   if(
     lastRoadLat === null ||
     lastRoadLon === null
-  ){
-
+  )
     return;
-
-  }
 
   const moved =
   distanceMeters(
@@ -1540,8 +1230,7 @@ function onLocation(position){
   );
 
   if(
-    moved >=
-    ROAD_REFRESH_DISTANCE
+    moved >= ROAD_REFRESH_DISTANCE
   ){
 
     loadRoadNetwork(
@@ -1593,24 +1282,22 @@ function onLocationError(error){
 }
 
 
-/* =========================================================
-   PLAYER
-========================================================= */
+/* =========================
+   PLAYER MARKER
+========================= */
 
 function createPlayer(lat,lon){
 
   const skin =
   SKINS[
     playerData?.equipped_skin
-  ] ||
-  SKINS.blue;
+  ] || SKINS.blue;
 
   playerMarker =
   L.marker(
     [lat,lon],
     {
-      icon:
-      L.divIcon({
+      icon:L.divIcon({
 
         className:"",
 
@@ -1620,13 +1307,11 @@ function createPlayer(lat,lon){
         </div>`,
 
         iconSize:[28,28],
-
         iconAnchor:[14,14]
 
       }),
 
       zIndexOffset:1000
-
     }
   ).addTo(map);
 
@@ -1644,13 +1329,12 @@ function createPlayer(lat,lon){
 }
 
 
-/* =========================================================
-   ROAD LOADING
-========================================================= */
+/* =========================
+   ROADS
+========================= */
 
 async function loadRoadNetwork(
-  lat,
-  lon
+  lat,lon
 ){
 
   if(loadingRoads)
@@ -1659,7 +1343,6 @@ async function loadRoadNetwork(
   loadingRoads = true;
 
   lastRoadLat = lat;
-
   lastRoadLon = lon;
 
   setStatus(
@@ -1670,8 +1353,7 @@ async function loadRoadNetwork(
 
     const ways =
     await getNearbyWays(
-      lat,
-      lon
+      lat,lon
     );
 
     if(!ways.length){
@@ -1682,24 +1364,15 @@ async function loadRoadNetwork(
 
       loadingRoads = false;
 
-      setTimeout(
-        ()=>{
-          loadRoadNetwork(
-            lat,
-            lon
-          );
-        },
-        5000
-      );
+      setTimeout(()=>{
+        loadRoadNetwork(
+          lat,lon
+        );
+      },5000);
 
       return;
 
     }
-
-    /*
-     * Find the actual nearest POINT on a road,
-     * rather than merely the nearest node.
-     */
 
     const nearest =
     findNearestRoadPoint(
@@ -1725,11 +1398,6 @@ async function loadRoadNetwork(
       nearest.distance
     );
 
-    /*
-     * We allow the player to be NEAR the road.
-     * They do not need to be physically touching it.
-     */
-
     if(
       roadDistance > 300
     ){
@@ -1744,21 +1412,11 @@ async function loadRoadNetwork(
 
     }
 
-    /*
-     * Find every way connected to the nearest
-     * road instead of accidentally choosing
-     * a random nearby disconnected road.
-     */
-
     const network =
     buildConnectedNetwork(
       ways,
       nearest.way
     );
-
-    /*
-     * Generate coins from the network.
-     */
 
     generateNetworkCoins(
       network,
@@ -1789,13 +1447,12 @@ async function loadRoadNetwork(
 }
 
 
-/* =========================================================
+/* =========================
    OVERPASS
-========================================================= */
+========================= */
 
 async function getNearbyWays(
-  lat,
-  lon
+  lat,lon
 ){
 
   const latDelta =
@@ -1806,21 +1463,14 @@ async function getNearbyWays(
   (
     111320 *
     Math.cos(
-      lat * Math.PI / 180
+      lat*Math.PI/180
     )
   );
 
-  const south =
-  lat - latDelta;
-
-  const north =
-  lat + latDelta;
-
-  const west =
-  lon - lonDelta;
-
-  const east =
-  lon + lonDelta;
+  const south = lat-latDelta;
+  const north = lat+latDelta;
+  const west = lon-lonDelta;
+  const east = lon+lonDelta;
 
   let filter = `
     way["highway"]
@@ -1841,24 +1491,13 @@ async function getNearbyWays(
   }
 
   const query = `
-
     [out:json][timeout:15];
-
     ${filter}
-
     out tags geom;
-
   `;
 
-  /*
-   * Try servers one at a time.
-   * This makes the game survive an Overpass
-   * server being slow/down.
-   */
-
   for(
-    const server of
-    OVERPASS_SERVERS
+    const server of OVERPASS_SERVERS
   ){
 
     try{
@@ -1868,9 +1507,7 @@ async function getNearbyWays(
 
       const timeout =
       setTimeout(
-        ()=>{
-          controller.abort();
-        },
+        ()=>controller.abort(),
         12000
       );
 
@@ -1886,7 +1523,7 @@ async function getNearbyWays(
           },
 
           body:
-          "data=" +
+          "data="+
           encodeURIComponent(query),
 
           signal:
@@ -1927,14 +1564,13 @@ async function getNearbyWays(
 }
 
 
-/* =========================================================
-   FILTER
-========================================================= */
+/* =========================
+   FILTER ROADS
+========================= */
 
 function filterWays(elements){
 
   const allowedPublic = [
-
     "footway",
     "path",
     "pedestrian",
@@ -1949,7 +1585,6 @@ function filterWays(elements){
     "tertiary_link",
     "secondary",
     "secondary_link"
-
   ];
 
   const result = [];
@@ -1965,11 +1600,8 @@ function filterWays(elements){
     )
       continue;
 
-    const tags =
-    e.tags || {};
-
-    const highway =
-    tags.highway;
+    const tags = e.tags || {};
+    const highway = tags.highway;
 
     if(!highway)
       continue;
@@ -1986,12 +1618,10 @@ function filterWays(elements){
     }else{
 
       const forbidden = [
-
         "motorway",
         "motorway_link",
         "trunk",
         "trunk_link"
-
       ];
 
       if(
@@ -2024,14 +1654,12 @@ function filterWays(elements){
 }
 
 
-/* =========================================================
+/* =========================
    NEAREST ROAD POINT
-========================================================= */
+========================= */
 
 function findNearestRoadPoint(
-  ways,
-  lat,
-  lon
+  ways,lat,lon
 ){
 
   let best = null;
@@ -2076,15 +1704,10 @@ function findNearestRoadPoint(
       ){
 
         best = {
-
           way,
-
           segmentIndex:i,
-
           point,
-
           distance:d
-
         };
 
       }
@@ -2098,45 +1721,35 @@ function findNearestRoadPoint(
 }
 
 
-/*
- * Approximate projection in local meters.
- * Much better than checking only OSM nodes.
- */
-
 function closestPointOnSegment(
-  lat,
-  lon,
-  lat1,
-  lon1,
-  lat2,
-  lon2
+  lat,lon,
+  lat1,lon1,
+  lat2,lon2
 ){
 
   const cos =
   Math.cos(
-    lat * Math.PI / 180
+    lat*Math.PI/180
   );
 
   const x =
-  (lon-lon1) *
-  111320 *
-  cos;
+  (lon-lon1)*
+  111320*cos;
 
   const y =
-  (lat-lat1) *
+  (lat-lat1)*
   111320;
 
   const dx =
-  (lon2-lon1) *
-  111320 *
-  cos;
+  (lon2-lon1)*
+  111320*cos;
 
   const dy =
-  (lat2-lat1) *
+  (lat2-lat1)*
   111320;
 
   const len2 =
-  dx*dx + dy*dy;
+  dx*dx+dy*dy;
 
   let t =
   len2 === 0
@@ -2150,23 +1763,19 @@ function closestPointOnSegment(
   );
 
   return {
-
     lat:
-    lat1 +
-    (lat2-lat1)*t,
+    lat1+(lat2-lat1)*t,
 
     lon:
-    lon1 +
-    (lon2-lon1)*t
-
+    lon1+(lon2-lon1)*t
   };
 
 }
 
 
-/* =========================================================
-   CONNECTED NETWORK
-========================================================= */
+/* =========================
+   CONNECTED ROAD NETWORK
+========================= */
 
 function buildConnectedNetwork(
   ways,
@@ -2174,31 +1783,19 @@ function buildConnectedNetwork(
 ){
 
   const network = [];
-
-  const visited =
-  new Set();
-
-  const queue =
-  [startingWay];
+  const visited = new Set();
+  const queue = [startingWay];
 
   while(queue.length){
 
     const way =
     queue.shift();
 
-    if(
-      visited.has(way.id)
-    )
+    if(visited.has(way.id))
       continue;
 
     visited.add(way.id);
-
     network.push(way);
-
-    /*
-     * Ways are considered connected if
-     * their endpoints meet within ~25m.
-     */
 
     for(
       const other of ways
@@ -2229,10 +1826,7 @@ function buildConnectedNetwork(
 }
 
 
-function waysConnected(
-  a,
-  b
-){
+function waysConnected(a,b){
 
   const a1 =
   a.geometry[0];
@@ -2279,9 +1873,9 @@ function waysConnected(
 }
 
 
-/* =========================================================
-   GENERATE COINS
-========================================================= */
+/* =========================
+   COIN GENERATION
+========================= */
 
 function generateNetworkCoins(
   network,
@@ -2290,18 +1884,7 @@ function generateNetworkCoins(
   playerLon
 ){
 
-  /*
-   * Remove only uncollected coins.
-   * Already-collected coins stay permanently
-   * stored in Supabase and don't respawn.
-   */
-
   removeUncollectedCoins();
-
-  /*
-   * Sort network sections by distance from
-   * the player's nearest road point.
-   */
 
   const ordered =
   network.slice().sort(
@@ -2326,13 +1909,7 @@ function generateNetworkCoins(
 
   let generated = 0;
 
-  /*
-   * First, create coins along the closest
-   * section starting at the nearest point.
-   */
-
-  const first =
-  ordered[0];
+  const first = ordered[0];
 
   if(first){
 
@@ -2363,12 +1940,6 @@ function generateNetworkCoins(
     }
 
   }
-
-  /*
-   * Then add coins to other connected
-   * sections. This creates mini paths/
-   * branches at intersections.
-   */
 
   for(
     let i=1;
@@ -2408,10 +1979,6 @@ function generateNetworkCoins(
 }
 
 
-/* =========================================================
-   POINTS ALONG WAY
-========================================================= */
-
 function pointsAlongWay(
   way,
   startingPoint,
@@ -2423,12 +1990,6 @@ function pointsAlongWay(
   let geometry =
   way.geometry.slice();
 
-  /*
-   * For the nearest road, choose the
-   * direction whose endpoint is closest
-   * to the player's position.
-   */
-
   if(
     fromNearest &&
     startingPoint
@@ -2438,7 +1999,9 @@ function pointsAlongWay(
     geometry[0];
 
     const last =
-    geometry[geometry.length-1];
+    geometry[
+      geometry.length-1
+    ];
 
     const dFirst =
     distanceMeters(
@@ -2468,13 +2031,8 @@ function pointsAlongWay(
   geometry[0];
 
   for(
-    let i=0;
-    i<geometry.length;
-    i++
+    const p of geometry
   ){
-
-    const p =
-    geometry[i];
 
     const d =
     distanceMeters(
@@ -2487,8 +2045,7 @@ function pointsAlongWay(
     accumulated += d;
 
     if(
-      accumulated >=
-      COIN_SPACING
+      accumulated >= COIN_SPACING
     ){
 
       result.push({
@@ -2517,13 +2074,8 @@ function distanceToWay(
   let best = Infinity;
 
   for(
-    let i=0;
-    i<way.geometry.length;
-    i++
+    const p of way.geometry
   ){
-
-    const p =
-    way.geometry[i];
 
     const d =
     distanceMeters(
@@ -2533,8 +2085,8 @@ function distanceToWay(
       p.lon
     );
 
-    if(d<best)
-      best=d;
+    if(d < best)
+      best = d;
 
   }
 
@@ -2543,18 +2095,14 @@ function distanceToWay(
 }
 
 
-/* =========================================================
+/* =========================
    COINS
-========================================================= */
+========================= */
 
-function coinId(
-  lat,
-  lon
-){
+function coinId(lat,lon){
 
   return (
-    Math.round(lat*100000)
-    +
+    Math.round(lat*100000) +
     "_" +
     Math.round(lon*100000)
   );
@@ -2562,10 +2110,7 @@ function coinId(
 }
 
 
-function addCoin(
-  lat,
-  lon
-){
+function addCoin(lat,lon){
 
   if(!map || !playerData)
     return false;
@@ -2573,19 +2118,11 @@ function addCoin(
   const id =
   coinId(lat,lon);
 
-  /*
-   * Permanently collected?
-   */
-
   if(
     playerData.collected_coins
     .includes(id)
   )
     return false;
-
-  /*
-   * Avoid duplicate coins.
-   */
 
   for(
     const c of coins
@@ -2605,8 +2142,7 @@ function addCoin(
   L.marker(
     [lat,lon],
     {
-      icon:
-      L.divIcon({
+      icon:L.divIcon({
 
         className:"",
 
@@ -2614,7 +2150,6 @@ function addCoin(
         `<div class="coin">🪙</div>`,
 
         iconSize:[34,34],
-
         iconAnchor:[17,17]
 
       })
@@ -2622,27 +2157,17 @@ function addCoin(
   ).addTo(map);
 
   coins.push({
-
     id,
-
     lat,
-
     lon,
-
     marker,
-
     collected:false
-
   });
 
   return true;
 
 }
 
-
-/* =========================================================
-   REMOVE UNCOLLECTED
-========================================================= */
 
 function removeUncollectedCoins(){
 
@@ -2671,13 +2196,12 @@ function removeUncollectedCoins(){
 }
 
 
-/* =========================================================
-   COLLECT
-========================================================= */
+/* =========================
+   COLLECT COIN
+========================= */
 
 function collectNearbyCoins(
-  lat,
-  lon
+  lat,lon
 ){
 
   for(
@@ -2718,6 +2242,9 @@ async function collectCoin(c){
 
   c.collected = true;
 
+  /* 🔊 COIN SOUND */
+  playCoinSound();
+
   if(
     map.hasLayer(c.marker)
   ){
@@ -2740,7 +2267,6 @@ async function collectCoin(c){
   }
 
   playerData.coins += 10;
-
   playerData.xp += 10;
 
   checkLevel();
@@ -2772,8 +2298,7 @@ function checkLevel(){
     playerData.xp >= required
   ){
 
-    playerData.xp -=
-    required;
+    playerData.xp -= required;
 
     playerData.level++;
 
@@ -2789,10 +2314,6 @@ function checkLevel(){
 }
 
 
-/* =========================================================
-   DISPLAY
-========================================================= */
-
 function updateCoinDisplay(){
 
   coinsDisplay.textContent =
@@ -2803,9 +2324,9 @@ function updateCoinDisplay(){
 }
 
 
-/* =========================================================
+/* =========================
    SHOP
-========================================================= */
+========================= */
 
 document
 .getElementById("shopButton")
@@ -2818,7 +2339,6 @@ document
     renderShop();
   }
 );
-
 
 document
 .getElementById("closeShop")
@@ -2875,11 +2395,9 @@ function renderShop(){
     "skinInfo";
 
     info.innerHTML = `
-
       <div class="skinName">
         ${skin.name}
       </div>
-
       <div class="skinPrice">
         ${
           skin.price === 0
@@ -2887,7 +2405,6 @@ function renderShop(){
           : "🪙 " + skin.price
         }
       </div>
-
     `;
 
     const button =
@@ -2909,22 +2426,17 @@ function renderShop(){
       "EQUIP";
 
       button.onclick =
-      ()=>{
-        equipSkin(id);
-      };
+      ()=>equipSkin(id);
 
     }else if(
-      playerData.coins >=
-      skin.price
+      playerData.coins >= skin.price
     ){
 
       button.textContent =
       "BUY";
 
       button.onclick =
-      ()=>{
-        buySkin(id);
-      };
+      ()=>buySkin(id);
 
     }else{
 
@@ -2950,13 +2462,9 @@ function renderShop(){
 
 async function buySkin(id){
 
-  const skin =
-  SKINS[id];
+  const skin = SKINS[id];
 
-  if(
-    !skin ||
-    !playerData
-  )
+  if(!skin || !playerData)
     return;
 
   if(
@@ -2981,19 +2489,14 @@ async function buySkin(id){
   playerData.coins -=
   skin.price;
 
-  playerData.unlocked_skins.push(
-    id
-  );
+  playerData.unlocked_skins.push(id);
 
-  playerData.equipped_skin =
-  id;
+  playerData.equipped_skin = id;
 
   await savePlayer();
 
   updateCoinDisplay();
-
   updatePlayerSkin();
-
   renderShop();
 
   showToast(
@@ -3012,13 +2515,11 @@ async function equipSkin(id){
   )
     return;
 
-  playerData.equipped_skin =
-  id;
+  playerData.equipped_skin = id;
 
   await savePlayer();
 
   updatePlayerSkin();
-
   renderShop();
 
 }
@@ -3032,11 +2533,9 @@ function updatePlayerSkin(){
   const skin =
   SKINS[
     playerData?.equipped_skin
-  ] ||
-  SKINS.blue;
+  ] || SKINS.blue;
 
   playerMarker.setIcon(
-
     L.divIcon({
 
       className:"",
@@ -3047,19 +2546,17 @@ function updatePlayerSkin(){
       </div>`,
 
       iconSize:[28,28],
-
       iconAnchor:[14,14]
 
     })
-
   );
 
 }
 
 
-/* =========================================================
+/* =========================
    ACCOUNT
-========================================================= */
+========================= */
 
 document
 .getElementById("accountButton")
@@ -3075,7 +2572,6 @@ document
   }
 );
 
-
 document
 .getElementById("closeAccount")
 .addEventListener(
@@ -3085,7 +2581,6 @@ document
     "none";
   }
 );
-
 
 document
 .getElementById("signOutButton")
@@ -3101,9 +2596,9 @@ document
 );
 
 
-/* =========================================================
-   AUTH STATE
-========================================================= */
+/* =========================
+   AUTH LISTENER
+========================= */
 
 supabase.auth.onAuthStateChange(
   (event,session)=>{
@@ -3125,9 +2620,9 @@ supabase.auth.onAuthStateChange(
 );
 
 
-/* =========================================================
+/* =========================
    START
-========================================================= */
+========================= */
 
 checkAuth();
 
