@@ -2,633 +2,244 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>GPS Coin</title>
 
 <link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial;background:#080b10}
+button,input{font:inherit}
 
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#080b10;
-}
+#map{position:absolute;inset:0;z-index:1}
 
-button,input{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
-
-#map{
-  position:fixed;
-  inset:0;
-  z-index:1;
-}
-
-/* =========================
-   AUTH
-========================= */
-
-#authScreen{
-  position:fixed;
-  inset:0;
-  z-index:10000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  background:
-    radial-gradient(circle at 50% 30%,#172d43,#080b10 70%);
-  color:white;
-}
-
-.authBox{
-  width:min(430px,100%);
-  padding:30px 24px;
-  border-radius:24px;
-  background:rgba(18,25,34,.96);
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
-  text-align:center;
-}
-
-.logo{
-  font-size:64px;
-  animation:float 2s infinite ease-in-out;
-}
-
-@keyframes float{
-  50%{transform:translateY(-8px)}
-}
-
-.authBox h1{
-  margin:8px 0;
-  font-size:34px;
-}
-
-.authSub{
-  color:#9ba8b6;
-  margin-bottom:25px;
-}
-
-#emailInput{
-  width:100%;
-  padding:15px;
-  border:1px solid #394654;
-  border-radius:13px;
-  outline:none;
-  background:#0e141b;
-  color:white;
-}
-
-#emailInput:focus{
-  border-color:#00aaff;
-}
-
-.primary{
-  width:100%;
-  margin-top:12px;
-  padding:15px;
-  border:0;
-  border-radius:13px;
-  background:#008de0;
-  color:white;
-  font-weight:bold;
-}
-
-.primary:disabled{
-  opacity:.5;
-}
-
-#authMessage{
-  margin-top:15px;
-  min-height:20px;
-  color:#aebbc8;
-  font-size:14px;
-}
-
-/* =========================
-   LOADING
-========================= */
-
-#loadingScreen{
-  position:fixed;
-  inset:0;
-  z-index:9000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  color:white;
-  background:
-    radial-gradient(circle at center,#172333,#080b10 70%);
-}
-
-.loadingContent{
-  width:min(430px,100%);
-  text-align:center;
-}
-
-.loadingLogo{
-  font-size:70px;
-  animation:float 2s infinite ease-in-out;
-}
-
-.loadingTitle{
-  font-size:36px;
-  font-weight:900;
-}
-
-.loadingSub{
-  color:#9ba8b6;
-}
-
-.loadingBar{
-  height:7px;
-  margin-top:28px;
-  overflow:hidden;
-  border-radius:20px;
-  background:#202a35;
-}
-
-#loadingBar{
-  width:10%;
-  height:100%;
-  border-radius:20px;
-  background:linear-gradient(90deg,#00aaff,#66ddff);
-  box-shadow:0 0 15px #00aaff;
-  transition:.4s;
-}
-
-#loadingText{
-  margin-top:13px;
-  color:#b9c5d2;
-}
-
-#modeSelect{
-  display:none;
-  margin-top:25px;
-}
-
-.modeTitle{
-  font-weight:bold;
-  font-size:19px;
-  margin-bottom:13px;
-}
-
-.modeButtons{
-  display:flex;
-  gap:10px;
-}
-
-.modeChoice{
-  flex:1;
-  padding:17px 10px;
-  border:1px solid #354352;
-  border-radius:17px;
-  background:#151d26;
-  color:white;
-}
-
-.modeChoice:active{
-  transform:scale(.96);
-}
-
-.modeIcon{
-  font-size:30px;
-}
-
-.modeName{
-  margin-top:7px;
-  font-weight:900;
-}
-
-.modeDescription{
-  margin-top:5px;
-  color:#8e9aaa;
-  font-size:12px;
-  line-height:1.4;
-}
-
-/* =========================
-   HUD
-========================= */
-
-#hud{
-  position:fixed;
-  top:max(10px,env(safe-area-inset-top));
-  left:10px;
-  right:10px;
-  z-index:1000;
-  display:flex;
-  gap:7px;
-  pointer-events:none;
-}
-
-.hudBox{
-  min-height:44px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:rgba(8,13,19,.94);
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 4px 18px rgba(0,0,0,.35);
-  backdrop-filter:blur(10px);
-  font-weight:bold;
-}
-
-#coinsDisplay{
-  flex:1;
-  justify-content:flex-start;
-}
-
-#shopButton,
-#accountButton{
-  pointer-events:auto;
-  cursor:pointer;
-}
-
-/* =========================
-   STATUS
-========================= */
-
-#status{
-  position:fixed;
-  left:12px;
-  right:12px;
-  bottom:max(14px,env(safe-area-inset-bottom));
-  z-index:1000;
-  padding:11px 13px;
-  border-radius:14px;
-  background:rgba(8,13,19,.94);
-  color:white;
-  text-align:center;
-  font-size:13px;
-  box-shadow:0 4px 18px rgba(0,0,0,.35);
-}
-
-/* =========================
-   PLAYER
-========================= */
-
-.player{
-  width:22px;
-  height:22px;
-  border:3px solid white;
-  border-radius:50%;
-  background:var(--player-color);
-  box-shadow:
-    0 0 8px var(--player-color),
-    0 0 18px var(--player-color),
-    0 0 30px var(--player-color);
-}
-
-/* =========================
-   COIN
-========================= */
-
-.coin{
-  width:30px;
-  height:30px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:50%;
-  border:3px solid #fff4a3;
-  background:
-    radial-gradient(circle at 35% 35%,
-    #fffbd0 0%,
-    #ffe44d 25%,
-    #ffd000 55%,
-    #f0a000 80%,
-    #c87800 100%);
-  box-shadow:
-    0 0 8px #ffd700,
-    0 0 18px #ffb000;
-  font-size:16px;
-  animation:pulse 1.3s infinite;
-}
-
-@keyframes pulse{
-  50%{transform:scale(1.13)}
-}
-
-/* =========================
-   OVERLAYS
-========================= */
-
-.overlay{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:5000;
-  overflow:auto;
-  padding:20px;
-  background:rgba(0,0,0,.8);
+.screen{
+ position:fixed;inset:0;z-index:99999;
+ display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(circle,#172333,#080b10 75%);
+ color:white;padding:20px
 }
 
 .panel{
-  width:min(480px,100%);
-  margin:30px auto;
-  padding:22px;
-  border-radius:20px;
-  background:#151a20;
-  color:white;
+ width:min(430px,100%);
+ text-align:center
 }
 
-.panelHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.logo{font-size:65px;animation:float 2s infinite ease-in-out}
+@keyframes float{50%{transform:translateY(-10px)}}
+
+h1{font-size:38px;margin:5px 0 8px}
+.sub{color:#9daaba;margin-bottom:25px}
+
+input{
+ width:100%;padding:15px;border:1px solid #344252;
+ border-radius:14px;background:#151d26;color:white;
+ outline:none;margin-bottom:10px
 }
 
-.panelHeader h2{
-  margin:0;
+button{
+ border:0;border-radius:14px;padding:14px;
+ background:#008cff;color:white;font-weight:bold;
+ cursor:pointer
 }
 
-.close{
-  border:0;
-  border-radius:10px;
-  padding:8px 12px;
-  background:#333;
-  color:white;
+.full{width:100%}
+
+.modeButtons{display:flex;gap:12px}
+.mode{
+ flex:1;background:#151d26;border:1px solid #344252;
+ color:white;padding:20px 10px;border-radius:18px
+}
+.mode:hover{border-color:#00aaff}
+.modeIcon{font-size:32px;margin-bottom:8px}
+.modeName{font-weight:bold}
+.modeDesc{font-size:12px;color:#8997a7;margin-top:6px}
+
+#loadingScreen{display:none}
+.loadingBar{
+ height:7px;background:#202a35;border-radius:20px;
+ overflow:hidden;margin-top:25px
+}
+#loadingBarInner{
+ width:10%;height:100%;
+ background:linear-gradient(90deg,#00aaff,#66ddff);
+ transition:.3s
+}
+#loadingText{margin-top:12px;color:#b9c5d2}
+
+#hud{
+ position:absolute;top:calc(10px + env(safe-area-inset-top));
+ left:10px;right:10px;z-index:1000;
+ display:flex;gap:7px;pointer-events:none
+}
+.hud{
+ background:rgba(8,13,19,.94);color:white;
+ padding:11px 12px;border-radius:14px;
+ box-shadow:0 4px 18px #0008;
+ pointer-events:auto;font-weight:bold
+}
+#coinsDisplay{flex:1}
+#status{
+ position:absolute;bottom:calc(15px + env(safe-area-inset-bottom));
+ left:12px;right:12px;z-index:1000;
+ padding:11px;border-radius:14px;
+ background:rgba(8,13,19,.94);color:white;
+ text-align:center;font-size:14px;pointer-events:none
 }
 
-.balance{
-  margin:15px 0;
-  padding:12px;
-  border-radius:12px;
-  text-align:center;
-  background:rgba(255,215,0,.12);
+.player{
+ width:24px;height:24px;border:3px solid white;
+ border-radius:50%;background:#00aaff;
+ box-shadow:0 0 10px #00aaff,0 0 25px #00aaff
+}
+
+.coin{
+ width:30px;height:30px;border-radius:50%;
+ display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(circle,#fffbd0,#ffe44d,#ffd000,#c87800);
+ border:3px solid #fff4a3;
+ box-shadow:0 0 10px #ffd700,0 0 25px #ffb000;
+ font-size:16px;
+ animation:pulse 1.2s infinite
+}
+@keyframes pulse{50%{transform:scale(1.13)}}
+
+.overlay{
+ display:none;position:fixed;inset:0;z-index:5000;
+ background:#000c;padding:20px;overflow:auto
+}
+.card{
+ width:min(450px,100%);margin:40px auto;
+ background:#151a20;color:white;padding:22px;
+ border-radius:20px
 }
 
 .shopItem{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:10px;
-  padding:13px;
-  border-radius:14px;
-  background:#20262d;
+ display:flex;align-items:center;gap:12px;
+ padding:12px;margin:8px 0;background:#20262d;
+ border-radius:14px
 }
-
-.skinPreview{
-  width:42px;
-  height:42px;
-  border:4px solid white;
-  border-radius:50%;
+.preview{
+ width:40px;height:40px;border-radius:50%;
+ border:4px solid white
 }
-
-.skinInfo{
-  flex:1;
-}
-
-.skinName{
-  font-weight:bold;
-}
-
-.skinPrice{
-  color:#ffd700;
-  font-size:13px;
-  margin-top:3px;
-}
-
-.shopAction{
-  border:0;
-  border-radius:10px;
-  padding:9px 11px;
-  background:#0077cc;
-  color:white;
-  font-weight:bold;
-}
-
-.shopAction:disabled{
-  opacity:.5;
-}
-
-.accountEmail{
-  margin:15px 0;
-  padding:13px;
-  border-radius:12px;
-  background:#20262d;
-  word-break:break-all;
-  color:#b9c5d2;
-}
-
-.accountAction{
-  width:100%;
-  margin-top:10px;
-  padding:13px;
-  border:0;
-  border-radius:12px;
-  background:#0077cc;
-  color:white;
-  font-weight:bold;
-}
-
-.danger{
-  background:#a83232;
-}
-
-/* =========================
-   TOAST
-========================= */
+.info{flex:1}
+.close{background:#444}
+.danger{background:#a83232}
 
 #toast{
-  position:fixed;
-  left:50%;
-  bottom:85px;
-  z-index:10000;
-  transform:translate(-50%,20px);
-  opacity:0;
-  pointer-events:none;
-  padding:13px 18px;
-  border-radius:14px;
-  background:#101820;
-  color:white;
-  font-weight:bold;
-  transition:.25s;
-  white-space:nowrap;
+ position:fixed;left:50%;bottom:85px;z-index:10000;
+ transform:translate(-50%,20px);opacity:0;
+ background:#101820;color:white;padding:13px 18px;
+ border-radius:14px;font-weight:bold;transition:.25s;
+ pointer-events:none;white-space:nowrap
 }
+#toast.show{opacity:1;transform:translate(-50%,0)}
 
-#toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
-}
-
-/* Leaflet controls don't overlap HUD */
-.leaflet-top.leaflet-left{
-  top:125px;
-  left:10px;
-}
-
+.leaflet-top{top:75px}
+.leaflet-left{left:10px}
 .leaflet-control-zoom a{
-  width:40px!important;
-  height:40px!important;
-  line-height:40px!important;
-  font-size:20px!important;
-}
-
-.leaflet-control-attribution{
-  font-size:8px;
+ width:40px!important;height:40px!important;
+ line-height:40px!important;font-size:20px!important
 }
 </style>
 </head>
 
 <body>
 
-<!-- AUTH -->
-<div id="authScreen">
-  <div class="authBox">
-    <div class="logo">🪙</div>
-    <h1>GPS COIN</h1>
-    <div class="authSub">
-      Sign in once and your account will stay signed in.
-    </div>
+<!-- LOGIN -->
+<div id="loginScreen" class="screen">
+ <div class="panel">
+  <div class="logo">🪙</div>
+  <h1>GPS COIN</h1>
+  <div class="sub">Sign in to play</div>
 
-    <input
-      id="emailInput"
-      type="email"
-      autocomplete="email"
-      placeholder="Your email"
-    >
+  <input id="emailInput" type="email" placeholder="Your email">
 
-    <button id="signInButton" class="primary">
-      Send Sign-In Link
-    </button>
+  <button id="loginButton" class="full">SEND SIGN-IN LINK</button>
 
-    <div id="authMessage"></div>
+  <div id="loginMessage" style="margin-top:15px;color:#9daaba"></div>
+ </div>
+</div>
+
+<!-- MODE -->
+<div id="modeScreen" class="screen" style="display:none">
+ <div class="panel">
+  <div class="logo">🪙</div>
+  <h1>GPS COIN</h1>
+  <div class="sub">Choose how you want to play</div>
+
+  <div class="modeButtons">
+   <button class="mode" id="publicMode">
+    <div class="modeIcon">🌎</div>
+    <div class="modeName">PUBLIC</div>
+    <div class="modeDesc">Public mapped roads and paths</div>
+   </button>
+
+   <button class="mode" id="unlimitedMode">
+    <div class="modeIcon">🔓</div>
+    <div class="modeName">UNLIMITED</div>
+    <div class="modeDesc">More mapped paths</div>
+   </button>
   </div>
+ </div>
 </div>
 
 <!-- LOADING -->
-<div id="loadingScreen">
-  <div class="loadingContent">
+<div id="loadingScreen" class="screen">
+ <div class="panel">
+  <div class="logo">🪙</div>
+  <h1>GPS COIN</h1>
+  <div class="sub">Explore. Collect. Level up.</div>
 
-    <div class="loadingLogo">🪙</div>
-
-    <div class="loadingTitle">
-      GPS COIN
-    </div>
-
-    <div class="loadingSub">
-      Explore. Collect. Level up.
-    </div>
-
-    <div class="loadingBar">
-      <div id="loadingBar"></div>
-    </div>
-
-    <div id="loadingText">
-      Starting...
-    </div>
-
-    <div id="modeSelect">
-
-      <div class="modeTitle">
-        Choose your game mode
-      </div>
-
-      <div class="modeButtons">
-
-        <button id="publicMode" class="modeChoice">
-          <div class="modeIcon">🌎</div>
-          <div class="modeName">PUBLIC</div>
-          <div class="modeDescription">
-            Public mapped roads and paths.
-          </div>
-        </button>
-
-        <button id="unlimitedMode" class="modeChoice">
-          <div class="modeIcon">🔓</div>
-          <div class="modeName">UNLIMITED</div>
-          <div class="modeDescription">
-            Use a wider range of mapped paths.
-          </div>
-        </button>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- HUD -->
-<div id="hud">
-
-  <div id="coinsDisplay" class="hudBox">
-    🪙 Coins: 0
+  <div class="loadingBar">
+   <div id="loadingBarInner"></div>
   </div>
 
-  <div id="shopButton" class="hudBox">
-    🛒
-  </div>
-
-  <div id="accountButton" class="hudBox">
-    👤
-  </div>
-
+  <div id="loadingText">Starting...</div>
+ </div>
 </div>
 
 <div id="map"></div>
 
-<div id="status">
-  📍 Waiting for location...
+<div id="hud">
+ <div id="coinsDisplay" class="hud">🪙 0</div>
+ <button id="shopButton" class="hud">🛒</button>
+ <button id="accountButton" class="hud">👤</button>
 </div>
+
+<div id="status">📍 Waiting for location...</div>
 
 <!-- SHOP -->
 <div id="shopOverlay" class="overlay">
-
-  <div class="panel">
-
-    <div class="panelHeader">
-      <h2>🛒 Shop</h2>
-      <button id="closeShop" class="close">✕</button>
-    </div>
-
-    <div id="shopBalance" class="balance">
-      🪙 Coins: 0
-    </div>
-
-    <div id="shopItems"></div>
-
+ <div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+   <h2>🛒 Shop</h2>
+   <button id="closeShop" class="close">✕</button>
   </div>
+  <div id="shopBalance"></div>
+  <div id="shopItems"></div>
+ </div>
 </div>
 
 <!-- ACCOUNT -->
 <div id="accountOverlay" class="overlay">
-
-  <div class="panel">
-
-    <div class="panelHeader">
-      <h2>👤 Account</h2>
-      <button id="closeAccount" class="close">✕</button>
-    </div>
-
-    <div id="accountEmail" class="accountEmail">
-      Loading...
-    </div>
-
-    <button id="signOutButton"
-            class="accountAction danger">
-      Sign Out
-    </button>
-
+ <div class="card">
+  <h2>👤 Account</h2>
+  <div id="accountEmail"
+       style="background:#20262d;padding:12px;border-radius:12px;word-break:break-all">
   </div>
+
+  <button id="signOutButton" class="full danger" style="margin-top:15px">
+   SIGN OUT
+  </button>
+
+  <button id="closeAccount" class="full close" style="margin-top:10px">
+   CLOSE
+  </button>
+ </div>
 </div>
 
 <div id="toast"></div>
@@ -637,2255 +248,1363 @@ button{
 
 <script type="module">
 
-/* =========================================================
-   SUPABASE
-========================================================= */
+import { createClient }
+from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-import {
-  createClient
-} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+/* =====================================================
+   SUPABASE
+   ===================================================== */
 
 const SUPABASE_URL =
-  "https://yrcitnuuskcbiuryyytu.supabase.co";
+"https://yrcitnuuskcbiuryyytu.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_REmdL8nVsuxhOsRMTZlGFg_YILsQIVK";
+"sb_publishable_REmdL8nVsuxhOsRMTZlGFg_YILsQIVK";
 
 const supabase =
-  createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-      auth:{
-        persistSession:true,
-        autoRefreshToken:true,
-        detectSessionInUrl:true
-      }
-    }
-  );
-
-
-/* =========================================================
-   CONFIG
-========================================================= */
-
-const GAME_URL =
-  "https://elimin8or10.github.io/gps-game/";
-
-const SEARCH_RADIUS = 900;
-
-const COIN_SPACING = 55;
-
-const COLLECTION_DISTANCE = 25;
-
-const REFRESH_DISTANCE = 40;
-
-const OVERPASS = [
-  "https://overpass-api.de/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter"
-];
-
-
-/* =========================================================
-   SKINS
-========================================================= */
-
-const SKINS = {
-
-  blue:{
-    name:"Blue",
-    color:"#00aaff",
-    price:0
-  },
-
-  red:{
-    name:"Red",
-    color:"#ff3030",
-    price:50
-  },
-
-  green:{
-    name:"Green",
-    color:"#22dd55",
-    price:100
-  },
-
-  purple:{
-    name:"Purple",
-    color:"#aa55ff",
-    price:150
-  },
-
-  gold:{
-    name:"Gold",
-    color:"#ffd000",
-    price:250
-  },
-
-  pink:{
-    name:"Pink",
-    color:"#ff4fa3",
-    price:350
+createClient(
+ SUPABASE_URL,
+ SUPABASE_KEY,
+ {
+  auth:{
+   persistSession:true,
+   autoRefreshToken:true,
+   detectSessionInUrl:true
   }
+ }
+);
 
+
+/* =====================================================
+   IMPORTANT REDIRECT
+   ===================================================== */
+
+const REDIRECT_URL =
+"https://elimin8or10.github.io/gps-game/";
+
+
+/* =====================================================
+   STATE
+   ===================================================== */
+
+let user=null;
+let player=null;
+let map=null;
+let playerMarker=null;
+let watchId=null;
+
+let mode="PUBLIC";
+
+let coins=[];
+
+let lastLat=null;
+let lastLon=null;
+
+let loadingTrail=false;
+
+const SEARCH_RADIUS=1000;
+const COIN_SPACING=55;
+const COLLECTION_DISTANCE=25;
+const REFRESH_DISTANCE=100;
+
+
+/* =====================================================
+   SKINS
+   ===================================================== */
+
+const skins={
+ blue:{name:"Blue",color:"#00aaff",price:0},
+ red:{name:"Red",color:"#ff3030",price:50},
+ green:{name:"Green",color:"#22dd55",price:100},
+ purple:{name:"Purple",color:"#aa55ff",price:150},
+ gold:{name:"Gold",color:"#ffd000",price:250},
+ pink:{name:"Pink",color:"#ff4fa3",price:350}
 };
 
 
-/* =========================================================
-   STATE
-========================================================= */
+/* =====================================================
+   ELEMENTS
+   ===================================================== */
 
-let user = null;
+const loginScreen=
+document.getElementById("loginScreen");
 
-let player = null;
+const modeScreen=
+document.getElementById("modeScreen");
 
-let map = null;
+const loadingScreen=
+document.getElementById("loadingScreen");
 
-let playerMarker = null;
+const loadingText=
+document.getElementById("loadingText");
 
-let coins = [];
+const loadingBar=
+document.getElementById("loadingBarInner");
 
-let mode = "PUBLIC";
+const status=
+document.getElementById("status");
 
-let watchId = null;
-
-let latitude = null;
-
-let longitude = null;
-
-let lastTrailLat = null;
-
-let lastTrailLon = null;
-
-let loadingTrail = false;
+const coinsDisplay=
+document.getElementById("coinsDisplay");
 
 
-/* =========================================================
-   DOM
-========================================================= */
+/* =====================================================
+   LOGIN
+   ===================================================== */
 
-const authScreen =
-  document.getElementById("authScreen");
-
-const loadingScreen =
-  document.getElementById("loadingScreen");
-
-const loadingText =
-  document.getElementById("loadingText");
-
-const loadingBar =
-  document.getElementById("loadingBar");
-
-const modeSelect =
-  document.getElementById("modeSelect");
-
-const authMessage =
-  document.getElementById("authMessage");
-
-const emailInput =
-  document.getElementById("emailInput");
-
-const signInButton =
-  document.getElementById("signInButton");
-
-const status =
-  document.getElementById("status");
-
-const coinsDisplay =
-  document.getElementById("coinsDisplay");
-
-const toast =
-  document.getElementById("toast");
+document
+.getElementById("loginButton")
+.addEventListener("click",sendLogin);
 
 
-/* =========================================================
-   UI
-========================================================= */
+async function sendLogin(){
 
-function setLoading(text,progress){
+ const input=
+ document.getElementById("emailInput");
 
-  loadingText.textContent = text;
+ const message=
+ document.getElementById("loginMessage");
 
-  loadingBar.style.width =
-    progress + "%";
+ const email=
+ input.value.trim();
 
-}
+ if(!email){
+  message.textContent="Enter your email.";
+  return;
+ }
 
-function setStatus(text){
+ message.textContent="Sending...";
 
-  status.textContent = text;
+ const {error}=
+ await supabase.auth.signInWithOtp({
+  email,
+  options:{
+   emailRedirectTo:REDIRECT_URL,
+   shouldCreateUser:true
+  }
+ });
 
-}
+ if(error){
+  console.error(error);
+  message.textContent=
+   "❌ "+error.message;
+  return;
+ }
 
-function toastMessage(text){
-
-  toast.textContent = text;
-
-  toast.classList.add("show");
-
-  setTimeout(()=>{
-    toast.classList.remove("show");
-  },2200);
-
+ message.textContent=
+ "✅ Check your email for the sign-in link.";
 }
 
 
-/* =========================================================
+/* =====================================================
    AUTH
-========================================================= */
+   ===================================================== */
 
-async function initAuth(){
+async function checkAuth(){
 
-  /*
-   * THIS IS THE IMPORTANT PART:
-   *
-   * Supabase automatically restores
-   * the saved session.
-   */
+ setLoading("Checking account...",20);
 
-  const {
-    data
-  } =
-    await supabase.auth.getSession();
+ const {data,error}=
+ await supabase.auth.getSession();
 
-  if(data.session){
+ if(error){
+  console.error(error);
+ }
 
-    user = data.session.user;
+ if(data.session?.user){
 
-    await startAfterLogin();
+  user=data.session.user;
 
-    return;
-  }
-
-  /*
-   * If the URL contains a magic-link
-   * session, Supabase processes it.
-   */
-
-  const {
-    data:{
-      session
-    }
-  } =
-    await supabase.auth.getSession();
-
-  if(session){
-
-    user = session.user;
-
-    await startAfterLogin();
-
-    return;
-  }
-
-  authScreen.style.display = "flex";
-}
-
-
-signInButton.addEventListener(
-  "click",
-  sendMagicLink
-);
-
-
-emailInput.addEventListener(
-  "keydown",
-  e=>{
-    if(e.key === "Enter"){
-      sendMagicLink();
-    }
-  }
-);
-
-
-async function sendMagicLink(){
-
-  const email =
-    emailInput.value.trim();
-
-  if(!email){
-
-    authMessage.textContent =
-      "Enter your email.";
-
-    return;
-  }
-
-  signInButton.disabled = true;
-
-  authMessage.textContent =
-    "Sending sign-in link...";
-
-  const {
-    error
-  } =
-    await supabase.auth.signInWithOtp({
-
-      email,
-
-      options:{
-        emailRedirectTo:GAME_URL
-      }
-
-    });
-
-  if(error){
-
-    console.error(error);
-
-    authMessage.textContent =
-      error.message;
-
-    signInButton.disabled = false;
-
-    return;
-  }
-
-  authMessage.textContent =
-    "✅ Check your email. Tap the sign-in link.";
-
-  signInButton.disabled = false;
-}
-
-
-/* =========================================================
-   AUTH STATE
-========================================================= */
-
-supabase.auth.onAuthStateChange(
-  async (event,session)=>{
-
-    console.log(
-      "Auth:",
-      event
-    );
-
-    if(
-      session &&
-      !user
-    ){
-
-      user =
-        session.user;
-
-      await startAfterLogin();
-    }
-
-    if(
-      event === "SIGNED_OUT"
-    ){
-
-      user = null;
-
-      location.reload();
-    }
-
-  }
-);
-
-
-/* =========================================================
-   START
-========================================================= */
-
-async function startAfterLogin(){
-
-  authScreen.style.display =
-    "none";
-
-  loadingScreen.style.display =
-    "flex";
-
-  setLoading(
-    "Loading your account...",
-    25
-  );
+  loginScreen.style.display="none";
 
   await loadPlayer();
 
-  setLoading(
-    "Choose your game mode...",
-    100
-  );
+  showMode();
 
-  modeSelect.style.display =
-    "block";
+ }else{
+
+  loginScreen.style.display="flex";
+  modeScreen.style.display="none";
+  loadingScreen.style.display="none";
+
+ }
+
 }
 
 
-/* =========================================================
+/* =====================================================
+   AUTH STATE
+   ===================================================== */
+
+supabase.auth.onAuthStateChange(
+(event,session)=>{
+
+ console.log("AUTH:",event);
+
+ if(event==="SIGNED_IN" && session){
+
+  user=session.user;
+
+  loginScreen.style.display="none";
+
+  setTimeout(async()=>{
+   await loadPlayer();
+   showMode();
+  },0);
+ }
+
+ if(event==="SIGNED_OUT"){
+
+  user=null;
+  player=null;
+
+  location.reload();
+
+ }
+
+ });
+
+
+/* =====================================================
    PLAYER
-========================================================= */
+   ===================================================== */
 
 async function loadPlayer(){
 
-  if(!user) return;
+ if(!user)return;
 
-  let result =
-    await supabase
-      .from("players")
-      .select("*")
-      .eq("id",user.id)
-      .maybeSingle();
+ const {data,error}=
+ await supabase
+ .from("players")
+ .select("*")
+ .eq("id",user.id)
+ .maybeSingle();
 
-  if(result.error){
+ if(error){
+  console.error(error);
+  alert("Player database error: "+error.message);
+  return;
+ }
 
-    console.error(result.error);
+ if(!data){
 
-    setStatus(
-      "⚠️ Couldn't load player data."
-    );
+  const {data:newPlayer,error:createError}=
+  await supabase
+  .from("players")
+  .insert({
+   id:user.id,
+   coins:0,
+   xp:0,
+   level:1,
+   unlocked_skins:["blue"],
+   equipped_skin:"blue",
+   collected_coins:[]
+  })
+  .select()
+  .single();
 
-    return;
+  if(createError){
+   console.error(createError);
+   return;
   }
 
-  /*
-   * Safety fallback in case the trigger
-   * didn't create the row.
-   */
+  player=newPlayer;
 
-  if(!result.data){
+ }else{
 
-    const insert =
-      await supabase
-        .from("players")
-        .insert({
-          id:user.id
-        })
-        .select()
-        .single();
+  player=data;
 
-    if(insert.error){
+ }
 
-      console.error(insert.error);
-
-      return;
-    }
-
-    player =
-      insert.data;
-
-  }else{
-
-    player =
-      result.data;
-
-  }
-
-  updateCoins();
+ updateCoins();
 }
 
 
-function updateCoins(){
-
-  coinsDisplay.textContent =
-    "🪙 Coins: " +
-    (player?.coins || 0);
-
-}
-
-
-/* =========================================================
+/* =====================================================
    MODE
-========================================================= */
+   ===================================================== */
+
+function showMode(){
+
+ loadingScreen.style.display="none";
+ modeScreen.style.display="flex";
+
+}
 
 document
-  .getElementById("publicMode")
-  .onclick = ()=>{
-    chooseMode("PUBLIC");
-  };
+.getElementById("publicMode")
+.addEventListener("click",()=>chooseMode("PUBLIC"));
 
 document
-  .getElementById("unlimitedMode")
-  .onclick = ()=>{
-    chooseMode("UNLIMITED");
-  };
+.getElementById("unlimitedMode")
+.addEventListener("click",()=>chooseMode("UNLIMITED"));
 
 
 function chooseMode(selected){
 
-  mode = selected;
+ mode=selected;
 
-  modeSelect.style.display =
-    "none";
+ modeScreen.style.display="none";
+ loadingScreen.style.display="flex";
 
-  setLoading(
-    "Requesting your location...",
-    100
-  );
+ setLoading("Requesting your location...",20);
 
-  requestLocation();
+ startGPS();
+
 }
 
 
-/* =========================================================
+/* =====================================================
+   LOADING
+   ===================================================== */
+
+function setLoading(text,percent){
+
+ loadingText.textContent=text;
+ loadingBar.style.width=percent+"%";
+
+}
+
+
+/* =====================================================
    GPS
-========================================================= */
+   ===================================================== */
 
-function requestLocation(){
+function startGPS(){
 
-  if(!navigator.geolocation){
+ if(watchId!==null)return;
 
-    setStatus(
-      "❌ Your browser doesn't support GPS."
-    );
+ if(!navigator.geolocation){
 
-    return;
+  status.textContent=
+  "❌ GPS is not supported.";
+
+  return;
+ }
+
+ status.textContent=
+ "📍 Requesting location permission...";
+
+ navigator.geolocation.getCurrentPosition(
+  firstLocation,
+  gpsError,
+  {
+   enableHighAccuracy:true,
+   timeout:20000,
+   maximumAge:0
   }
+ );
 
-  /*
-   * This explicitly requests permission.
-   */
-
-  navigator.geolocation.getCurrentPosition(
-
-    position=>{
-
-      updateLocation(position);
-
-      startWatching();
-
-    },
-
-    error=>{
-
-      console.error(error);
-
-      if(error.code === 1){
-
-        setStatus(
-          "📍 Location permission denied. Enable Location for this site."
-        );
-
-      }else{
-
-        setStatus(
-          "📍 Couldn't get your location. Trying again..."
-        );
-
-        setTimeout(
-          requestLocation,
-          3000
-        );
-      }
-
-    },
-
-    {
-      enableHighAccuracy:true,
-      timeout:20000,
-      maximumAge:0
-    }
-
-  );
-}
-
-
-function startWatching(){
-
-  if(watchId !== null)
-    return;
-
-  watchId =
-    navigator.geolocation.watchPosition(
-
-      updateLocation,
-
-      error=>{
-        console.log(
-          "GPS update:",
-          error
-        );
-      },
-
-      {
-        enableHighAccuracy:true,
-        maximumAge:2000,
-        timeout:15000
-      }
-
-    );
-}
-
-
-/* =========================================================
-   LOCATION
-========================================================= */
-
-async function updateLocation(position){
-
-  latitude =
-    position.coords.latitude;
-
-  longitude =
-    position.coords.longitude;
-
-  if(!map){
-
-    createMap(
-      latitude,
-      longitude
-    );
-
-    loadingScreen.classList.add("hidden");
-
-    setTimeout(()=>{
-      loadingScreen.style.display =
-        "none";
-    },650);
-
-    setStatus(
-      "🗺️ Finding the nearest connected road..."
-    );
-
-    await loadTrail(
-      latitude,
-      longitude
-    );
-
-    return;
+ watchId=
+ navigator.geolocation.watchPosition(
+  updateLocation,
+  gpsError,
+  {
+   enableHighAccuracy:true,
+   timeout:20000,
+   maximumAge:2000
   }
-
-
-  if(playerMarker){
-
-    playerMarker.setLatLng([
-      latitude,
-      longitude
-    ]);
-
-  }
-
-
-  collectNearbyCoins(
-    latitude,
-    longitude
-  );
-
-
-  if(
-    lastTrailLat !== null &&
-    lastTrailLon !== null
-  ){
-
-    const moved =
-      distance(
-        lastTrailLat,
-        lastTrailLon,
-        latitude,
-        longitude
-      );
-
-    setStatus(
-      "📍 " +
-      Math.round(moved) +
-      "m since last path update"
-    );
-
-    /*
-     * This is deliberately small.
-     *
-     * The game does NOT require the player
-     * to touch a road before refreshing.
-     */
-
-    if(
-      moved >= REFRESH_DISTANCE
-    ){
-
-      await loadTrail(
-        latitude,
-        longitude
-      );
-    }
-
-  }else{
-
-    await loadTrail(
-      latitude,
-      longitude
-    );
-
-  }
+ );
 
 }
 
 
-/* =========================================================
-   MAP
-========================================================= */
+function firstLocation(position){
 
-function createMap(lat,lon){
+ const lat=position.coords.latitude;
+ const lon=position.coords.longitude;
 
-  map =
-    L.map("map",{
-      zoomControl:true
-    }).setView(
-      [lat,lon],
-      17
-    );
-
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      attribution:
-        "© OpenStreetMap contributors"
-    }
-  ).addTo(map);
-
-  createPlayer(
-    lat,
-    lon
-  );
+ startGame(lat,lon);
 
 }
 
 
-/* =========================================================
-   PLAYER MARKER
-========================================================= */
+function updateLocation(position){
+
+ const lat=position.coords.latitude;
+ const lon=position.coords.longitude;
+
+ if(!map){
+
+  startGame(lat,lon);
+  return;
+
+ }
+
+ if(playerMarker){
+
+  playerMarker.setLatLng([lat,lon]);
+
+ }
+
+ checkCollection(lat,lon);
+
+ if(lastLat!==null){
+
+  const moved=
+  distance(lastLat,lastLon,lat,lon);
+
+  if(moved>=REFRESH_DISTANCE){
+
+   lastLat=lat;
+   lastLon=lon;
+
+   loadTrail(lat,lon);
+
+  }
+
+ }
+
+ updateRoadDistance(lat,lon);
+
+}
+
+
+function gpsError(error){
+
+ console.error(error);
+
+ if(error.code===1){
+
+  status.textContent=
+  "📍 Location permission denied. Enable Location for Safari.";
+
+ }else{
+
+  status.textContent=
+  "📍 Waiting for GPS...";
+
+ }
+
+}
+
+
+/* =====================================================
+   GAME START
+   ===================================================== */
+
+function startGame(lat,lon){
+
+ if(map)return;
+
+ setLoading("Loading map...",50);
+
+ map=
+ L.map("map",{zoomControl:true})
+ .setView([lat,lon],17);
+
+ L.tileLayer(
+ "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+ {
+  attribution:"© OpenStreetMap contributors"
+ }
+ ).addTo(map);
+
+ lastLat=lat;
+ lastLon=lon;
+
+ createPlayer(lat,lon);
+
+ loadingScreen.classList.add("hidden");
+
+ setTimeout(()=>{
+  loadingScreen.style.display="none";
+ },700);
+
+ status.textContent=
+ "🗺️ Finding your nearest connected road...";
+
+ loadTrail(lat,lon);
+
+}
+
+
+/* =====================================================
+   PLAYER
+   ===================================================== */
 
 function createPlayer(lat,lon){
 
-  const color =
-    SKINS[
-      player?.equipped_skin || "blue"
-    ]?.color || "#00aaff";
+ const color=
+ skins[player?.equipped_skin||"blue"].color;
 
-  playerMarker =
-    L.marker(
-      [lat,lon],
-      {
-        icon:
-          L.divIcon({
-            className:"",
-            html:
-              `<div class="player"
-                style="--player-color:${color}">
-              </div>`,
-            iconSize:[28,28],
-            iconAnchor:[14,14]
-          })
-      }
-    ).addTo(map);
+ playerMarker=
+ L.marker(
+ [lat,lon],
+ {
+  icon:L.divIcon({
+   className:"",
+   html:`<div class="player"
+   style="background:${color};box-shadow:0 0 10px ${color},0 0 25px ${color}"></div>`,
+   iconSize:[24,24],
+   iconAnchor:[12,12]
+  })
+ }
+ ).addTo(map);
 
 }
 
 
-/* =========================================================
-   TRAIL LOADING
-========================================================= */
-
-async function loadTrail(lat,lon){
-
-  if(
-    loadingTrail ||
-    !map
-  ){
-    return;
-  }
-
-  loadingTrail = true;
-
-  lastTrailLat = lat;
-
-  lastTrailLon = lon;
-
-  setStatus(
-    "🗺️ Finding roads near you..."
-  );
-
-  try{
-
-    const ways =
-      await getWays(
-        lat,
-        lon
-      );
-
-    if(!ways.length){
-
-      setStatus(
-        "❌ No suitable roads found nearby."
-      );
-
-      loadingTrail = false;
-
-      return;
-    }
-
-
-    /*
-     * Find the closest ROAD NETWORK,
-     * not simply the closest random
-     * OSM way.
-     */
-
-    const network =
-      findBestNetwork(
-        ways,
-        lat,
-        lon
-      );
-
-
-    if(!network){
-
-      setStatus(
-        "❌ Couldn't find a connected road."
-      );
-
-      loadingTrail = false;
-
-      return;
-    }
-
-
-    const nearestDistance =
-      network.distance;
-
-
-    setStatus(
-      "🛣️ Nearest connected road: " +
-      Math.round(nearestDistance) +
-      "m away"
-    );
-
-
-    /*
-     * Generate along the actual connected
-     * network beginning at the closest
-     * point.
-     */
-
-    const route =
-      generateConnectedRoute(
-        ways,
-        network
-      );
-
-
-    for(const point of route){
-
-      createCoin(
-        point.lat,
-        point.lon
-      );
-
-    }
-
-
-    setStatus(
-      "🪙 " +
-      route.length +
-      " coins along your connected road"
-    );
-
-  }catch(error){
-
-    console.error(
-      "Trail error:",
-      error
-    );
-
-    setStatus(
-      "⚠️ Couldn't load nearby roads."
-    );
-
-  }
-
-  loadingTrail = false;
-}
-
-
-/* =========================================================
+/* =====================================================
    OVERPASS
-========================================================= */
+   ===================================================== */
 
 async function getWays(lat,lon){
 
-  const latOffset =
-    SEARCH_RADIUS / 111320;
+ const dLat=SEARCH_RADIUS/111320;
 
-  const lonOffset =
-    SEARCH_RADIUS /
-    (
-      111320 *
-      Math.cos(
-        lat*Math.PI/180
-      )
-    );
+ const dLon=
+ SEARCH_RADIUS/
+ (111320*Math.cos(lat*Math.PI/180));
 
-  const south =
-    lat-latOffset;
+ const south=lat-dLat;
+ const north=lat+dLat;
+ const west=lon-dLon;
+ const east=lon+dLon;
 
-  const north =
-    lat+latOffset;
+ const query=`
 
-  const west =
-    lon-lonOffset;
+ [out:json][timeout:25];
 
-  const east =
-    lon+lonOffset;
+ way["highway"]
+ (${south},${west},${north},${east});
 
+ out tags geom;
 
-  /*
-   * Important:
-   *
-   * We request geometry so we can follow
-   * the actual road network.
-   */
+ `;
 
-  const query = `
-[out:json][timeout:25];
+ const servers=[
+ "https://overpass-api.de/api/interpreter",
+ "https://overpass.kumi.systems/api/interpreter"
+ ];
 
-way["highway"]
-(${south},${west},${north},${east});
+ for(const server of servers){
 
-out tags geom;
-`;
+  try{
 
+   const response=
+   await fetch(server,{
+    method:"POST",
+    headers:{
+     "Content-Type":
+     "application/x-www-form-urlencoded"
+    },
+    body:
+    "data="+encodeURIComponent(query)
+   });
 
-  for(
-    const server of OVERPASS
-  ){
+   if(!response.ok)continue;
 
-    try{
+   const data=await response.json();
 
-      const response =
-        await fetch(
-          server,
-          {
-            method:"POST",
-            headers:{
-              "Content-Type":
-                "application/x-www-form-urlencoded"
-            },
-            body:
-              "data="+
-              encodeURIComponent(query)
-          }
-        );
+   return filterWays(data.elements||[]);
 
-      if(!response.ok)
-        throw new Error(
-          "HTTP "+response.status
-        );
+  }catch(e){
 
-      const data =
-        await response.json();
-
-      return filterWays(
-        data.elements || []
-      );
-
-    }catch(error){
-
-      console.log(
-        "Overpass failed:",
-        error
-      );
-
-    }
+   console.log(e);
 
   }
 
-  return [];
+ }
+
+ return [];
+
 }
 
 
-/* =========================================================
-   FILTER
-========================================================= */
+/* =====================================================
+   ROAD FILTER
+   ===================================================== */
 
 function filterWays(elements){
 
-  const allowedPublic = [
+ const allowedPublic=[
+  "footway",
+  "path",
+  "pedestrian",
+  "steps",
+  "cycleway",
+  "bridleway",
+  "living_street",
+  "residential",
+  "unclassified",
+  "service"
+ ];
 
-    "footway",
-    "path",
-    "pedestrian",
-    "steps",
-    "cycleway",
-    "bridleway",
-    "living_street",
-    "residential",
-    "unclassified",
-    "service"
+ const allowedUnlimited=[
+  ...allowedPublic,
+  "tertiary",
+  "tertiary_link",
+  "secondary",
+  "secondary_link"
+ ];
 
-  ];
+ const allowed=
+ mode==="PUBLIC"
+ ?allowedPublic
+ :allowedUnlimited;
 
-  const forbiddenUnlimited = [
+ return elements
+ .filter(e=>
+  e.type==="way" &&
+  e.geometry?.length>=2 &&
+  allowed.includes(e.tags?.highway)
+ )
+ .filter(e=>{
+  const access=
+  String(e.tags?.access||"").toLowerCase();
 
-    "motorway",
-    "motorway_link",
-    "trunk",
-    "trunk_link"
+  return ![
+   "private",
+   "no",
+   "permit",
+   "customers"
+  ].includes(access);
+ })
+ .map(e=>({
+  id:e.id,
+  geometry:e.geometry,
+  tags:e.tags||{}
+ }));
 
-  ];
-
-  const result = [];
-
-  for(
-    const e of elements
-  ){
-
-    if(
-      e.type !== "way" ||
-      !e.geometry ||
-      e.geometry.length < 2
-    ){
-      continue;
-    }
-
-    const tags =
-      e.tags || {};
-
-    const highway =
-      tags.highway;
-
-    if(!highway)
-      continue;
-
-
-    const access =
-      String(
-        tags.access || ""
-      ).toLowerCase();
-
-
-    if(
-      access === "private" ||
-      access === "no" ||
-      access === "permit" ||
-      access === "customers"
-    ){
-      continue;
-    }
-
-
-    if(mode === "PUBLIC"){
-
-      if(
-        !allowedPublic.includes(
-          highway
-        )
-      ){
-        continue;
-      }
-
-    }else{
-
-      if(
-        forbiddenUnlimited.includes(
-          highway
-        )
-      ){
-        continue;
-      }
-
-    }
-
-
-    result.push({
-
-      id:e.id,
-
-      geometry:e.geometry,
-
-      tags
-
-    });
-
-  }
-
-  return result;
 }
 
 
-/* =========================================================
-   BEST NETWORK
-========================================================= */
+/* =====================================================
+   CONNECTED ROAD GENERATION
+   ===================================================== */
 
-function findBestNetwork(
-  ways,
-  lat,
-  lon
-){
+/*
+ IMPORTANT:
 
-  /*
-   * First find the nearest way.
-   */
+ We don't simply choose the closest random
+ road and generate coins there.
 
-  let nearest = null;
+ We first find the closest road point,
+ then only follow road segments that are
+ actually connected to that starting road.
 
-  for(
-    const way of ways
-  ){
+ This prevents coins appearing on a nearby
+ disconnected road.
+*/
 
-    for(
-      let i=0;
-      i<way.geometry.length;
-      i++
-    ){
+async function loadTrail(lat,lon){
 
-      const p =
-        way.geometry[i];
+ if(loadingTrail)return;
 
-      const d =
-        distance(
-          lat,
-          lon,
-          p.lat,
-          p.lon
-        );
+ loadingTrail=true;
 
-      if(
-        !nearest ||
-        d < nearest.distance
-      ){
+ status.textContent=
+ "🗺️ Finding connected roads near you...";
 
-        nearest = {
-          way,
-          index:i,
-          distance:d,
-          point:p
-        };
+ removeCoins();
 
-      }
+ try{
 
-    }
+  const ways=
+  await getWays(lat,lon);
+
+  if(!ways.length){
+
+   status.textContent=
+   "No suitable roads nearby.";
+
+   loadingTrail=false;
+   return;
+  }
+
+  const start=
+  closestPoint(ways,lat,lon);
+
+  if(!start){
+
+   loadingTrail=false;
+   return;
+  }
+
+  const network=
+  buildConnectedNetwork(
+   ways,
+   start
+  );
+
+  if(!network.length){
+
+   status.textContent=
+   "Couldn't find a connected road.";
+
+   loadingTrail=false;
+   return;
+  }
+
+  const points=
+  generateCoinsAlongNetwork(
+   network
+  );
+
+  points.forEach(p=>
+   createCoin(p.lat,p.lon)
+  );
+
+  const dist=Math.round(start.distance);
+
+  status.textContent=
+  `🛣️ Nearest road: ${dist}m away • ${points.length} coins`;
+
+ }catch(e){
+
+  console.error(e);
+
+  status.textContent=
+  "⚠️ Couldn't load roads.";
+
+ }
+
+ loadingTrail=false;
+
+}
+
+
+/* =====================================================
+   CLOSEST ROAD POINT
+   ===================================================== */
+
+function closestPoint(ways,lat,lon){
+
+ let best=null;
+
+ for(const way of ways){
+
+  for(let i=0;i<way.geometry.length;i++){
+
+   const p=way.geometry[i];
+
+   const d=
+   distance(lat,lon,p.lat,p.lon);
+
+   if(!best||d<best.distance){
+
+    best={
+     way,
+     index:i,
+     point:p,
+     distance:d
+    };
+
+   }
 
   }
 
-  if(!nearest)
-    return null;
+ }
+
+ return best;
+
+}
 
 
-  /*
-   * Verify that this way belongs to
-   * a usable connected component.
-   *
-   * We prefer nearby ways that connect
-   * to this way instead of a random
-   * disconnected path.
-   */
+/* =====================================================
+   CONNECTED NETWORK
+   ===================================================== */
 
-  const component =
-    buildComponent(
-      ways,
-      nearest.way
-    );
+function buildConnectedNetwork(ways,start){
 
+ const network=[];
 
-  /*
-   * If a nearby way is tiny/disconnected,
-   * search for the closest substantial
-   * component instead.
-   */
+ const used=new Set();
+
+ let currentWay=start.way;
+ let currentIndex=start.index;
+ let direction=1;
+
+ let current=
+ currentWay.geometry[currentIndex];
+
+ network.push(current);
+
+ for(let steps=0;steps<250;steps++){
+
+  const nextIndex=
+  currentIndex+direction;
 
   if(
-    component.length < 2
+   nextIndex>=0 &&
+   nextIndex<currentWay.geometry.length
   ){
 
-    let best = null;
+   const next=
+   currentWay.geometry[nextIndex];
 
-    for(
-      const way of ways
-    ){
+   network.push(next);
 
-      const p =
-        closestPointOnWay(
-          way,
-          lat,
-          lon
-        );
+   current=next;
+   currentIndex=nextIndex;
 
-      if(
-        !best ||
-        p.distance < best.distance
-      ){
-
-        best = {
-          way,
-          index:p.index,
-          point:p.point,
-          distance:p.distance
-        };
-
-      }
-
-    }
-
-    return best;
+   continue;
   }
 
+  /*
+   At an endpoint, ONLY jump to another
+   way whose endpoint is physically close.
+  */
 
-  return nearest;
-}
-
-
-/* =========================================================
-   CONNECTED COMPONENT
-========================================================= */
-
-function buildComponent(
-  ways,
-  startWay
-){
-
-  const component = [];
-
-  const visited =
-    new Set();
-
-  const queue =
-    [startWay];
-
-  while(queue.length){
-
-    const way =
-      queue.shift();
-
-    if(
-      visited.has(way.id)
-    ){
-      continue;
-    }
-
-    visited.add(way.id);
-
-    component.push(way);
-
-
-    for(
-      const other of ways
-    ){
-
-      if(
-        visited.has(other.id)
-      )
-        continue;
-
-      if(
-        waysConnect(
-          way,
-          other
-        )
-      ){
-
-        queue.push(other);
-
-      }
-
-    }
-
-    /*
-     * Don't spend forever building
-     * an enormous network.
-     */
-
-    if(component.length >= 100)
-      break;
-
-  }
-
-  return component;
-}
-
-
-/* =========================================================
-   CONNECTED
-========================================================= */
-
-function waysConnect(a,b){
-
-  const threshold = 35;
-
-  const aFirst =
-    a.geometry[0];
-
-  const aLast =
-    a.geometry[
-      a.geometry.length-1
-    ];
-
-  const bFirst =
-    b.geometry[0];
-
-  const bLast =
-    b.geometry[
-      b.geometry.length-1
-    ];
-
-
-  return (
-
-    distance(
-      aFirst.lat,
-      aFirst.lon,
-      bFirst.lat,
-      bFirst.lon
-    ) <= threshold ||
-
-    distance(
-      aFirst.lat,
-      aFirst.lon,
-      bLast.lat,
-      bLast.lon
-    ) <= threshold ||
-
-    distance(
-      aLast.lat,
-      aLast.lon,
-      bFirst.lat,
-      bFirst.lon
-    ) <= threshold ||
-
-    distance(
-      aLast.lat,
-      aLast.lon,
-      bLast.lat,
-      bLast.lon
-    ) <= threshold
-
+  const connection=
+  findConnection(
+   ways,
+   current,
+   currentWay.id,
+   used
   );
+
+  if(!connection)break;
+
+  used.add(connection.way.id);
+
+  currentWay=connection.way;
+  currentIndex=connection.index;
+  direction=connection.direction;
+
+ }
+
+ return network;
+
 }
 
 
-/* =========================================================
-   CLOSEST POINT
-========================================================= */
+/* =====================================================
+   FIND REAL CONNECTION
+   ===================================================== */
 
-function closestPointOnWay(
-  way,
-  lat,
-  lon
+function findConnection(
+ ways,
+ point,
+ currentId,
+ used
 ){
 
-  let best = null;
+ let best=null;
+ let bestDistance=18;
 
-  for(
-    let i=0;
-    i<way.geometry.length;
-    i++
-  ){
+ for(const way of ways){
 
-    const p =
-      way.geometry[i];
+  if(
+   way.id===currentId ||
+   used.has(way.id)
+  )continue;
 
-    const d =
-      distance(
-        lat,
-        lon,
-        p.lat,
-        p.lon
-      );
+  const first=way.geometry[0];
 
-    if(
-      !best ||
-      d < best.distance
-    ){
+  const last=
+  way.geometry[way.geometry.length-1];
 
-      best = {
-        index:i,
-        point:p,
-        distance:d
-      };
+  const d1=
+  distance(
+   point.lat,point.lon,
+   first.lat,first.lon
+  );
 
-    }
+  const d2=
+  distance(
+   point.lat,point.lon,
+   last.lat,last.lon
+  );
+
+  if(d1<bestDistance){
+
+   best={
+    way,
+    index:0,
+    direction:1
+   };
+
+   bestDistance=d1;
 
   }
 
-  return best;
-}
+  if(d2<bestDistance){
 
+   best={
+    way,
+    index:way.geometry.length-1,
+    direction:-1
+   };
 
-/* =========================================================
-   ROUTE GENERATOR
-========================================================= */
-
-function generateConnectedRoute(
-  ways,
-  start
-){
-
-  const route = [];
-
-  let way =
-    start.way;
-
-  let index =
-    start.index;
-
-  /*
-   * Start from the nearest point and
-   * walk forward.
-   */
-
-  let direction =
-    index <
-    way.geometry.length-1
-      ? 1
-      : -1;
-
-  let accumulated = 0;
-
-  let last =
-    way.geometry[index];
-
-  const visited =
-    new Set();
-
-
-  /*
-   * Allow plenty of coins.
-   */
-
-  const maxCoins = 30;
-
-
-  while(
-    route.length < maxCoins
-  ){
-
-    const key =
-      way.id +
-      ":" +
-      index +
-      ":" +
-      direction;
-
-    if(
-      visited.has(key)
-    ){
-      break;
-    }
-
-    visited.add(key);
-
-
-    const nextIndex =
-      index + direction;
-
-
-    /*
-     * Reached the end of this road.
-     * Find a road that actually connects
-     * to the endpoint.
-     */
-
-    if(
-      nextIndex < 0 ||
-      nextIndex >=
-      way.geometry.length
-    ){
-
-      const endpoint =
-        way.geometry[
-          direction === 1
-            ? way.geometry.length-1
-            : 0
-        ];
-
-
-      const next =
-        findConnectedWay(
-          ways,
-          endpoint,
-          way.id
-        );
-
-
-      if(!next)
-        break;
-
-
-      way =
-        next.way;
-
-      index =
-        next.index;
-
-      direction =
-        next.direction;
-
-      last =
-        way.geometry[index];
-
-      continue;
-    }
-
-
-    const point =
-      way.geometry[nextIndex];
-
-
-    accumulated +=
-      distance(
-        last.lat,
-        last.lon,
-        point.lat,
-        point.lon
-      );
-
-
-    if(
-      accumulated >=
-      COIN_SPACING
-    ){
-
-      route.push({
-        lat:point.lat,
-        lon:point.lon
-      });
-
-      accumulated = 0;
-    }
-
-
-    last = point;
-
-    index = nextIndex;
+   bestDistance=d2;
 
   }
 
+ }
 
-  return route;
+ return best;
+
 }
 
 
-/* =========================================================
-   FIND CONNECTED WAY
-========================================================= */
+/* =====================================================
+   GENERATE COINS
+   ===================================================== */
 
-function findConnectedWay(
-  ways,
-  endpoint,
-  currentId
-){
+function generateCoinsAlongNetwork(points){
 
-  let best = null;
+ const result=[];
 
-  let bestDistance = 35;
+ let accumulated=0;
 
+ for(let i=1;i<points.length;i++){
 
-  for(
-    const way of ways
-  ){
+  const a=points[i-1];
+  const b=points[i];
 
-    if(
-      way.id === currentId
-    )
-      continue;
+  accumulated+=
+  distance(
+   a.lat,a.lon,
+   b.lat,b.lon
+  );
 
+  if(accumulated>=COIN_SPACING){
 
-    const first =
-      way.geometry[0];
+   result.push({
+    lat:b.lat,
+    lon:b.lon
+   });
 
-    const last =
-      way.geometry[
-        way.geometry.length-1
-      ];
-
-
-    const d1 =
-      distance(
-        endpoint.lat,
-        endpoint.lon,
-        first.lat,
-        first.lon
-      );
-
-
-    const d2 =
-      distance(
-        endpoint.lat,
-        endpoint.lon,
-        last.lat,
-        last.lon
-      );
-
-
-    if(
-      d1 < bestDistance
-    ){
-
-      best = {
-        way,
-        index:0,
-        direction:1
-      };
-
-      bestDistance = d1;
-    }
-
-
-    if(
-      d2 < bestDistance
-    ){
-
-      best = {
-        way,
-        index:
-          way.geometry.length-1,
-        direction:-1
-      };
-
-      bestDistance = d2;
-    }
+   accumulated=0;
 
   }
 
-  return best;
+ }
+
+ return result;
+
 }
 
 
-/* =========================================================
+/* =====================================================
    COINS
-========================================================= */
-
-function coinId(lat,lon){
-
-  return (
-    Math.round(lat*100000) +
-    "_" +
-    Math.round(lon*100000)
-  );
-}
-
+   ===================================================== */
 
 function createCoin(lat,lon){
 
-  if(!map || !player)
-    return;
+ if(!map||!player)return;
 
+ const id=
+ Math.round(lat*100000)+
+ "_"+
+ Math.round(lon*100000);
 
-  const id =
-    coinId(lat,lon);
+ if(
+ player.collected_coins?.includes(id)
+ )return;
 
+ if(
+ coins.some(c=>
+  distance(
+   c.lat,c.lon,
+   lat,lon
+  )<25
+ )
+ )return;
 
-  if(
-    player.collected_coins?.includes(id)
-  ){
-    return;
-  }
+ const marker=
+ L.marker(
+ [lat,lon],
+ {
+  icon:L.divIcon({
+   className:"",
+   html:`<div class="coin">🪙</div>`,
+   iconSize:[30,30],
+   iconAnchor:[15,15]
+  })
+ }
+ ).addTo(map);
 
-
-  /*
-   * Don't put multiple coins on top
-   * of each other.
-   */
-
-  for(
-    const c of coins
-  ){
-
-    if(
-      distance(
-        lat,
-        lon,
-        c.lat,
-        c.lon
-      ) < 20
-    ){
-      return;
-    }
-
-  }
-
-
-  const marker =
-    L.marker(
-      [lat,lon],
-      {
-        icon:
-          L.divIcon({
-            className:"",
-            html:
-              `<div class="coin">🪙</div>`,
-            iconSize:[34,34],
-            iconAnchor:[17,17]
-          })
-      }
-    ).addTo(map);
-
-
-  coins.push({
-    id,
-    lat,
-    lon,
-    marker
-  });
-
-}
-
-
-/* =========================================================
-   COLLECTION
-========================================================= */
-
-function collectNearbyCoins(
+ coins.push({
+  id,
   lat,
-  lon
-){
-
-  for(
-    const coin of [...coins]
-  ){
-
-    const d =
-      distance(
-        lat,
-        lon,
-        coin.lat,
-        coin.lon
-      );
-
-
-    if(
-      d <= COLLECTION_DISTANCE
-    ){
-
-      collectCoin(
-        coin
-      );
-
-    }
-
-  }
+  lon,
+  marker,
+  collected:false
+ });
 
 }
 
 
-async function collectCoin(
-  coin
-){
+function removeCoins(){
 
-  if(!player)
-    return;
-
-
-  /*
-   * Remove immediately so it can't
-   * be collected twice.
-   */
+ for(const coin of coins){
 
   if(
-    !coins.includes(coin)
-  )
-    return;
-
-
-  map.removeLayer(
-    coin.marker
-  );
-
-  coins =
-    coins.filter(
-      c=>c!==coin
-    );
-
-
-  if(
-    !player.collected_coins
+   map?.hasLayer(coin.marker)
   ){
-
-    player.collected_coins = [];
-
+   map.removeLayer(coin.marker);
   }
 
+ }
 
-  if(
-    player.collected_coins.includes(
-      coin.id
-    )
-  ){
-    return;
-  }
-
-
-  player.collected_coins.push(
-    coin.id
-  );
-
-
-  player.coins =
-    (player.coins || 0) + 10;
-
-
-  player.xp =
-    (player.xp || 0) + 10;
-
-
-  levelUp();
-
-
-  updateCoins();
-
-
-  toastMessage(
-    "🪙 COIN COLLECTED! +10"
-  );
-
-
-  await savePlayer();
+ coins=[];
 
 }
 
 
-/* =========================================================
-   LEVEL
-========================================================= */
+/* =====================================================
+   COLLECTION
+   ===================================================== */
 
-function levelUp(){
+function checkCollection(lat,lon){
 
-  if(!player)
-    return;
+ for(const coin of coins){
 
+  if(coin.collected)continue;
 
-  const needed =
-    (player.level || 1) * 100;
+  const d=
+  distance(
+   lat,lon,
+   coin.lat,coin.lon
+  );
 
+  if(d<=COLLECTION_DISTANCE){
 
-  if(
-    player.xp >= needed
-  ){
-
-    player.xp -= needed;
-
-    player.level =
-      (player.level || 1) + 1;
-
-    toastMessage(
-      "🎉 LEVEL " +
-      player.level +
-      "!"
-    );
+   collectCoin(coin);
 
   }
+
+ }
 
 }
 
 
-/* =========================================================
+async function collectCoin(coin){
+
+ if(
+  coin.collected ||
+  !player
+ )return;
+
+ coin.collected=true;
+
+ if(map.hasLayer(coin.marker))
+ map.removeLayer(coin.marker);
+
+ player.coins+=10;
+ player.xp+=10;
+
+ if(!player.collected_coins)
+ player.collected_coins=[];
+
+ if(!player.collected_coins.includes(coin.id))
+ player.collected_coins.push(coin.id);
+
+ while(player.xp>=player.level*100){
+
+  player.xp-=player.level*100;
+  player.level++;
+
+  toast(
+   `🎉 LEVEL ${player.level}!`
+  );
+
+ }
+
+ updateCoins();
+
+ toast("🪙 COIN COLLECTED! +10");
+
+ await savePlayer();
+
+}
+
+
+/* =====================================================
    SAVE
-========================================================= */
+   ===================================================== */
 
 async function savePlayer(){
 
-  if(!player)
-    return;
+ if(!player||!user)return;
 
+ const {error}=
+ await supabase
+ .from("players")
+ .update({
+  coins:player.coins,
+  xp:player.xp,
+  level:player.level,
+  unlocked_skins:player.unlocked_skins,
+  equipped_skin:player.equipped_skin,
+  collected_coins:player.collected_coins,
+  updated_at:new Date().toISOString()
+ })
+ .eq("id",user.id);
 
-  const {
-    error
-  } =
-    await supabase
-      .from("players")
-      .update({
-
-        coins:player.coins,
-
-        xp:player.xp,
-
-        level:player.level,
-
-        unlocked_skins:
-          player.unlocked_skins,
-
-        equipped_skin:
-          player.equipped_skin,
-
-        collected_coins:
-          player.collected_coins,
-
-        updated_at:
-          new Date().toISOString()
-
-      })
-      .eq(
-        "id",
-        player.id
-      );
-
-
-  if(error){
-
-    console.error(
-      "Save error:",
-      error
-    );
-
-    toastMessage(
-      "⚠️ Save failed"
-    );
-
-  }
+ if(error)
+ console.error("SAVE ERROR",error);
 
 }
 
 
-/* =========================================================
+/* =====================================================
+   COIN DISPLAY
+   ===================================================== */
+
+function updateCoins(){
+
+ coinsDisplay.textContent=
+ `🪙 ${player?.coins||0}`;
+
+}
+
+
+/* =====================================================
+   ROAD DISTANCE
+   ===================================================== */
+
+async function updateRoadDistance(lat,lon){
+
+ if(!map)return;
+
+ /*
+   This updates continuously as the player moves.
+ */
+
+ const ways=
+ await getWays(lat,lon);
+
+ if(!ways.length)return;
+
+ const nearest=
+ closestPoint(ways,lat,lon);
+
+ if(nearest){
+
+  status.textContent=
+  `🛣️ Nearest road: ${Math.round(nearest.distance)}m • 🪙 ${player?.coins||0}`;
+
+ }
+
+}
+
+
+/* =====================================================
    SHOP
-========================================================= */
+   ===================================================== */
 
 document
-  .getElementById("shopButton")
-  .onclick = ()=>{
-
-    document
-      .getElementById("shopOverlay")
-      .style.display="block";
-
-    renderShop();
-
-  };
-
+.getElementById("shopButton")
+.addEventListener("click",openShop);
 
 document
-  .getElementById("closeShop")
-  .onclick = ()=>{
+.getElementById("closeShop")
+.addEventListener("click",()=>{
+ document.getElementById("shopOverlay").style.display="none";
+});
 
-    document
-      .getElementById("shopOverlay")
-      .style.display="none";
 
-  };
+function openShop(){
+
+ document.getElementById("shopOverlay").style.display="block";
+
+ renderShop();
+
+}
 
 
 function renderShop(){
 
-  if(!player)
-    return;
+ const items=
+ document.getElementById("shopItems");
 
-  const balance =
-    document.getElementById(
-      "shopBalance"
-    );
+ const balance=
+ document.getElementById("shopBalance");
 
-  const items =
-    document.getElementById(
-      "shopItems"
-    );
+ balance.textContent=
+ `🪙 Coins: ${player?.coins||0}`;
 
+ items.innerHTML="";
 
-  balance.textContent =
-    "🪙 Coins: " +
-    player.coins;
+ for(const [id,skin] of Object.entries(skins)){
 
+  const unlocked=
+  player.unlocked_skins.includes(id);
 
-  items.innerHTML = "";
+  const equipped=
+  player.equipped_skin===id;
 
+  const row=
+  document.createElement("div");
 
-  Object.entries(
-    SKINS
-  ).forEach(
-    ([id,skin])=>{
+  row.className="shopItem";
 
-      const unlocked =
-        player.unlocked_skins
-          ?.includes(id);
+  row.innerHTML=`
+   <div class="preview"
+   style="background:${skin.color};box-shadow:0 0 12px ${skin.color}">
+   </div>
 
-      const equipped =
-        player.equipped_skin === id;
+   <div class="info">
+    <b>${skin.name}</b><br>
+    <span style="color:#ffd700">
+    ${skin.price===0?"FREE":"🪙 "+skin.price}
+    </span>
+   </div>
+  `;
 
+  const button=
+  document.createElement("button");
 
-      const item =
-        document.createElement("div");
+  if(equipped){
 
-      item.className =
-        "shopItem";
+   button.textContent="EQUIPPED";
+   button.disabled=true;
 
+  }else if(unlocked){
 
-      const preview =
-        document.createElement("div");
+   button.textContent="EQUIP";
 
-      preview.className =
-        "skinPreview";
+   button.onclick=async()=>{
 
-      preview.style.background =
-        skin.color;
+    player.equipped_skin=id;
 
+    await savePlayer();
 
-      const info =
-        document.createElement("div");
+    renderShop();
 
-      info.className =
-        "skinInfo";
+    toast("🎨 Equipped!");
 
-      info.innerHTML =
-        `
-          <div class="skinName">
-            ${skin.name}
-          </div>
+   };
 
-          <div class="skinPrice">
-            ${
-              skin.price === 0
-                ? "FREE"
-                : "🪙 " + skin.price
-            }
-          </div>
-        `;
+  }else if(player.coins>=skin.price){
 
+   button.textContent="BUY";
 
-      const button =
-        document.createElement("button");
+   button.onclick=async()=>{
 
-      button.className =
-        "shopAction";
+    player.coins-=skin.price;
 
+    player.unlocked_skins.push(id);
+    player.equipped_skin=id;
 
-      if(equipped){
+    await savePlayer();
 
-        button.textContent =
-          "EQUIPPED";
+    updateCoins();
+    renderShop();
 
-        button.disabled=true;
+    toast("🎨 Skin unlocked!");
 
-      }else if(unlocked){
+   };
 
-        button.textContent =
-          "EQUIP";
+  }else{
 
-        button.onclick =
-          ()=>equipSkin(id);
+   button.textContent="NEED COINS";
+   button.disabled=true;
 
-      }else if(
-        player.coins >= skin.price
-      ){
+  }
 
-        button.textContent =
-          "BUY";
+  row.appendChild(button);
+  items.appendChild(row);
 
-        button.onclick =
-          ()=>buySkin(id);
-
-      }else{
-
-        button.textContent =
-          "NEED COINS";
-
-        button.disabled=true;
-
-      }
-
-
-      item.append(
-        preview,
-        info,
-        button
-      );
-
-      items.appendChild(item);
-
-    }
-  );
+ }
 
 }
 
 
-async function buySkin(id){
-
-  const skin =
-    SKINS[id];
-
-  if(!skin || !player)
-    return;
-
-
-  if(
-    player.coins < skin.price
-  )
-    return;
-
-
-  player.coins -=
-    skin.price;
-
-
-  if(
-    !player.unlocked_skins
-  )
-    player.unlocked_skins=[];
-
-
-  player.unlocked_skins.push(id);
-
-  player.equipped_skin =
-    id;
-
-
-  await savePlayer();
-
-  updateCoins();
-
-  updatePlayerMarker();
-
-  renderShop();
-
-  toastMessage(
-    "🎨 " +
-    skin.name +
-    " unlocked!"
-  );
-
-}
-
-
-async function equipSkin(id){
-
-  if(!player)
-    return;
-
-
-  if(
-    !player.unlocked_skins.includes(id)
-  )
-    return;
-
-
-  player.equipped_skin =
-    id;
-
-
-  await savePlayer();
-
-  updatePlayerMarker();
-
-  renderShop();
-
-}
-
-
-/* =========================================================
-   UPDATE PLAYER
-========================================================= */
-
-function updatePlayerMarker(){
-
-  if(!playerMarker)
-    return;
-
-
-  const color =
-    SKINS[
-      player.equipped_skin || "blue"
-    ]?.color || "#00aaff";
-
-
-  playerMarker.setIcon(
-    L.divIcon({
-      className:"",
-      html:
-        `<div class="player"
-          style="--player-color:${color}">
-        </div>`,
-      iconSize:[28,28],
-      iconAnchor:[14,14]
-    })
-  );
-
-}
-
-
-/* =========================================================
+/* =====================================================
    ACCOUNT
-========================================================= */
+   ===================================================== */
 
 document
-  .getElementById("accountButton")
-  .onclick = ()=>{
+.getElementById("accountButton")
+.addEventListener("click",()=>{
 
-    document
-      .getElementById("accountOverlay")
-      .style.display="block";
+ document.getElementById("accountEmail")
+ .textContent=user?.email||"";
 
-    document
-      .getElementById("accountEmail")
-      .textContent =
-      user?.email ||
-      "Unknown";
+ document.getElementById("accountOverlay")
+ .style.display="block";
 
-  };
+});
 
 
 document
-  .getElementById("closeAccount")
-  .onclick = ()=>{
+.getElementById("closeAccount")
+.addEventListener("click",()=>{
 
-    document
-      .getElementById("accountOverlay")
-      .style.display="none";
+ document.getElementById("accountOverlay")
+ .style.display="none";
 
-  };
+});
 
 
 document
-  .getElementById("signOutButton")
-  .onclick =
-  async ()=>{
+.getElementById("signOutButton")
+.addEventListener("click",async()=>{
 
-    await supabase.auth.signOut();
+ await supabase.auth.signOut();
 
-    location.reload();
-
-  };
+});
 
 
-/* =========================================================
+/* =====================================================
+   TOAST
+   ===================================================== */
+
+let toastTimer;
+
+function toast(text){
+
+ const el=
+ document.getElementById("toast");
+
+ el.textContent=text;
+ el.classList.add("show");
+
+ clearTimeout(toastTimer);
+
+ toastTimer=
+ setTimeout(
+  ()=>el.classList.remove("show"),
+  2200
+ );
+
+}
+
+
+/* =====================================================
    DISTANCE
-========================================================= */
+   ===================================================== */
 
-function distance(
-  lat1,
-  lon1,
-  lat2,
-  lon2
-){
+function distance(lat1,lon1,lat2,lon2){
 
-  const R = 6371000;
+ const R=6371000;
 
-  const p1 =
-    lat1*Math.PI/180;
+ const p1=lat1*Math.PI/180;
+ const p2=lat2*Math.PI/180;
 
-  const p2 =
-    lat2*Math.PI/180;
+ const dLat=
+ (lat2-lat1)*Math.PI/180;
 
-  const dLat =
-    (lat2-lat1)*
-    Math.PI/180;
+ const dLon=
+ (lon2-lon1)*Math.PI/180;
 
-  const dLon =
-    (lon2-lon1)*
-    Math.PI/180;
+ const a=
+ Math.sin(dLat/2)**2+
+ Math.cos(p1)*
+ Math.cos(p2)*
+ Math.sin(dLon/2)**2;
 
-
-  const a =
-    Math.sin(dLat/2)**2 +
-    Math.cos(p1)*
-    Math.cos(p2)*
-    Math.sin(dLon/2)**2;
-
-
-  return (
-    R *
-    2 *
-    Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1-a)
-    )
+ return R*
+ 2*
+ Math.atan2(
+   Math.sqrt(a),
+   Math.sqrt(1-a)
   );
 
 }
 
 
-/* =========================================================
+/* =====================================================
    START
-========================================================= */
+   ===================================================== */
 
-initAuth();
+checkAuth();
 
 </script>
 
