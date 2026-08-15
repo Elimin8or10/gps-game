@@ -36,75 +36,23 @@ button{
 }
 
 /* =========================
-   PAST COIN LOCATIONS
+   PAST COINS
 ========================= */
 
-function showCollectedCoinLocations(){
-
-    // Remove old markers first
-    for(const marker of collectedCoinMarkers){
-
-        if(map.hasLayer(marker)){
-            map.removeLayer(marker);
-        }
-    }
-
-    collectedCoinMarkers=[];
-
-    if(
-        !map||
-        !playerData||
-        !Array.isArray(playerData.collected_coins)
-    )return;
-
-    /*
-     * Your current collected_coins stores IDs like:
-     *
-     * 123456_987654
-     *
-     * which came from:
-     * Math.round(lat*100000)+"_"+Math.round(lon*100000)
-     */
-
-    for(
-        const id of playerData.collected_coins
-    ){
-
-        const parts=id.split("_");
-
-        if(parts.length!==2)
-            continue;
-
-        const lat=
-            Number(parts[0])/100000;
-
-        const lon=
-            Number(parts[1])/100000;
-
-        if(
-            !Number.isFinite(lat)||
-            !Number.isFinite(lon)
-        )continue;
-
-        const marker=
-            L.marker(
-                [lat,lon],
-                {
-                    icon:
-                        L.divIcon({
-                            className:"",
-                            html:
-                                `<div class="pastCoin">✓</div>`,
-                            iconSize:[22,22],
-                            iconAnchor:[11,11]
-                        }),
-                    interactive:false,
-                    zIndexOffset:-100
-                }
-            ).addTo(map);
-
-        collectedCoinMarkers.push(marker);
-    }
+.pastCoin{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#111a22dd;
+    border:2px solid #7b8794;
+    color:#9ca8b4;
+    font-size:12px;
+    font-weight:1000;
+    box-shadow:0 2px 8px #0008;
+    opacity:.8
 }
 
 /* =========================
@@ -1355,30 +1303,34 @@ const EXPLORATION_MOVE_DISTANCE=35;
 
 const RESPAWN_CHECK_MS=3000;
 
-/*
- * IMPORTANT:
- *
- * A road must be physically connected to the
- * player's nearest road using one of these
- * connection tests.
- *
- * 8m is intentionally strict.
- *
- * This prevents two parallel roads, driveways,
- * sidewalks, etc. from being treated as one road
- * simply because they happen to be nearby.
- */
 const ROAD_CONNECTION_TOLERANCE=8;
 
-/*
- * Maximum distance along the connected network
- * that coins can be generated from the player's
- * nearest road point.
- *
- * This prevents the connected component from
- * wandering deep into a giant road network.
- */
 const NETWORK_COIN_DISTANCE=600;
+
+/*
+ * =========================
+ * ANTI-CAR SETTINGS
+ * =========================
+ *
+ * 30 mph ≈ 13.4 m/s.
+ *
+ * If GPS says the player is moving faster
+ * than this, coins cannot be collected.
+ *
+ * This does NOT remove coins.
+ */
+const MAX_COLLECTION_SPEED_MPS=13.4;
+
+/*
+ * Require the high speed to be observed for
+ * multiple readings before blocking collection.
+ *
+ * This helps prevent one bad GPS speed reading
+ * from instantly disabling collection.
+ */
+const HIGH_SPEED_CONFIRMATIONS=2;
+
+let highSpeedReadings=0;
 
 /* =========================
    SKINS
@@ -1529,6 +1481,17 @@ let recentCollectedLocations=new Map();
 
 let compassListening=false;
 
+/*
+ * Speed tracking.
+ */
+let lastSpeedSampleLat=null;
+let lastSpeedSampleLon=null;
+let lastSpeedSampleTime=null;
+
+let currentMovementSpeedMPS=0;
+
+let lastSpeedStatusTime=0;
+
 /* =========================
    HELPERS
 ========================= */
@@ -1632,6 +1595,254 @@ function updatePlayerHeading(){
 
     p.style.transform=
         `translateX(-50%) rotate(${h}deg)`;
+}
+
+/* =========================
+   SPEED / ANTI-CAR
+========================= */
+
+function updateMovementSpeed(
+    lat,
+    lon,
+    gpsSpeed
+){
+
+    /*
+     * Prefer the browser's native GPS speed
+     * when it gives us a valid value.
+     */
+    if(
+        typeof gpsSpeed==="number"&&
+        Number.isFinite(gpsSpeed)&&
+        gpsSpeed>=0
+    ){
+
+        currentMovementSpeedMPS=
+            gpsSpeed;
+
+    }else{
+
+        /*
+         * Otherwise calculate speed ourselves
+         * using distance / elapsed time.
+         */
+        const now=Date.now();
+
+        if(
+            lastSpeedSampleLat!==null&&
+            lastSpeedSampleLon!==null&&
+            lastSpeedSampleTime!==null
+        ){
+
+            const elapsed=
+                (now-lastSpeedSampleTime)/1000;
+
+            if(
+                elapsed>0.2&&
+                elapsed<30
+            ){
+
+                const distance=
+                    distanceMeters(
+                        lastSpeedSampleLat,
+                        lastSpeedSampleLon,
+                        lat,
+                        lon
+                    );
+
+                /*
+                 * Ignore absurd GPS jumps.
+                 */
+                const calculated=
+                    distance/elapsed;
+
+                if(calculated<70){
+
+                    /*
+                     * Smooth the calculated speed
+                     * so GPS jitter doesn't instantly
+                     * cause a car-speed lock.
+                     */
+                    currentMovementSpeedMPS=
+                        currentMovementSpeedMPS*.35+
+                        calculated*.65;
+                }
+            }
+        }
+
+        lastSpeedSampleLat=lat;
+        lastSpeedSampleLon=lon;
+        lastSpeedSampleTime=now;
+    }
+
+    /*
+     * GPS speed was valid, but we still update
+     * the sample positions so fallback remains
+     * ready if GPS speed disappears.
+     */
+    if(
+        typeof gpsSpeed==="number"&&
+        Number.isFinite(gpsSpeed)
+    ){
+
+        lastSpeedSampleLat=lat;
+        lastSpeedSampleLon=lon;
+        lastSpeedSampleTime=Date.now();
+    }
+
+    if(
+        currentMovementSpeedMPS>=
+        MAX_COLLECTION_SPEED_MPS
+    ){
+
+        highSpeedReadings=
+            Math.min(
+                HIGH_SPEED_CONFIRMATIONS,
+                highSpeedReadings+1
+            );
+
+    }else{
+
+        /*
+         * Require the player to slow down before
+         * collection becomes available again.
+         *
+         * We use a slightly lower reset threshold
+         * to prevent rapid ON/OFF flickering around
+         * the cutoff.
+         */
+        if(
+            currentMovementSpeedMPS<
+            MAX_COLLECTION_SPEED_MPS*.75
+        ){
+
+            highSpeedReadings=0;
+        }
+    }
+}
+
+function isMovingTooFastToCollect(){
+
+    return(
+        highSpeedReadings>=
+        HIGH_SPEED_CONFIRMATIONS
+    );
+}
+
+function getSpeedMPH(){
+
+    return currentMovementSpeedMPS*2.236936;
+}
+
+function updateSpeedStatus(){
+
+    if(!isMovingTooFastToCollect())
+        return;
+
+    const now=Date.now();
+
+    /*
+     * Don't spam the status every GPS update.
+     */
+    if(
+        now-lastSpeedStatusTime<
+        3000
+    )return;
+
+    lastSpeedStatusTime=now;
+
+    setStatus(
+        `🚗 Moving too fast to collect coins • ${Math.round(getSpeedMPH())} mph`
+    );
+}
+
+/* =========================
+   PAST COIN LOCATIONS
+========================= */
+
+function showCollectedCoinLocations(){
+
+    /*
+     * Remove old past-coin markers first.
+     */
+    for(
+        const marker of collectedCoinMarkers
+    ){
+
+        if(
+            map&&
+            map.hasLayer(marker)
+        ){
+
+            map.removeLayer(marker);
+        }
+    }
+
+    collectedCoinMarkers=[];
+
+    if(
+        !map||
+        !playerData||
+        !Array.isArray(
+            playerData.collected_coins
+        )
+    )return;
+
+    /*
+     * collected_coins contains IDs like:
+     *
+     * 4296000_-8567000
+     *
+     * generated from:
+     *
+     * Math.round(lat*100000)+"_"+Math.round(lon*100000)
+     */
+    for(
+        const id of playerData.collected_coins
+    ){
+
+        if(
+            typeof id!=="string"
+        )continue;
+
+        const parts=
+            id.split("_");
+
+        if(parts.length!==2)
+            continue;
+
+        const lat=
+            Number(parts[0])/100000;
+
+        const lon=
+            Number(parts[1])/100000;
+
+        if(
+            !Number.isFinite(lat)||
+            !Number.isFinite(lon)
+        )continue;
+
+        const marker=
+            L.marker(
+                [lat,lon],
+                {
+                    icon:
+                        L.divIcon({
+                            className:"",
+                            html:
+                                `<div class="pastCoin">✓</div>`,
+                            iconSize:[22,22],
+                            iconAnchor:[11,11]
+                        }),
+                    interactive:false,
+                    zIndexOffset:-100
+                }
+            ).addTo(map);
+
+        collectedCoinMarkers.push(
+            marker
+        );
+    }
 }
 
 /* =========================
@@ -2410,6 +2621,18 @@ function onLocation(position){
     const accuracy=
         position.coords.accuracy||30;
 
+    /*
+     * IMPORTANT:
+     *
+     * Use the GPS-provided speed if available.
+     * This is meters per second.
+     */
+    updateMovementSpeed(
+        lat,
+        lon,
+        position.coords.speed
+    );
+
     currentGPSLat=lat;
     currentGPSLon=lon;
 
@@ -2524,6 +2747,13 @@ function onLocation(position){
 
         $("loadingScreen").style.display="none";
 
+        /*
+         * Show all previously collected coin
+         * locations immediately after the map
+         * becomes available.
+         */
+        showCollectedCoinLocations();
+
         setStatus(
             "🗺️ Finding your nearby road..."
         );
@@ -2547,10 +2777,19 @@ function onLocation(position){
         }
     }
 
+    /*
+     * ANTI-CAR:
+     *
+     * This function will immediately refuse
+     * to collect anything if the player is
+     * moving at car-like speed.
+     */
     collectNearbyCoins(
         lat,
         lon
     );
+
+    updateSpeedStatus();
 
     if(
         lastRoadLat===null||
@@ -2754,24 +2993,12 @@ async function loadRoadNetwork(lat,lon){
             return;
         }
 
-        /*
-         * IMPORTANT:
-         *
-         * This now builds ONLY the physically
-         * connected component containing the
-         * nearest road.
-         */
         roadNetwork=
             buildConnectedNetwork(
                 ways,
                 nearest
             );
 
-        /*
-         * If the component somehow only contains
-         * a tiny unrelated segment, don't generate
-         * anything.
-         */
         if(!roadNetwork.length){
 
             setStatus(
@@ -3011,16 +3238,9 @@ function filterWays(elements){
 }
 
 /* ============================================================
-   NEW ROAD CONNECTION SYSTEM
+   ROAD CONNECTION SYSTEM
 ============================================================ */
 
-/*
- * Convert a latitude/longitude point into a local
- * meter-based coordinate system.
- *
- * This makes intersection calculations much more
- * accurate than comparing raw latitude/longitude.
- */
 function toXY(lat,lon,referenceLat){
 
     const metersPerDegreeLat=111320;
@@ -3037,10 +3257,6 @@ function toXY(lat,lon,referenceLat){
     };
 }
 
-/*
- * Returns true if two line segments actually
- * intersect.
- */
 function segmentsIntersect(
     a,
     b,
@@ -3158,18 +3374,10 @@ function boundingBoxesOverlap(
         maxAx>=minCx&&
         maxCx>=minAx&&
         maxAy>=minCy&&
-        maxCy>=minAy
+        maxCy>=minCy
     );
 }
 
-/*
- * Finds the minimum distance between two road
- * segments.
- *
- * This is used when roads don't literally
- * intersect but their endpoints meet within
- * a very small tolerance.
- */
 function segmentToSegmentDistance(
     a,
     b,
@@ -3258,20 +3466,6 @@ function segmentToSegmentDistance(
     );
 }
 
-/*
- * TRUE only when two ways are physically
- * connected.
- *
- * IMPORTANT:
- *
- * We do NOT connect roads simply because
- * they are within 30 meters anymore.
- *
- * They must:
- *
- * 1. Actually intersect, OR
- * 2. Have endpoints within 8 meters.
- */
 function waysConnected(a,b){
 
     const aEnds=[
@@ -3288,10 +3482,6 @@ function waysConnected(a,b){
         ]
     ];
 
-    /*
-     * First check endpoint-to-endpoint
-     * connection.
-     */
     for(
         const x of aEnds
     ){
@@ -3314,13 +3504,6 @@ function waysConnected(a,b){
         }
     }
 
-    /*
-     * Now check actual line intersections.
-     *
-     * This catches roads that cross in the
-     * middle of their geometry rather than
-     * sharing an endpoint.
-     */
     for(
         let i=0;
         i<a.geometry.length-1;
@@ -3330,9 +3513,6 @@ function waysConnected(a,b){
         const a1=a.geometry[i];
         const a2=a.geometry[i+1];
 
-        /*
-         * Quick bounding distance check.
-         */
         for(
             let j=0;
             j<b.geometry.length-1;
@@ -3342,10 +3522,6 @@ function waysConnected(a,b){
             const b1=b.geometry[j];
             const b2=b.geometry[j+1];
 
-            /*
-             * Don't do expensive intersection math
-             * if the segments are obviously far apart.
-             */
             const midpointA={
                 lat:(a1.lat+a2.lat)/2,
                 lon:(a1.lon+a2.lon)/2
@@ -3401,11 +3577,6 @@ function waysConnected(a,b){
                 return true;
             }
 
-            /*
-             * Tiny gap tolerance for mapped roads
-             * whose geometry has a few meters between
-             * the two segments.
-             */
             const gap=
                 segmentToSegmentDistance(
                     a1,
@@ -3418,13 +3589,6 @@ function waysConnected(a,b){
                 gap<=ROAD_CONNECTION_TOLERANCE
             ){
 
-                /*
-                 * Only allow the tiny gap if the
-                 * closest points are close to the
-                 * ends of the ways. This prevents
-                 * two parallel roads from connecting
-                 * just because they are 5m apart.
-                 */
                 const nearEnd=
                     endpointNearSegment(
                         aEnds,
@@ -3482,15 +3646,6 @@ function endpointNearSegment(
     return false;
 }
 
-/*
- * Build ONLY the connected component that
- * contains the player's nearest road.
- *
- * Previously this function received the way
- * directly and could connect unrelated ways.
- *
- * Now it receives the full nearest object.
- */
 function buildConnectedNetwork(
     ways,
     nearest
@@ -3528,10 +3683,6 @@ function buildConnectedNetwork(
 
         network.push(way);
 
-        /*
-         * Only connect ways that are genuinely
-         * connected.
-         */
         for(
             const other of ways
         ){
@@ -3558,11 +3709,6 @@ function buildConnectedNetwork(
     return network;
 }
 
-/*
- * Check whether a point lies close to one of
- * the actual road segments in the connected
- * network.
- */
 function pointIsOnNetwork(
     point,
     network,
@@ -3611,10 +3757,6 @@ function pointIsOnNetwork(
     return false;
 }
 
-/*
- * Distance from a point to the connected
- * network.
- */
 function distanceToNetwork(
     point,
     network
@@ -3788,7 +3930,7 @@ function closestPointOnSegment(
 }
 
 /* =========================
-   ANTI-GRIND COIN GENERATION
+   COIN GENERATION
 ========================= */
 
 function coinId(lat,lon){
@@ -3914,12 +4056,6 @@ function generateNetworkCoins(
                         point.lon
                     );
 
-                /*
-                 * HARD CHECK:
-                 *
-                 * Candidate must be on the actual
-                 * connected network.
-                 */
                 if(
                     distanceFromPlayer<=
                     COIN_GENERATION_RADIUS&&
@@ -3930,11 +4066,6 @@ function generateNetworkCoins(
                     )
                 ){
 
-                    /*
-                     * Also make sure this point is
-                     * not too far away along the
-                     * connected network.
-                     */
                     const networkDistance=
                         distanceToNetwork(
                             point,
@@ -3984,10 +4115,6 @@ function generateNetworkCoins(
         }
     }
 
-    /*
-     * Intersections are calculated ONLY inside
-     * the connected network.
-     */
     for(
         const point of findRoadIntersections(
             network
@@ -4099,13 +4226,6 @@ function generateNetworkCoins(
             !isFarFromActiveCoins(point)
         )continue;
 
-        /*
-         * FINAL SAFETY CHECK:
-         *
-         * Even after candidate generation,
-         * verify the point is still actually on
-         * the player's connected road network.
-         */
         if(
             !pointIsOnNetwork(
                 point,
@@ -4221,11 +4341,6 @@ function findRoadIntersections(network){
                         continue;
                     }
 
-                    /*
-                     * Approximate intersection location
-                     * using the midpoint of the closest
-                     * segment points.
-                     */
                     const p1=
                         closestPointOnSegment(
                             a1.lat,
@@ -4291,9 +4406,6 @@ function findRoadIntersections(network){
         }
     }
 
-    /*
-     * Remove duplicate intersections.
-     */
     const unique=[];
     const seen=new Set();
 
@@ -4429,10 +4541,29 @@ function addCoin(
     return true;
 }
 
+/* =========================
+   COIN COLLECTION
+========================= */
+
 function collectNearbyCoins(
     lat,
     lon
 ){
+
+    /*
+     * HARD ANTI-CAR CHECK.
+     *
+     * This happens BEFORE checking distance
+     * to any coin.
+     */
+    if(
+        isMovingTooFastToCollect()
+    ){
+
+        updateSpeedStatus();
+
+        return;
+    }
 
     for(
         const c of [...coins]
@@ -4460,6 +4591,21 @@ async function collectCoin(c){
         c.collected
     )return;
 
+    /*
+     * Double safety check.
+     *
+     * Even if collection was triggered by
+     * something other than collectNearbyCoins,
+     * the player still cannot collect while
+     * moving at car speed.
+     */
+    if(
+        isMovingTooFastToCollect()
+    ){
+
+        return;
+    }
+
     c.collected=true;
 
     if(map.hasLayer(c.marker)){
@@ -4485,6 +4631,15 @@ async function collectCoin(c){
         );
     }
 
+    /*
+     * Immediately create the permanent past
+     * location marker.
+     */
+    addPastCoinMarker(
+        c.lat,
+        c.lon
+    );
+
     markCoinLocationCollected(
         c.id
     );
@@ -4509,6 +4664,37 @@ async function collectCoin(c){
     await savePlayer();
 
     maybeGenerateCoins();
+}
+
+/*
+ * Add one past-coin marker immediately after
+ * collection so the map updates without waiting
+ * for a reload.
+ */
+function addPastCoinMarker(lat,lon){
+
+    if(!map)return;
+
+    const marker=
+        L.marker(
+            [lat,lon],
+            {
+                icon:
+                    L.divIcon({
+                        className:"",
+                        html:
+                            `<div class="pastCoin">✓</div>`,
+                        iconSize:[22,22],
+                        iconAnchor:[11,11]
+                    }),
+                interactive:false,
+                zIndexOffset:-100
+            }
+        ).addTo(map);
+
+    collectedCoinMarkers.push(
+        marker
+    );
 }
 
 function checkLevel(){
@@ -4566,11 +4752,6 @@ function maybeGenerateCoins(){
     if(!nearest)
         return;
 
-    /*
-     * If our existing network no longer actually
-     * contains the player's nearest road, throw it
-     * away and wait for a fresh Overpass query.
-     */
     if(
         !roadNetwork.some(
             way=>
@@ -4637,6 +4818,8 @@ setInterval(
         removeFarCoins();
 
         maybeGenerateCoins();
+
+        updateSpeedStatus();
 
     },
     RESPAWN_CHECK_MS
