@@ -36,6 +36,78 @@ button{
 }
 
 /* =========================
+   PAST COIN LOCATIONS
+========================= */
+
+function showCollectedCoinLocations(){
+
+    // Remove old markers first
+    for(const marker of collectedCoinMarkers){
+
+        if(map.hasLayer(marker)){
+            map.removeLayer(marker);
+        }
+    }
+
+    collectedCoinMarkers=[];
+
+    if(
+        !map||
+        !playerData||
+        !Array.isArray(playerData.collected_coins)
+    )return;
+
+    /*
+     * Your current collected_coins stores IDs like:
+     *
+     * 123456_987654
+     *
+     * which came from:
+     * Math.round(lat*100000)+"_"+Math.round(lon*100000)
+     */
+
+    for(
+        const id of playerData.collected_coins
+    ){
+
+        const parts=id.split("_");
+
+        if(parts.length!==2)
+            continue;
+
+        const lat=
+            Number(parts[0])/100000;
+
+        const lon=
+            Number(parts[1])/100000;
+
+        if(
+            !Number.isFinite(lat)||
+            !Number.isFinite(lon)
+        )continue;
+
+        const marker=
+            L.marker(
+                [lat,lon],
+                {
+                    icon:
+                        L.divIcon({
+                            className:"",
+                            html:
+                                `<div class="pastCoin">✓</div>`,
+                            iconSize:[22,22],
+                            iconAnchor:[11,11]
+                        }),
+                    interactive:false,
+                    zIndexOffset:-100
+                }
+            ).addTo(map);
+
+        collectedCoinMarkers.push(marker);
+    }
+}
+
+/* =========================
    AUTH
 ========================= */
 
