@@ -22,11 +22,13 @@ button{font:inherit}
 .loadingTitle{font-size:34px;font-weight:900}.loadingBar{height:7px;margin-top:25px;border-radius:20px;background:#202a35;overflow:hidden}#loadingBar{width:10%;height:100%;background:linear-gradient(90deg,#00aaff,#66ddff);transition:width .3s}#loadingText{margin-top:13px;color:#b9c5d2;min-height:22px}
 #hud{position:fixed;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;z-index:2000;display:flex;gap:7px}.hud{min-height:44px;padding:10px 13px;border-radius:13px;background:#080d13f2;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px #0006;backdrop-filter:blur(10px)}#coinsDisplay{flex:1;justify-content:flex-start;font-weight:bold}.hudButton{cursor:pointer;font-size:20px}
 #status{position:fixed;left:12px;right:12px;bottom:calc(15px + env(safe-area-inset-bottom));z-index:2000;padding:12px;border-radius:14px;background:#080d13f2;color:white;text-align:center;font-size:14px;box-shadow:0 4px 18px #0006}
-.player{width:23px;height:23px;border:3px solid white;border-radius:50%;background:var(--player-color);box-shadow:0 0 8px var(--player-color),0 0 18px var(--player-color),0 0 30px var(--player-color);position:relative}
+.player{width:23px;height:23px;border:3px solid white;border-radius:50%;background:var(--player-color);box-shadow:0 0 8px var(--player-color),0 0 18px var(--player-color),0 0 30px var(--player-color);position:relative}.player.skin-lava{animation:skinPulse .8s infinite alternate}.player.skin-ice{animation:skinPulse 1.6s infinite alternate}.player.skin-toxic{animation:toxicPulse .7s infinite alternate}.player.skin-galaxy{animation:galaxySpin 3s linear infinite}.player.skin-crystal{animation:crystalPulse 1.2s infinite alternate}.player.skin-gold{animation:goldPulse 1s infinite alternate}.player.skin-pink{animation:pinkPulse 1.1s infinite alternate}
+@keyframes skinPulse{from{filter:brightness(1)}to{filter:brightness(1.45) saturate(1.25)}}@keyframes toxicPulse{from{filter:brightness(1)}to{filter:brightness(1.6) drop-shadow(0 0 7px #39ff14)}}@keyframes galaxySpin{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}@keyframes crystalPulse{from{filter:brightness(1)}to{filter:brightness(1.55)}}@keyframes goldPulse{from{filter:brightness(1)}to{filter:brightness(1.35)}}@keyframes pinkPulse{from{filter:brightness(1)}to{filter:brightness(1.3)}}
+
 .playerPointer{position:absolute;left:50%;top:-22px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:18px solid var(--player-color);transform:translateX(-50%);filter:drop-shadow(0 0 4px var(--player-color)) drop-shadow(0 0 8px var(--player-color));transform-origin:50% 33px;pointer-events:none}
 .playerPointerInner{position:absolute;left:50%;top:3px;transform:translateX(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:9px solid white}
 .coin{width:29px;height:29px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:3px solid #fff4a3;background:radial-gradient(circle at 35% 35%,#fffbd0,#ffe44d 28%,#ffd000 58%,#d88600);box-shadow:0 0 8px #ffd700,0 0 18px #ffb000,0 0 28px #ffbe00b3;animation:pulse 1.4s infinite}@keyframes pulse{50%{transform:scale(1.13)}}
-.overlay{position:fixed;inset:0;z-index:5000;display:none;padding:20px;overflow:auto;background:#000c}.panel{width:min(500px,100%);margin:35px auto;padding:20px;border-radius:20px;background:#151a20;color:white}.panelHeader{display:flex;align-items:center;justify-content:space-between}.close{border:0;border-radius:10px;padding:8px 12px;background:#333;color:white}.balance{margin:15px 0;padding:12px;border-radius:12px;background:#ffd7001f;text-align:center;font-weight:bold}.shopItem{display:flex;align-items:center;gap:14px;margin-bottom:10px;padding:14px;border-radius:14px;background:#20262d}.skinPreview{width:43px;height:43px;border-radius:50%;border:4px solid white;flex-shrink:0}.skinInfo{flex:1}.skinName{font-weight:bold}.skinPrice{color:#ffd700;font-size:13px;margin-top:4px}.action,.accountAction{border:0;border-radius:9px;padding:9px 12px;background:#0077cc;color:white;font-weight:bold}.action:disabled{opacity:.45}.accountAction{width:100%;margin-top:10px;padding:13px;border-radius:12px}.danger{background:#a83232}.settingRow{display:flex;justify-content:space-between;align-items:center;padding:13px;margin-top:10px;background:#20262d;border-radius:12px}.toggle{padding:8px 12px;border:0;border-radius:9px;background:#0077cc;color:white;font-weight:bold}
+.overlay{position:fixed;inset:0;z-index:5000;display:none;padding:20px;overflow:auto;background:#000c}.panel{width:min(500px,100%);margin:35px auto;padding:20px;border-radius:20px;background:#151a20;color:white}.panelHeader{display:flex;align-items:center;justify-content:space-between}.close{border:0;border-radius:10px;padding:8px 12px;background:#333;color:white}.balance{margin:15px 0;padding:12px;border-radius:12px;background:#ffd7001f;text-align:center;font-weight:bold}.shopItem{display:flex;align-items:center;gap:14px;margin-bottom:10px;padding:14px;border-radius:14px;background:#20262d}.skinPreview{position:relative;overflow:hidden}.skinPreview::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(120deg,#fff8,transparent 45%,#fff2);pointer-events:none}.skinMeta{font-size:11px;color:#7f8d9b;margin-top:3px}.skinPreview{width:43px;height:43px;border-radius:50%;border:4px solid white;flex-shrink:0}.skinInfo{flex:1}.skinName{font-weight:bold}.skinPrice{color:#ffd700;font-size:13px;margin-top:4px}.action,.accountAction{border:0;border-radius:9px;padding:9px 12px;background:#0077cc;color:white;font-weight:bold}.action:disabled{opacity:.45}.accountAction{width:100%;margin-top:10px;padding:13px;border-radius:12px}.danger{background:#a83232}.settingRow{display:flex;justify-content:space-between;align-items:center;padding:13px;margin-top:10px;background:#20262d;border-radius:12px}.toggle{padding:8px 12px;border:0;border-radius:9px;background:#0077cc;color:white;font-weight:bold}
 #toast{position:fixed;left:50%;bottom:90px;z-index:10000;transform:translate(-50%,20px);opacity:0;pointer-events:none;padding:13px 18px;border-radius:14px;background:#101820;color:white;font-weight:bold;transition:.25s;white-space:nowrap}#toast.show{opacity:1;transform:translate(-50%,0)}.leaflet-top{top:65px}
 </style>
 </head>
@@ -70,7 +72,19 @@ const supabase=createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const OVERPASS_SERVERS=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter"];
 const SEARCH_RADIUS=1200,ROAD_REFRESH_DISTANCE=75,COIN_SPACING=55,MAX_COINS=20,COLLECTION_DISTANCE=25,MIN_NEW_LOCATION_DISTANCE=40,RESPAWN_CHECK_MS=2500;
-const SKINS={blue:{name:"Blue",color:"#00aaff",price:0},red:{name:"Red",color:"#ff3030",price:50},green:{name:"Green",color:"#22dd55",price:100},purple:{name:"Purple",color:"#aa55ff",price:150},gold:{name:"Gold",color:"#ffd000",price:250},pink:{name:"Pink",color:"#ff4fa3",price:350}};
+const SKINS={
+ blue:{name:"Blue",price:0,type:"solid",color:"#00aaff"},
+ red:{name:"Red",price:50,type:"solid",color:"#ff3030"},
+ green:{name:"Green",price:100,type:"solid",color:"#22dd55"},
+ purple:{name:"Purple",price:150,type:"solid",color:"#aa55ff"},
+ gold:{name:"Gold",price:250,type:"gradient",background:"linear-gradient(135deg,#fff36b,#ff9d00 55%,#fff36b)",color:"#ffd000",effect:"gold"},
+ pink:{name:"Pink",price:350,type:"gradient",background:"linear-gradient(135deg,#ff4fa3,#ff8bd1,#a84dff)",color:"#ff4fa3",effect:"pink"},
+ lava:{name:"Lava",price:500,type:"gradient",background:"linear-gradient(135deg,#ff2400,#ff7a00 45%,#ffd000)",color:"#ff5a00",effect:"lava"},
+ ice:{name:"Ice",price:650,type:"gradient",background:"linear-gradient(135deg,#dfffff,#55ddff 45%,#147dff)",color:"#55ddff",effect:"ice"},
+ toxic:{name:"Toxic",price:800,type:"gradient",background:"linear-gradient(135deg,#d7ff00,#39ff14 45%,#00a83b)",color:"#39ff14",effect:"toxic"},
+ galaxy:{name:"Galaxy",price:1000,type:"image",image:"skins/galaxy.png",background:"radial-gradient(circle at 30% 30%,#ff4fd8,#5525c9 45%,#09001d)",color:"#b46cff",effect:"galaxy"},
+ crystal:{name:"Crystal",price:1250,type:"gradient",background:"linear-gradient(135deg,#ffffff,#9ffcff 35%,#7b6cff 70%,#ffffff)",color:"#9ffcff",effect:"crystal"}
+};
 
 let currentUser=null,playerData=null,gameMode=null,map=null,playerMarker=null,accuracyCircle=null,coins=[],roadNetwork=[],lastRoadLat=null,lastRoadLon=null,loadingRoads=false,watchId=null,toastTimer=null,deviceHeading=null,gpsHeading=null,lastGPSLat=null,lastGPSLon=null,compassListening=false;
 const $=id=>document.getElementById(id);
@@ -157,23 +171,138 @@ function onLocation(position){
  if(lastRoadLat===null||distanceMeters(lastRoadLat,lastRoadLon,lat,lon)>=ROAD_REFRESH_DISTANCE)loadRoadNetwork(lat,lon)
 }
 function onLocationError(error){console.error(error);$("loadingScreen").style.display="none";if(error.code===1)setStatus("📍 Location permission denied. Enable Location for this site.");else if(error.code===2)setStatus("📍 Location unavailable. Move somewhere with a clearer GPS signal.");else setStatus("📍 Waiting for a better GPS signal...")}
+function skinStyle(skin){
+ const background=skin.background||skin.color||"#00aaff";
+ const image=skin.image?`background-image:url("${skin.image}");background-size:cover;background-position:center;`:"";
+ const cls=skin.effect?` skin-${skin.effect}`:"";
+ return {background,image,cls};
+}
+function playerMarkerHtml(skin){
+ const st=skinStyle(skin);
+ return `<div class="player${st.cls}" style="--player-color:${skin.color};background:${st.background};${st.image}"><div class="playerPointer"><div class="playerPointerInner"></div></div></div>`;
+}
 function createPlayer(lat,lon){
  const skin=SKINS[playerData?.equipped_skin]||SKINS.blue;
- playerMarker=L.marker([lat,lon],{icon:L.divIcon({className:"",html:`<div class="player" style="--player-color:${skin.color}"><div class="playerPointer"><div class="playerPointerInner"></div></div></div>`,iconSize:[28,50],iconAnchor:[14,25]}),zIndexOffset:1000}).addTo(map);
+ playerMarker=L.marker([lat,lon],{icon:L.divIcon({className:"",html:playerMarkerHtml(skin),iconSize:[28,50],iconAnchor:[14,25]}),zIndexOffset:1000}).addTo(map);
  accuracyCircle=L.circle([lat,lon],{radius:30,color:"#008ee6",weight:1,fillOpacity:.08}).addTo(map);updatePlayerHeading()
 }
 
 /* ROAD / COIN CODE */
 async function loadRoadNetwork(lat,lon){if(loadingRoads)return;loadingRoads=true;lastRoadLat=lat;lastRoadLon=lon;setStatus("🗺️ Searching nearby roads...");try{const ways=await getNearbyWays(lat,lon);if(!ways.length){setStatus("🔎 No mapped roads found. Retrying...");loadingRoads=false;setTimeout(()=>loadRoadNetwork(lat,lon),4000);return}const nearest=findNearestRoadPoint(ways,lat,lon);if(!nearest){loadingRoads=false;return}if(nearest.distance>400){setStatus(`🚶 Nearest mapped road: ${Math.round(nearest.distance)}m away`);loadingRoads=false;return}roadNetwork=buildConnectedNetwork(ways,nearest.way);generateNetworkCoins(roadNetwork,nearest);setStatus(`🛣️ Road ${Math.round(nearest.distance)}m away • ${coins.length} coins`)}catch(e){console.error(e);setStatus("⚠️ Road server failed. Retrying...")}loadingRoads=false}
 async function getNearbyWays(lat,lon){const ld=SEARCH_RADIUS/111320,lo=SEARCH_RADIUS/(111320*Math.cos(lat*Math.PI/180)),south=lat-ld,north=lat+ld,west=lon-lo,east=lon+lo;let filter=`way["highway"](${south},${west},${north},${east});`;if(gameMode==="PUBLIC")filter=`way["highway"]["access"!="private"]["access"!="no"]["access"!="customers"]["access"!="permit"](${south},${west},${north},${east});`;const query=`[out:json][timeout:20];${filter}out tags geom;`;for(const server of OVERPASS_SERVERS){try{const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000),response=await fetch(server,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"data="+encodeURIComponent(query),signal:controller.signal});clearTimeout(timeout);if(!response.ok)continue;const json=await response.json(),ways=filterWays(json.elements||[]);if(ways.length)return ways}catch(e){console.log("Overpass failed",server)}}return []}
-function filterWays(elements){const publicRoads=["footway","path","pedestrian","steps","cycleway","bridleway","living_street","residential","unclassified","service","tertiary","tertiary_link","secondary","secondary_link"],result=[];for(const e of elements){if(e.type!=="way"||!e.geometry||e.geometry.length<2)continue;const highway=e.tags?.highway;if(!highway)continue;if(gameMode==="PUBLIC"? !publicRoads.includes(highway):["motorway","motorway_link","trunk","trunk_link"].includes(highway))continue;result.push({id:e.id,geometry:e.geometry.map(p=>({lat:+p.lat,lon:+p.lon})),tags:e.tags||{}})}return result}
+function filterWays(elements){
+ const publicRoads=["footway","path","pedestrian","steps","cycleway","bridleway","living_street","residential","unclassified","service","tertiary","tertiary_link","secondary","secondary_link"];
+ const result=[];
+ for(const e of elements){
+  if(e.type!=="way"||!e.geometry||e.geometry.length<2)continue;
+  const tags=e.tags||{}, highway=tags.highway;
+  if(!highway)continue;
+  const access=String(tags.access||"").toLowerCase();
+  if(["private","no","customers","permit"].includes(access))continue;
+  if(tags.area==="yes"||tags.indoor==="yes")continue;
+  const service=String(tags.service||"").toLowerCase();
+  if(["driveway","parking_aisle","alley"].includes(service))continue;
+  if(tags.amenity==="parking")continue;
+  if(gameMode==="PUBLIC"){
+   if(!publicRoads.includes(highway))continue;
+  }else{
+   if(["motorway","motorway_link","trunk","trunk_link"].includes(highway))continue;
+   if(["construction","proposed","raceway"].includes(highway))continue;
+  }
+  result.push({id:e.id,geometry:e.geometry.map(p=>({lat:+p.lat,lon:+p.lon})),tags});
+ }
+ return result;
+}
 function findNearestRoadPoint(ways,lat,lon){let best=null;for(const way of ways)for(let i=0;i<way.geometry.length-1;i++){const a=way.geometry[i],b=way.geometry[i+1],point=closestPointOnSegment(lat,lon,a.lat,a.lon,b.lat,b.lon),d=distanceMeters(lat,lon,point.lat,point.lon);if(!best||d<best.distance)best={way,segmentIndex:i,point,distance:d}}return best}
 function closestPointOnSegment(lat,lon,lat1,lon1,lat2,lon2){const cos=Math.cos(lat*Math.PI/180),x=(lon-lon1)*111320*cos,y=(lat-lat1)*111320,dx=(lon2-lon1)*111320*cos,dy=(lat2-lat1)*111320,len2=dx*dx+dy*dy;let t=len2===0?0:(x*dx+y*dy)/len2;t=Math.max(0,Math.min(1,t));return{lat:lat1+(lat2-lat1)*t,lon:lon1+(lon2-lon1)*t}}
 function buildConnectedNetwork(ways,start){const network=[],visited=new Set(),queue=[start];while(queue.length){const way=queue.shift();if(visited.has(way.id))continue;visited.add(way.id);network.push(way);for(const other of ways)if(!visited.has(other.id)&&waysConnected(way,other))queue.push(other)}return network}
 function waysConnected(a,b){const a1=a.geometry[0],a2=a.geometry[a.geometry.length-1],b1=b.geometry[0],b2=b.geometry[b.geometry.length-1];return[[a1,b1],[a1,b2],[a2,b1],[a2,b2]].some(([x,y])=>distanceMeters(x.lat,x.lon,y.lat,y.lon)<=30)}
 function coinId(lat,lon){return Math.round(lat*100000)+"_"+Math.round(lon*100000)}
-function generateNetworkCoins(network,nearest){if(!network.length||coins.length>=MAX_COINS)return;const candidates=[];const ordered=network.slice().sort((a,b)=>distanceToWay(nearest.point,a)-distanceToWay(nearest.point,b));for(const way of ordered)candidates.push(...pointsAlongWay(way));for(let i=candidates.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]]}let added=0;for(const p of candidates){if(coins.length>=MAX_COINS)break;if(isFarFromActiveCoins(p)&&!wasCollected(p)&&addCoin(p.lat,p.lon))added++}if(coins.length<MAX_COINS)for(const p of candidates){if(coins.length>=MAX_COINS)break;if(isFarFromActiveCoins(p)&&addCoin(p.lat,p.lon))added++}if(added)setStatus(`🪙 ${coins.length} coins available nearby`)}
-function pointsAlongWay(way){const result=[];for(let i=1;i<way.geometry.length;i++){const a=way.geometry[i-1],b=way.geometry[i],d=distanceMeters(a.lat,a.lon,b.lat,b.lon);if(d>0){const steps=Math.max(1,Math.floor(d/COIN_SPACING));for(let s=1;s<=steps;s++){const t=s/steps;result.push({lat:a.lat+(b.lat-a.lat)*t,lon:a.lon+(b.lon-a.lon)*t})}}}return result}
+function generateNetworkCoins(network,nearest){
+ if(!network.length||coins.length>=MAX_COINS)return;
+ const ways=network.slice().sort((a,b)=>distanceToWay(nearest.point,a)-distanceToWay(nearest.point,b));
+ const candidates=[];
+ for(const way of ways)candidates.push(...pointsAlongWayNatural(way));
+ for(const p of findRoadIntersections(network)){
+  if(Math.random()<0.65){
+   candidates.push(p);
+   if(Math.random()<0.45){
+    const nearby=pointAlongNetworkNear(p,network,12+Math.random()*12);
+    if(nearby)candidates.push(nearby);
+   }
+  }
+ }
+ candidates.sort((a,b)=>{
+  const da=distanceMeters(nearest.point.lat,nearest.point.lon,a.lat,a.lon);
+  const db=distanceMeters(nearest.point.lat,nearest.point.lon,b.lat,b.lon);
+  return (da+(Math.random()-.5)*220)-(db+(Math.random()-.5)*220);
+ });
+ let added=0;
+ for(const p of candidates){
+  if(coins.length>=MAX_COINS)break;
+  if(!wasCollected(p)&&isFarFromActiveCoins(p)&&addCoin(p.lat,p.lon))added++;
+ }
+ if(coins.length<MAX_COINS){
+  for(const p of candidates){
+   if(coins.length>=MAX_COINS)break;
+   if(isFarFromActiveCoins(p)&&addCoin(p.lat,p.lon))added++;
+  }
+ }
+ if(added){
+  const pattern=added>=4?"✨ Coin trail generated":added>=2?"🪙 Coin group generated":"🪙 New coin found";
+  setStatus(`${pattern} • ${coins.length} nearby`);
+ }
+}
+
+function pointsAlongWayNatural(way){
+ const result=[];
+ for(let i=1;i<way.geometry.length;i++){
+  const a=way.geometry[i-1],b=way.geometry[i],d=distanceMeters(a.lat,a.lon,b.lat,b.lon);
+  if(d<8)continue;
+  let pos=8+Math.random()*18;
+  while(pos<d){
+   const t=pos/d;
+   result.push({lat:a.lat+(b.lat-a.lat)*t,lon:a.lon+(b.lon-a.lon)*t});
+   if(Math.random()<0.18){
+    const extra=13+Math.random()*18,t2=Math.min(.98,(pos+extra)/d);
+    result.push({lat:a.lat+(b.lat-a.lat)*t2,lon:a.lon+(b.lon-a.lon)*t2});
+    pos+=extra;
+   }
+   pos+=Math.random()<0.13?75+Math.random()*70:28+Math.random()*42;
+  }
+ }
+ return result;
+}
+
+function findRoadIntersections(network){
+ const result=[];
+ for(let i=0;i<network.length;i++){
+  const a=network[i],aEnds=[a.geometry[0],a.geometry[a.geometry.length-1]];
+  for(let j=i+1;j<network.length;j++){
+   const b=network[j],bEnds=[b.geometry[0],b.geometry[b.geometry.length-1]];
+   for(const x of aEnds)for(const y of bEnds){
+    if(distanceMeters(x.lat,x.lon,y.lat,y.lon)<=25)result.push({lat:(x.lat+y.lat)/2,lon:(x.lon+y.lon)/2});
+   }
+  }
+ }
+ return result;
+}
+
+function pointAlongNetworkNear(point,network,meters){
+ const candidates=[];
+ for(const way of network){
+  for(let i=1;i<way.geometry.length;i++){
+   const a=way.geometry[i-1],b=way.geometry[i],near=closestPointOnSegment(point.lat,point.lon,a.lat,a.lon,b.lat,b.lon);
+   if(distanceMeters(point.lat,point.lon,near.lat,near.lon)<=4)candidates.push({a,b});
+  }
+ }
+ if(!candidates.length)return null;
+ const seg=candidates[Math.floor(Math.random()*candidates.length)];
+ const d=distanceMeters(seg.a.lat,seg.a.lon,seg.b.lat,seg.b.lon);
+ if(d<meters+4)return {lat:seg.a.lat,lon:seg.a.lon};
+ const t=Math.random()>.5?Math.min(.98,meters/d):Math.max(.02,1-meters/d);
+ return {lat:seg.a.lat+(seg.b.lat-seg.a.lat)*t,lon:seg.a.lon+(seg.b.lon-seg.a.lon)*t};
+}
 function distanceToWay(point,way){let best=Infinity;for(const p of way.geometry)best=Math.min(best,distanceMeters(point.lat,point.lon,p.lat,p.lon));return best}
 function isFarFromActiveCoins(p){return coins.every(c=>distanceMeters(p.lat,p.lon,c.lat,c.lon)>=MIN_NEW_LOCATION_DISTANCE)}
 function wasCollected(p){return playerData?.collected_coins?.includes(coinId(p.lat,p.lon))}
@@ -186,10 +315,30 @@ setInterval(()=>{if(!playerData||!roadNetwork.length||lastRoadLat===null)return;
 
 /* SHOP */
 $("shopButton").onclick=()=>{$("shopOverlay").style.display="block";renderShop()};$("closeShop").onclick=()=>$("shopOverlay").style.display="none";
-function renderShop(){if(!playerData)return;$("shopBalance").textContent=`🪙 Coins: ${playerData.coins}`;$("shopItems").innerHTML="";for(const[id,skin]of Object.entries(SKINS)){const unlocked=playerData.unlocked_skins.includes(id),equipped=playerData.equipped_skin===id,item=document.createElement("div");item.className="shopItem";const preview=document.createElement("div");preview.className="skinPreview";preview.style.background=skin.color;const info=document.createElement("div");info.className="skinInfo";info.innerHTML=`<div class="skinName">${skin.name}</div><div class="skinPrice">${skin.price===0?"FREE":"🪙 "+skin.price}</div>`;const button=document.createElement("button");button.className="action";if(equipped){button.textContent="EQUIPPED";button.disabled=true}else if(unlocked){button.textContent="EQUIP";button.onclick=()=>equipSkin(id)}else if(playerData.coins>=skin.price){button.textContent="BUY";button.onclick=()=>buySkin(id)}else{button.textContent="NEED COINS";button.disabled=true}item.append(preview,info,button);$("shopItems").appendChild(item)}}
+function renderShop(){
+ if(!playerData)return;
+ $("shopBalance").textContent=`🪙 Coins: ${playerData.coins}`;
+ $("shopItems").innerHTML="";
+ for(const[id,skin]of Object.entries(SKINS)){
+  const unlocked=playerData.unlocked_skins.includes(id),equipped=playerData.equipped_skin===id;
+  const item=document.createElement("div");item.className="shopItem";
+  const preview=document.createElement("div");preview.className="skinPreview";
+  const st=skinStyle(skin);preview.style.background=st.background;
+  if(skin.image){preview.style.backgroundImage=`url("${skin.image}")`;preview.style.backgroundSize="cover";preview.style.backgroundPosition="center";}
+  if(skin.effect)preview.classList.add(`skin-${skin.effect}`);
+  const info=document.createElement("div");info.className="skinInfo";
+  info.innerHTML=`<div class="skinName">${skin.name}</div><div class="skinPrice">${skin.price===0?"FREE":"🪙 "+skin.price}</div><div class="skinMeta">${skin.type==="image"?"Custom artwork":"Animated skin"}</div>`;
+  const button=document.createElement("button");button.className="action";
+  if(equipped){button.textContent="EQUIPPED";button.disabled=true}
+  else if(unlocked){button.textContent="EQUIP";button.onclick=()=>equipSkin(id)}
+  else if(playerData.coins>=skin.price){button.textContent="BUY";button.onclick=()=>buySkin(id)}
+  else{button.textContent="NEED COINS";button.disabled=true}
+  item.append(preview,info,button);$("shopItems").appendChild(item);
+ }
+}
 async function buySkin(id){const skin=SKINS[id];if(!skin||playerData.unlocked_skins.includes(id))return;if(playerData.coins<skin.price){showToast("❌ Not enough coins");return}playerData.coins-=skin.price;playerData.unlocked_skins.push(id);playerData.equipped_skin=id;await savePlayer();updateCoinDisplay();updatePlayerSkin();renderShop();showToast(`🎨 ${skin.name} unlocked!`)}
 async function equipSkin(id){if(!playerData.unlocked_skins.includes(id))return;playerData.equipped_skin=id;await savePlayer();updatePlayerSkin();renderShop()}
-function updatePlayerSkin(){if(!playerMarker)return;const skin=SKINS[playerData.equipped_skin]||SKINS.blue;playerMarker.setIcon(L.divIcon({className:"",html:`<div class="player" style="--player-color:${skin.color}"><div class="playerPointer"><div class="playerPointerInner"></div></div></div>`,iconSize:[28,50],iconAnchor:[14,25]}));updatePlayerHeading()}
+function updatePlayerSkin(){if(!playerMarker)return;const skin=SKINS[playerData.equipped_skin]||SKINS.blue;playerMarker.setIcon(L.divIcon({className:"",html:playerMarkerHtml(skin),iconSize:[28,50],iconAnchor:[14,25]}));updatePlayerHeading()}
 
 /* ACCOUNT */
 $("accountButton").onclick=()=>{$("accountOverlay").style.display="block";$("accountEmail").textContent="Player account • No email required"};
