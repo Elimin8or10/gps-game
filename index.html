@@ -915,10 +915,6 @@ button{
 
 <body>
 
-<!-- =========================
-     AUTH
-========================= -->
-
 <div id="authScreen">
     <div class="authBox">
 
@@ -948,10 +944,6 @@ button{
 
     </div>
 </div>
-
-<!-- =========================
-     MODE
-========================= -->
 
 <div id="modeScreen">
 
@@ -1000,10 +992,6 @@ button{
     </div>
 </div>
 
-<!-- =========================
-     LOADING
-========================= -->
-
 <div id="loadingScreen">
 
     <div class="loadingBox">
@@ -1023,11 +1011,8 @@ button{
         </div>
 
     </div>
-</div>
 
-<!-- =========================
-     HUD
-========================= -->
+</div>
 
 <div id="hud">
 
@@ -1059,10 +1044,6 @@ button{
     Waiting for location...
 </div>
 
-<!-- =========================
-     SHOP
-========================= -->
-
 <div id="shopOverlay">
 
     <div class="shopPage">
@@ -1077,10 +1058,7 @@ button{
                 🛒 SHOP
             </div>
 
-            <div
-                id="shopBalance"
-                class="shopBalance"
-            >
+            <div id="shopBalance" class="shopBalance">
                 🪙 0
             </div>
 
@@ -1104,49 +1082,31 @@ button{
                     and has an animated cosmic glow.
                 </div>
 
-                <button
-                    id="featuredButton"
-                    class="featuredButton"
-                >
+                <button id="featuredButton" class="featuredButton">
                     🪙 1,000
                 </button>
 
             </div>
 
-            <div
-                id="featuredPreview"
-                class="featuredPreview"
-            ></div>
+            <div id="featuredPreview" class="featuredPreview"></div>
 
         </div>
 
         <div class="shopCategories">
 
-            <button
-                class="shopCategory active"
-                data-category="all"
-            >
+            <button class="shopCategory active" data-category="all">
                 ALL
             </button>
 
-            <button
-                class="shopCategory"
-                data-category="basic"
-            >
+            <button class="shopCategory" data-category="basic">
                 BASIC
             </button>
 
-            <button
-                class="shopCategory"
-                data-category="rare"
-            >
+            <button class="shopCategory" data-category="rare">
                 RARE
             </button>
 
-            <button
-                class="shopCategory"
-                data-category="legendary"
-            >
+            <button class="shopCategory" data-category="legendary">
                 LEGENDARY
             </button>
 
@@ -1156,17 +1116,10 @@ button{
             🧤 Skins
         </div>
 
-        <div
-            id="shopItems"
-            class="shopGrid"
-        ></div>
+        <div id="shopItems" class="shopGrid"></div>
 
     </div>
 </div>
-
-<!-- =========================
-     ACCOUNT / PLAYER PROFILE
-========================= -->
 
 <div id="accountOverlay">
 
@@ -1178,19 +1131,13 @@ button{
                 👤 Player Profile
             </h2>
 
-            <button
-                id="closeAccount"
-                class="close"
-            >
+            <button id="closeAccount" class="close">
                 ✕
             </button>
 
         </div>
 
-        <div
-            id="accountEmail"
-            class="accountEmail"
-        >
+        <div id="accountEmail" class="accountEmail">
             Player account • No email required
         </div>
 
@@ -1198,10 +1145,7 @@ button{
 
             <div class="profileStat">
 
-                <div
-                    id="profileCoins"
-                    class="profileStatValue"
-                >
+                <div id="profileCoins" class="profileStatValue">
                     0
                 </div>
 
@@ -1213,10 +1157,7 @@ button{
 
             <div class="profileStat">
 
-                <div
-                    id="profileLevel"
-                    class="profileStatValue"
-                >
+                <div id="profileLevel" class="profileStatValue">
                     1
                 </div>
 
@@ -1228,10 +1169,7 @@ button{
 
             <div class="profileStat">
 
-                <div
-                    id="profileSkinCount"
-                    class="profileStatValue"
-                >
+                <div id="profileSkinCount" class="profileStatValue">
                     1
                 </div>
 
@@ -1247,10 +1185,7 @@ button{
             🎨 Your Skins
         </div>
 
-        <div
-            id="profileSkins"
-            class="profileSkins"
-        ></div>
+        <div id="profileSkins" class="profileSkins"></div>
 
         <div class="profileSectionTitle">
             ⚙️ Settings
@@ -1262,10 +1197,7 @@ button{
                 🎵 Music
             </span>
 
-            <button
-                id="musicSetting"
-                class="toggle"
-            >
+            <button id="musicSetting" class="toggle">
                 ON
             </button>
 
@@ -1277,19 +1209,13 @@ button{
                 🪙 Coin SFX
             </span>
 
-            <button
-                id="sfxSetting"
-                class="toggle"
-            >
+            <button id="sfxSetting" class="toggle">
                 ON
             </button>
 
         </div>
 
-        <button
-            id="signOutButton"
-            class="accountAction danger"
-        >
+        <button id="signOutButton" class="accountAction danger">
             Sign Out
         </button>
 
@@ -1345,38 +1271,42 @@ const COLLECTION_DISTANCE=25;
 
 const MIN_NEW_LOCATION_DISTANCE=40;
 
-/*
- * A collected location cannot be reused
- * for this many milliseconds.
- *
- * 12 minutes.
- */
 const COLLECTED_LOCATION_COOLDOWN=12*60*1000;
 
-/*
- * Recently visited areas are tracked here.
- */
 const VISITED_AREA_TTL=15*60*1000;
 
-/*
- * Grid size for anti-loop tracking.
- * Roughly 100m cells.
- */
 const VISIT_GRID_SIZE=100;
 
-/*
- * Coins won't intentionally appear beyond
- * this distance from the player's current area.
- */
 const COIN_GENERATION_RADIUS=350;
 
-/*
- * A player must move at least this far before
- * the exploration meter meaningfully changes.
- */
 const EXPLORATION_MOVE_DISTANCE=35;
 
 const RESPAWN_CHECK_MS=3000;
+
+/*
+ * IMPORTANT:
+ *
+ * A road must be physically connected to the
+ * player's nearest road using one of these
+ * connection tests.
+ *
+ * 8m is intentionally strict.
+ *
+ * This prevents two parallel roads, driveways,
+ * sidewalks, etc. from being treated as one road
+ * simply because they happen to be nearby.
+ */
+const ROAD_CONNECTION_TOLERANCE=8;
+
+/*
+ * Maximum distance along the connected network
+ * that coins can be generated from the player's
+ * nearest road point.
+ *
+ * This prevents the connected component from
+ * wandering deep into a giant road network.
+ */
+const NETWORK_COIN_DISTANCE=600;
 
 /* =========================
    SKINS
@@ -1520,24 +1450,8 @@ let currentGPSLon=null;
 let lastMovementLat=null;
 let lastMovementLon=null;
 
-/*
- * Recently visited grid cells.
- *
- * Example:
- * {
- *   "42.961_-85.671":{
- *      visits:2,
- *      lastVisit:Date.now()
- *   }
- * }
- */
 let visitedAreas=new Map();
 
-/*
- * Recently collected coin locations.
- *
- * id -> timestamp
- */
 let recentCollectedLocations=new Map();
 
 let compassListening=false;
@@ -1653,9 +1567,6 @@ function updatePlayerHeading(){
 
 function getVisitCell(lat,lon){
 
-    /*
-     * Approximate 100m grid.
-     */
     const latSize=
         VISIT_GRID_SIZE/111320;
 
@@ -1746,12 +1657,6 @@ function getAreaVisitPenalty(lat,lon){
     if(!data)
         return 0;
 
-    /*
-     * 0 = fresh
-     * 0.25 = lightly visited
-     * 0.5 = repeatedly visited
-     * 0.8 = heavy loop
-     */
     return Math.min(
         .8,
         Math.max(
@@ -1808,11 +1713,6 @@ function wasRecentlyCollected(id){
     );
 }
 
-/*
- * Returns 0..1.
- * 1 = very fresh area.
- * 0 = heavily visited area.
- */
 function getExplorationScore(lat,lon){
 
     const penalty=
@@ -2440,9 +2340,6 @@ function onLocation(position){
     currentGPSLat=lat;
     currentGPSLon=lon;
 
-    /*
-     * Track actual exploration movement.
-     */
     if(
         lastMovementLat===null||
         lastMovementLon===null
@@ -2475,9 +2372,6 @@ function onLocation(position){
         }
     }
 
-    /*
-     * Heading.
-     */
     if(
         lastGPSLat!==null&&
         lastGPSLon!==null
@@ -2787,11 +2681,33 @@ async function loadRoadNetwork(lat,lon){
             return;
         }
 
+        /*
+         * IMPORTANT:
+         *
+         * This now builds ONLY the physically
+         * connected component containing the
+         * nearest road.
+         */
         roadNetwork=
             buildConnectedNetwork(
                 ways,
-                nearest.way
+                nearest
             );
+
+        /*
+         * If the component somehow only contains
+         * a tiny unrelated segment, don't generate
+         * anything.
+         */
+        if(!roadNetwork.length){
+
+            setStatus(
+                "🛣️ Couldn't find a connected road network nearby."
+            );
+
+            loadingRoads=false;
+            return;
+        }
 
         generateNetworkCoins(
             roadNetwork,
@@ -2799,7 +2715,7 @@ async function loadRoadNetwork(lat,lon){
         );
 
         setStatus(
-            `🛣️ Nearby road • ${coins.length} coins`
+            `🛣️ Connected road network • ${coins.length} coins`
         );
 
     }catch(e){
@@ -3021,6 +2937,664 @@ function filterWays(elements){
     return result;
 }
 
+/* ============================================================
+   NEW ROAD CONNECTION SYSTEM
+============================================================ */
+
+/*
+ * Convert a latitude/longitude point into a local
+ * meter-based coordinate system.
+ *
+ * This makes intersection calculations much more
+ * accurate than comparing raw latitude/longitude.
+ */
+function toXY(lat,lon,referenceLat){
+
+    const metersPerDegreeLat=111320;
+
+    const metersPerDegreeLon=
+        111320*
+        Math.cos(
+            referenceLat*Math.PI/180
+        );
+
+    return{
+        x:lon*metersPerDegreeLon,
+        y:lat*metersPerDegreeLat
+    };
+}
+
+/*
+ * Returns true if two line segments actually
+ * intersect.
+ */
+function segmentsIntersect(
+    a,
+    b,
+    c,
+    d
+){
+
+    const refLat=
+        (
+            a.lat+
+            b.lat+
+            c.lat+
+            d.lat
+        )/4;
+
+    const A=
+        toXY(
+            a.lat,
+            a.lon,
+            refLat
+        );
+
+    const B=
+        toXY(
+            b.lat,
+            b.lon,
+            refLat
+        );
+
+    const C=
+        toXY(
+            c.lat,
+            c.lon,
+            refLat
+        );
+
+    const D=
+        toXY(
+            d.lat,
+            d.lon,
+            refLat
+        );
+
+    const cross=
+        (p1,p2,p3)=>
+            (p2.x-p1.x)*
+            (p3.y-p1.y)-
+            (p2.y-p1.y)*
+            (p3.x-p1.x);
+
+    const c1=
+        cross(A,B,C);
+
+    const c2=
+        cross(A,B,D);
+
+    const c3=
+        cross(C,D,A);
+
+    const c4=
+        cross(C,D,B);
+
+    const eps=.01;
+
+    if(
+        Math.abs(c1)<eps&&
+        Math.abs(c2)<eps&&
+        Math.abs(c3)<eps&&
+        Math.abs(c4)<eps
+    ){
+
+        return boundingBoxesOverlap(
+            A,B,C,D
+        );
+    }
+
+    return(
+        ((c1>0&&c2<0)||(c1<0&&c2>0))&&
+        ((c3>0&&c4<0)||(c3<0&&c4>0))
+    );
+}
+
+function boundingBoxesOverlap(
+    A,
+    B,
+    C,
+    D
+){
+
+    const minAx=
+        Math.min(A.x,B.x);
+
+    const maxAx=
+        Math.max(A.x,B.x);
+
+    const minAy=
+        Math.min(A.y,B.y);
+
+    const maxAy=
+        Math.max(A.y,B.y);
+
+    const minCx=
+        Math.min(C.x,D.x);
+
+    const maxCx=
+        Math.max(C.x,D.x);
+
+    const minCy=
+        Math.min(C.y,D.y);
+
+    const maxCy=
+        Math.max(C.y,D.y);
+
+    return(
+        maxAx>=minCx&&
+        maxCx>=minAx&&
+        maxAy>=minCy&&
+        maxCy>=minAy
+    );
+}
+
+/*
+ * Finds the minimum distance between two road
+ * segments.
+ *
+ * This is used when roads don't literally
+ * intersect but their endpoints meet within
+ * a very small tolerance.
+ */
+function segmentToSegmentDistance(
+    a,
+    b,
+    c,
+    d
+){
+
+    if(
+        segmentsIntersect(
+            a,b,c,d
+        )
+    ){
+
+        return 0;
+    }
+
+    const p1=
+        closestPointOnSegment(
+            a.lat,
+            a.lon,
+            c.lat,
+            c.lon,
+            d.lat,
+            d.lon
+        );
+
+    const p2=
+        closestPointOnSegment(
+            b.lat,
+            b.lon,
+            c.lat,
+            c.lon,
+            d.lat,
+            d.lon
+        );
+
+    const p3=
+        closestPointOnSegment(
+            c.lat,
+            c.lon,
+            a.lat,
+            a.lon,
+            b.lat,
+            b.lon
+        );
+
+    const p4=
+        closestPointOnSegment(
+            d.lat,
+            d.lon,
+            a.lat,
+            a.lon,
+            b.lat,
+            b.lon
+        );
+
+    return Math.min(
+
+        distanceMeters(
+            a.lat,
+            a.lon,
+            p1.lat,
+            p1.lon
+        ),
+
+        distanceMeters(
+            b.lat,
+            b.lon,
+            p2.lat,
+            p2.lon
+        ),
+
+        distanceMeters(
+            c.lat,
+            c.lon,
+            p3.lat,
+            p3.lon
+        ),
+
+        distanceMeters(
+            d.lat,
+            d.lon,
+            p4.lat,
+            p4.lon
+        )
+    );
+}
+
+/*
+ * TRUE only when two ways are physically
+ * connected.
+ *
+ * IMPORTANT:
+ *
+ * We do NOT connect roads simply because
+ * they are within 30 meters anymore.
+ *
+ * They must:
+ *
+ * 1. Actually intersect, OR
+ * 2. Have endpoints within 8 meters.
+ */
+function waysConnected(a,b){
+
+    const aEnds=[
+        a.geometry[0],
+        a.geometry[
+            a.geometry.length-1
+        ]
+    ];
+
+    const bEnds=[
+        b.geometry[0],
+        b.geometry[
+            b.geometry.length-1
+        ]
+    ];
+
+    /*
+     * First check endpoint-to-endpoint
+     * connection.
+     */
+    for(
+        const x of aEnds
+    ){
+
+        for(
+            const y of bEnds
+        ){
+
+            if(
+                distanceMeters(
+                    x.lat,
+                    x.lon,
+                    y.lat,
+                    y.lon
+                )<=ROAD_CONNECTION_TOLERANCE
+            ){
+
+                return true;
+            }
+        }
+    }
+
+    /*
+     * Now check actual line intersections.
+     *
+     * This catches roads that cross in the
+     * middle of their geometry rather than
+     * sharing an endpoint.
+     */
+    for(
+        let i=0;
+        i<a.geometry.length-1;
+        i++
+    ){
+
+        const a1=a.geometry[i];
+        const a2=a.geometry[i+1];
+
+        /*
+         * Quick bounding distance check.
+         */
+        for(
+            let j=0;
+            j<b.geometry.length-1;
+            j++
+        ){
+
+            const b1=b.geometry[j];
+            const b2=b.geometry[j+1];
+
+            /*
+             * Don't do expensive intersection math
+             * if the segments are obviously far apart.
+             */
+            const midpointA={
+                lat:(a1.lat+a2.lat)/2,
+                lon:(a1.lon+a2.lon)/2
+            };
+
+            const midpointB={
+                lat:(b1.lat+b2.lat)/2,
+                lon:(b1.lon+b2.lon)/2
+            };
+
+            const midpointDistance=
+                distanceMeters(
+                    midpointA.lat,
+                    midpointA.lon,
+                    midpointB.lat,
+                    midpointB.lon
+                );
+
+            const aLength=
+                distanceMeters(
+                    a1.lat,
+                    a1.lon,
+                    a2.lat,
+                    a2.lon
+                );
+
+            const bLength=
+                distanceMeters(
+                    b1.lat,
+                    b1.lon,
+                    b2.lat,
+                    b2.lon
+                );
+
+            if(
+                midpointDistance>
+                (aLength+bLength)/2+
+                ROAD_CONNECTION_TOLERANCE+
+                10
+            ){
+                continue;
+            }
+
+            if(
+                segmentsIntersect(
+                    a1,
+                    a2,
+                    b1,
+                    b2
+                )
+            ){
+
+                return true;
+            }
+
+            /*
+             * Tiny gap tolerance for mapped roads
+             * whose geometry has a few meters between
+             * the two segments.
+             */
+            const gap=
+                segmentToSegmentDistance(
+                    a1,
+                    a2,
+                    b1,
+                    b2
+                );
+
+            if(
+                gap<=ROAD_CONNECTION_TOLERANCE
+            ){
+
+                /*
+                 * Only allow the tiny gap if the
+                 * closest points are close to the
+                 * ends of the ways. This prevents
+                 * two parallel roads from connecting
+                 * just because they are 5m apart.
+                 */
+                const nearEnd=
+                    endpointNearSegment(
+                        aEnds,
+                        b1,
+                        b2
+                    )||
+                    endpointNearSegment(
+                        bEnds,
+                        a1,
+                        a2
+                    );
+
+                if(nearEnd)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function endpointNearSegment(
+    endpoints,
+    a,
+    b
+){
+
+    for(
+        const p of endpoints
+    ){
+
+        const closest=
+            closestPointOnSegment(
+                p.lat,
+                p.lon,
+                a.lat,
+                a.lon,
+                b.lat,
+                b.lon
+            );
+
+        if(
+            distanceMeters(
+                p.lat,
+                p.lon,
+                closest.lat,
+                closest.lon
+            )<=ROAD_CONNECTION_TOLERANCE
+        ){
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*
+ * Build ONLY the connected component that
+ * contains the player's nearest road.
+ *
+ * Previously this function received the way
+ * directly and could connect unrelated ways.
+ *
+ * Now it receives the full nearest object.
+ */
+function buildConnectedNetwork(
+    ways,
+    nearest
+){
+
+    if(
+        !nearest||
+        !nearest.way
+    ){
+
+        return[];
+    }
+
+    const network=[];
+    const visited=new Set();
+
+    const queue=[
+        nearest.way
+    ];
+
+    while(queue.length){
+
+        const way=
+            queue.shift();
+
+        if(
+            !way||
+            visited.has(way.id)
+        ){
+
+            continue;
+        }
+
+        visited.add(way.id);
+
+        network.push(way);
+
+        /*
+         * Only connect ways that are genuinely
+         * connected.
+         */
+        for(
+            const other of ways
+        ){
+
+            if(
+                visited.has(other.id)
+            ){
+
+                continue;
+            }
+
+            if(
+                waysConnected(
+                    way,
+                    other
+                )
+            ){
+
+                queue.push(other);
+            }
+        }
+    }
+
+    return network;
+}
+
+/*
+ * Check whether a point lies close to one of
+ * the actual road segments in the connected
+ * network.
+ */
+function pointIsOnNetwork(
+    point,
+    network,
+    maxDistance=12
+){
+
+    for(
+        const way of network
+    ){
+
+        for(
+            let i=0;
+            i<way.geometry.length-1;
+            i++
+        ){
+
+            const a=
+                way.geometry[i];
+
+            const b=
+                way.geometry[i+1];
+
+            const closest=
+                closestPointOnSegment(
+                    point.lat,
+                    point.lon,
+                    a.lat,
+                    a.lon,
+                    b.lat,
+                    b.lon
+                );
+
+            const d=
+                distanceMeters(
+                    point.lat,
+                    point.lon,
+                    closest.lat,
+                    closest.lon
+                );
+
+            if(d<=maxDistance)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+/*
+ * Distance from a point to the connected
+ * network.
+ */
+function distanceToNetwork(
+    point,
+    network
+){
+
+    let best=Infinity;
+
+    for(
+        const way of network
+    ){
+
+        for(
+            let i=0;
+            i<way.geometry.length-1;
+            i++
+        ){
+
+            const a=
+                way.geometry[i];
+
+            const b=
+                way.geometry[i+1];
+
+            const closest=
+                closestPointOnSegment(
+                    point.lat,
+                    point.lon,
+                    a.lat,
+                    a.lon,
+                    b.lat,
+                    b.lon
+                );
+
+            const d=
+                distanceMeters(
+                    point.lat,
+                    point.lon,
+                    closest.lat,
+                    closest.lon
+                );
+
+            if(d<best)
+                best=d;
+        }
+    }
+
+    return best;
+}
+
+/* =========================
+   ROAD POINT
+========================= */
+
 function findNearestRoadPoint(
     ways,
     lat,
@@ -3140,76 +3714,6 @@ function closestPointOnSegment(
     };
 }
 
-function buildConnectedNetwork(
-    ways,
-    start
-){
-
-    const network=[];
-    const visited=new Set();
-    const queue=[start];
-
-    while(queue.length){
-
-        const way=
-            queue.shift();
-
-        if(visited.has(way.id))
-            continue;
-
-        visited.add(way.id);
-
-        network.push(way);
-
-        for(
-            const other of ways
-        ){
-
-            if(
-                !visited.has(other.id)&&
-                waysConnected(way,other)
-            ){
-
-                queue.push(other);
-            }
-        }
-    }
-
-    return network;
-}
-
-function waysConnected(a,b){
-
-    const a1=a.geometry[0];
-
-    const a2=
-        a.geometry[
-            a.geometry.length-1
-        ];
-
-    const b1=b.geometry[0];
-
-    const b2=
-        b.geometry[
-            b.geometry.length-1
-        ];
-
-    return[
-        [a1,b1],
-        [a1,b2],
-        [a2,b1],
-        [a2,b2]
-    ].some(
-        ([x,y])=>
-            distanceMeters(
-                x.lat,
-                x.lon,
-                y.lat,
-                y.lon
-            )<=30
-    );
-}
-
 /* =========================
    ANTI-GRIND COIN GENERATION
 ========================= */
@@ -3240,12 +3744,6 @@ function generateNetworkCoins(
         !playerData
     )return;
 
-    /*
-     * Don't constantly fill back to 20.
-     *
-     * This means players can't simply stand
-     * still and farm a pile forever.
-     */
     if(
         coins.length>=TARGET_MIN_COINS
     )return;
@@ -3290,11 +3788,6 @@ function generateNetworkCoins(
             if(segmentLength<8)
                 continue;
 
-            /*
-             * Skip road segments whose endpoints
-             * are both clearly outside the local
-             * playable area.
-             */
             const endDistanceA=
                 distanceMeters(
                     playerLat,
@@ -3348,44 +3841,69 @@ function generateNetworkCoins(
                         point.lon
                     );
 
+                /*
+                 * HARD CHECK:
+                 *
+                 * Candidate must be on the actual
+                 * connected network.
+                 */
                 if(
                     distanceFromPlayer<=
-                    COIN_GENERATION_RADIUS
+                    COIN_GENERATION_RADIUS&&
+                    pointIsOnNetwork(
+                        point,
+                        network,
+                        3
+                    )
                 ){
 
-                    const id=
-                        coinId(
-                            point.lat,
-                            point.lon
+                    /*
+                     * Also make sure this point is
+                     * not too far away along the
+                     * connected network.
+                     */
+                    const networkDistance=
+                        distanceToNetwork(
+                            point,
+                            network
                         );
 
                     if(
-                        !isCoinRecentlyCollected(id)
+                        networkDistance<=
+                        NETWORK_COIN_DISTANCE
                     ){
 
-                        const exploration=
-                            getExplorationScore(
+                        const id=
+                            coinId(
                                 point.lat,
                                 point.lon
                             );
 
-                        candidates.push({
+                        if(
+                            !isCoinRecentlyCollected(id)
+                        ){
 
-                            ...point,
+                            const exploration=
+                                getExplorationScore(
+                                    point.lat,
+                                    point.lon
+                                );
 
-                            distance:
-                                distanceFromPlayer,
+                            candidates.push({
 
-                            exploration,
+                                ...point,
 
-                            id
-                        });
+                                distance:
+                                    distanceFromPlayer,
+
+                                exploration,
+
+                                id
+                            });
+                        }
                     }
                 }
 
-                /*
-                 * Variable spacing.
-                 */
                 pos+=
                     28+
                     Math.random()*45;
@@ -3394,8 +3912,8 @@ function generateNetworkCoins(
     }
 
     /*
-     * Intersections are good special
-     * locations for coins.
+     * Intersections are calculated ONLY inside
+     * the connected network.
      */
     for(
         const point of findRoadIntersections(
@@ -3414,6 +3932,14 @@ function generateNetworkCoins(
         if(
             distanceFromPlayer>
             COIN_GENERATION_RADIUS
+        )continue;
+
+        if(
+            distanceToNetwork(
+                point,
+                network
+            )>
+            5
         )continue;
 
         const id=
@@ -3445,13 +3971,6 @@ function generateNetworkCoins(
         });
     }
 
-    /*
-     * SCORE THE CANDIDATES.
-     *
-     * Fresh areas score better.
-     * Recently visited areas score worse.
-     * Very close points are okay, but not dominant.
-     */
     candidates.forEach(
         point=>{
 
@@ -3461,28 +3980,17 @@ function generateNetworkCoins(
                 point.exploration*
                 100;
 
-            /*
-             * Slight preference for places
-             * that require some movement.
-             */
             score+=
                 Math.min(
                     70,
                     point.distance*.18
                 );
 
-            /*
-             * Intersections are slightly more
-             * interesting.
-             */
             if(point.intersection){
 
                 score+=20;
             }
 
-            /*
-             * Randomness prevents deterministic routes.
-             */
             score+=
                 Math.random()*90;
 
@@ -3495,11 +4003,6 @@ function generateNetworkCoins(
             b.score-a.score
     );
 
-    /*
-     * Determine how many we're allowed to add.
-     *
-     * Never instantly refill to 20.
-     */
     const needed=
         Math.min(
             MAX_COINS-coins.length,
@@ -3509,10 +4012,6 @@ function generateNetworkCoins(
     if(needed<=0)
         return;
 
-    /*
-     * Prefer candidates that are not near
-     * already-active coins.
-     */
     let added=0;
 
     for(
@@ -3526,6 +4025,35 @@ function generateNetworkCoins(
         if(
             !isFarFromActiveCoins(point)
         )continue;
+
+        /*
+         * FINAL SAFETY CHECK:
+         *
+         * Even after candidate generation,
+         * verify the point is still actually on
+         * the player's connected road network.
+         */
+        if(
+            !pointIsOnNetwork(
+                point,
+                network,
+                4
+            )
+        ){
+
+            continue;
+        }
+
+        if(
+            distanceToNetwork(
+                point,
+                network
+            )>
+            4
+        ){
+
+            continue;
+        }
 
         if(
             addCoin(
@@ -3575,13 +4103,6 @@ function findRoadIntersections(network){
         const a=
             network[i];
 
-        const aEnds=[
-            a.geometry[0],
-            a.geometry[
-                a.geometry.length-1
-            ]
-        ];
-
         for(
             let j=i+1;
             j<network.length;
@@ -3591,45 +4112,138 @@ function findRoadIntersections(network){
             const b=
                 network[j];
 
-            const bEnds=[
-                b.geometry[0],
-                b.geometry[
-                    b.geometry.length-1
-                ]
-            ];
-
             for(
-                const x of aEnds
+                let ai=0;
+                ai<a.geometry.length-1;
+                ai++
             ){
 
+                const a1=
+                    a.geometry[ai];
+
+                const a2=
+                    a.geometry[ai+1];
+
                 for(
-                    const y of bEnds
+                    let bi=0;
+                    bi<b.geometry.length-1;
+                    bi++
                 ){
 
+                    const b1=
+                        b.geometry[bi];
+
+                    const b2=
+                        b.geometry[bi+1];
+
                     if(
-                        distanceMeters(
-                            x.lat,
-                            x.lon,
-                            y.lat,
-                            y.lon
-                        )<=25
+                        !segmentsIntersect(
+                            a1,
+                            a2,
+                            b1,
+                            b2
+                        )
                     ){
 
-                        result.push({
-
-                            lat:
-                                (x.lat+y.lat)/2,
-
-                            lon:
-                                (x.lon+y.lon)/2
-                        });
+                        continue;
                     }
+
+                    /*
+                     * Approximate intersection location
+                     * using the midpoint of the closest
+                     * segment points.
+                     */
+                    const p1=
+                        closestPointOnSegment(
+                            a1.lat,
+                            a1.lon,
+                            b1.lat,
+                            b1.lon,
+                            b2.lat,
+                            b2.lon
+                        );
+
+                    const p2=
+                        closestPointOnSegment(
+                            a2.lat,
+                            a2.lon,
+                            b1.lat,
+                            b1.lon,
+                            b2.lat,
+                            b2.lon
+                        );
+
+                    const p3=
+                        closestPointOnSegment(
+                            b1.lat,
+                            b1.lon,
+                            a1.lat,
+                            a1.lon,
+                            a2.lat,
+                            a2.lon
+                        );
+
+                    const p4=
+                        closestPointOnSegment(
+                            b2.lat,
+                            b2.lon,
+                            a1.lat,
+                            a1.lon,
+                            a2.lat,
+                            a2.lon
+                        );
+
+                    const lat=
+                        (
+                            p1.lat+
+                            p2.lat+
+                            p3.lat+
+                            p4.lat
+                        )/4;
+
+                    const lon=
+                        (
+                            p1.lon+
+                            p2.lon+
+                            p3.lon+
+                            p4.lon
+                        )/4;
+
+                    result.push({
+                        lat,
+                        lon
+                    });
                 }
             }
         }
     }
 
-    return result;
+    /*
+     * Remove duplicate intersections.
+     */
+    const unique=[];
+    const seen=new Set();
+
+    for(
+        const p of result
+    ){
+
+        const id=
+            coinId(
+                p.lat,
+                p.lon
+            );
+
+        if(
+            seen.has(id)
+        )continue;
+
+        seen.add(id);
+
+        unique.push(p);
+    }
+
+    return unique;
 }
 
 function isFarFromActiveCoins(p){
@@ -3661,9 +4275,6 @@ function addCoin(
         currentGPSLon===null
     )return false;
 
-    /*
-     * HARD DISTANCE LIMIT.
-     */
     const playerDistance=
         distanceMeters(
             currentGPSLat,
@@ -3684,10 +4295,6 @@ function addCoin(
         forcedId||
         coinId(lat,lon);
 
-    /*
-     * Already collected permanently
-     * in this player's history.
-     */
     if(
         playerData.collected_coins.includes(id)
     ){
@@ -3695,10 +4302,6 @@ function addCoin(
         return false;
     }
 
-    /*
-     * Recently collected locations
-     * have a temporary cooldown.
-     */
     if(
         isCoinRecentlyCollected(id)
     ){
@@ -3706,9 +4309,6 @@ function addCoin(
         return false;
     }
 
-    /*
-     * Don't stack active coins.
-     */
     if(
         coins.some(
             c=>
@@ -3801,9 +4401,6 @@ async function collectCoin(c){
             x=>x!==c
         );
 
-    /*
-     * Permanent player history.
-     */
     if(
         !playerData.collected_coins.includes(
             c.id
@@ -3815,9 +4412,6 @@ async function collectCoin(c){
         );
     }
 
-    /*
-     * Temporary world cooldown.
-     */
     markCoinLocationCollected(
         c.id
     );
@@ -3841,13 +4435,6 @@ async function collectCoin(c){
 
     await savePlayer();
 
-    /*
-     * Do NOT immediately respawn a replacement
-     * at the exact spot.
-     *
-     * Instead, the normal regeneration system
-     * decides when/where new coins appear.
-     */
     maybeGenerateCoins();
 }
 
@@ -3892,12 +4479,6 @@ function maybeGenerateCoins(){
         currentGPSLon===null
     )return;
 
-    /*
-     * Don't refill constantly.
-     *
-     * Below 8 active coins triggers the
-     * generation system.
-     */
     if(
         coins.length>=TARGET_MIN_COINS
     )return;
@@ -3912,6 +4493,23 @@ function maybeGenerateCoins(){
     if(!nearest)
         return;
 
+    /*
+     * If our existing network no longer actually
+     * contains the player's nearest road, throw it
+     * away and wait for a fresh Overpass query.
+     */
+    if(
+        !roadNetwork.some(
+            way=>
+                way.id===nearest.way.id
+        )
+    ){
+
+        roadNetwork=[];
+
+        return;
+    }
+
     generateNetworkCoins(
         roadNetwork,
         nearest
@@ -3925,10 +4523,6 @@ function removeFarCoins(){
         currentGPSLon===null
     )return;
 
-    /*
-     * Only remove coins that are significantly
-     * behind the player.
-     */
     const removalDistance=
         COIN_GENERATION_RADIUS+100;
 
