@@ -22,7 +22,10 @@ html,body{
     background:#080b10
 }
 
-button{font:inherit;cursor:pointer}
+button{
+    font:inherit;
+    cursor:pointer
+}
 
 #map{
     position:fixed;
@@ -239,16 +242,33 @@ button{font:inherit;cursor:pointer}
    PLAYER
 ========================= */
 
+/*
+   IMPORTANT:
+   Any PNG used as a skin is automatically
+   clipped into a perfect circle.
+*/
+
 .player{
     width:30px;
     height:30px;
+
     border:3px solid white;
     border-radius:50%;
+
+    overflow:hidden;
+    clip-path:circle(50%);
+
     background:var(--player-color);
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+
     box-shadow:
         0 0 8px var(--player-color),
         0 0 18px var(--player-color),
         0 0 30px var(--player-color);
+
     position:relative
 }
 
@@ -265,7 +285,7 @@ button{font:inherit;cursor:pointer}
 }
 
 .player.skin-galaxy{
-    animation:galaxySpin 3s linear infinite
+    animation:galaxyGlow 1.8s infinite alternate
 }
 
 .player.skin-crystal{
@@ -281,49 +301,81 @@ button{font:inherit;cursor:pointer}
 }
 
 @keyframes skinPulse{
-    from{filter:brightness(1)}
-    to{filter:brightness(1.45) saturate(1.25)}
+    from{
+        filter:brightness(1)
+    }
+    to{
+        filter:brightness(1.45) saturate(1.25)
+    }
 }
 
 @keyframes toxicPulse{
-    from{filter:brightness(1)}
-    to{filter:brightness(1.6) drop-shadow(0 0 7px #39ff14)}
+    from{
+        filter:brightness(1)
+    }
+    to{
+        filter:brightness(1.6) drop-shadow(0 0 7px #39ff14)
+    }
 }
 
-@keyframes galaxySpin{
-    from{filter:hue-rotate(0deg)}
-    to{filter:hue-rotate(360deg)}
+/* Galaxy no longer changes the artwork's colors */
+@keyframes galaxyGlow{
+    from{
+        filter:brightness(1)
+    }
+    to{
+        filter:brightness(1.3)
+            drop-shadow(0 0 7px #b46cff)
+    }
 }
 
 @keyframes crystalPulse{
-    from{filter:brightness(1)}
-    to{filter:brightness(1.55)}
+    from{
+        filter:brightness(1)
+    }
+    to{
+        filter:brightness(1.55)
+    }
 }
 
 @keyframes goldPulse{
-    from{filter:brightness(1)}
-    to{filter:brightness(1.35)}
+    from{
+        filter:brightness(1)
+    }
+    to{
+        filter:brightness(1.35)
+    }
 }
 
 @keyframes pinkPulse{
-    from{filter:brightness(1)}
-    to{filter:brightness(1.3)}
+    from{
+        filter:brightness(1)
+    }
+    to{
+        filter:brightness(1.3)
+    }
 }
 
 .playerPointer{
     position:absolute;
     left:50%;
     top:-22px;
+
     width:0;
     height:0;
+
     border-left:9px solid transparent;
     border-right:9px solid transparent;
     border-bottom:18px solid var(--player-color);
+
     transform:translateX(-50%);
+
     filter:
         drop-shadow(0 0 4px var(--player-color))
         drop-shadow(0 0 8px var(--player-color));
+
     transform-origin:50% 33px;
+
     pointer-events:none
 }
 
@@ -331,9 +383,12 @@ button{font:inherit;cursor:pointer}
     position:absolute;
     left:50%;
     top:3px;
+
     transform:translateX(-50%);
+
     width:0;
     height:0;
+
     border-left:4px solid transparent;
     border-right:4px solid transparent;
     border-bottom:9px solid white
@@ -346,11 +401,15 @@ button{font:inherit;cursor:pointer}
 .coin{
     width:29px;
     height:29px;
+
     display:flex;
     align-items:center;
     justify-content:center;
+
     border-radius:50%;
+
     border:3px solid #fff4a3;
+
     background:radial-gradient(
         circle at 35% 35%,
         #fffbd0,
@@ -358,15 +417,19 @@ button{font:inherit;cursor:pointer}
         #ffd000 58%,
         #d88600
     );
+
     box-shadow:
         0 0 8px #ffd700,
         0 0 18px #ffb000,
         0 0 28px #ffbe00b3;
+
     animation:pulse 1.4s infinite
 }
 
 @keyframes pulse{
-    50%{transform:scale(1.13)}
+    50%{
+        transform:scale(1.13)
+    }
 }
 
 /* =========================
@@ -377,8 +440,11 @@ button{font:inherit;cursor:pointer}
     position:fixed;
     inset:0;
     z-index:9000;
+
     display:none;
+
     overflow-y:auto;
+
     background:
         radial-gradient(
             circle at 50% -10%,
@@ -386,6 +452,7 @@ button{font:inherit;cursor:pointer}
             #0a1119 42%,
             #05080c 100%
         );
+
     color:white;
     padding:0
 }
@@ -393,6 +460,7 @@ button{font:inherit;cursor:pointer}
 .shopPage{
     width:100%;
     min-height:100%;
+
     padding:
         calc(14px + env(safe-area-inset-top))
         18px
@@ -402,19 +470,26 @@ button{font:inherit;cursor:pointer}
 .shopTopbar{
     width:min(1100px,100%);
     margin:0 auto;
+
     display:flex;
     align-items:center;
     justify-content:space-between;
+
     gap:12px;
+
     position:sticky;
     top:0;
+
     z-index:5;
+
     padding:8px 0 18px;
+
     background:linear-gradient(
         #0a1119f5,
         #0a1119cc,
         transparent
     );
+
     backdrop-filter:blur(8px)
 }
 
@@ -437,29 +512,44 @@ button{font:inherit;cursor:pointer}
     display:flex;
     align-items:center;
     gap:7px;
+
     padding:11px 15px;
+
     border-radius:13px;
+
     background:#151f29;
     border:1px solid #394958;
+
     font-weight:900;
     color:#ffd83d;
+
     white-space:nowrap
 }
 
-/* FEATURED */
+/* =========================
+   FEATURED
+========================= */
 
 .shopFeatured{
     width:min(1100px,100%);
     margin:10px auto 28px;
+
     min-height:250px;
+
     border-radius:26px;
+
     overflow:hidden;
+
     position:relative;
+
     display:flex;
     align-items:center;
     justify-content:space-between;
+
     gap:30px;
+
     padding:35px;
+
     background:
         radial-gradient(
             circle at 75% 40%,
@@ -471,20 +561,32 @@ button{font:inherit;cursor:pointer}
             #ff4fc633,
             transparent 30%
         ),
-        linear-gradient(135deg,#111b2b,#090d15);
+        linear-gradient(
+            135deg,
+            #111b2b,
+            #090d15
+        );
+
     border:1px solid #34445a;
+
     box-shadow:0 20px 70px #0008
 }
 
 .shopFeatured::before{
     content:"";
+
     position:absolute;
+
     width:300px;
     height:300px;
+
     right:-100px;
     top:-120px;
+
     border-radius:50%;
+
     background:#8b4dff22;
+
     filter:blur(30px)
 }
 
@@ -529,31 +631,65 @@ button{font:inherit;cursor:pointer}
     opacity:.5
 }
 
+/*
+   Custom PNG automatically becomes circular.
+*/
+
 .featuredPreview{
     position:relative;
     z-index:1;
+
     width:170px;
     height:170px;
+
     flex-shrink:0;
+
     border-radius:50%;
+
+    overflow:hidden;
+    clip-path:circle(50%);
+
     border:5px solid white;
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+
     box-shadow:
         0 0 20px #b46cff,
         0 0 55px #7c3cff,
         0 0 100px #6a24ff66;
-    background-size:cover;
-    background-position:center;
-    animation:galaxySpin 3s linear infinite
+
+    animation:galaxyPreviewGlow 1.8s infinite alternate
 }
 
-/* CATEGORIES */
+@keyframes galaxyPreviewGlow{
+    from{
+        transform:scale(1);
+        filter:brightness(1)
+    }
+
+    to{
+        transform:scale(1.035);
+        filter:
+            brightness(1.2)
+            drop-shadow(0 0 12px #b46cff)
+    }
+}
+
+/* =========================
+   CATEGORIES
+========================= */
 
 .shopCategories{
     width:min(1100px,100%);
     margin:0 auto 18px;
+
     display:flex;
     gap:8px;
+
     overflow-x:auto;
+
     scrollbar-width:none
 }
 
@@ -565,9 +701,13 @@ button{font:inherit;cursor:pointer}
     border:1px solid #344454;
     background:#111a23;
     color:#9eabb8;
+
     padding:10px 17px;
+
     border-radius:999px;
+
     font-weight:800;
+
     white-space:nowrap
 }
 
@@ -580,78 +720,135 @@ button{font:inherit;cursor:pointer}
 .shopSectionTitle{
     width:min(1100px,100%);
     margin:0 auto 13px;
+
     font-size:20px;
     font-weight:1000
 }
 
-/* GRID */
+/* =========================
+   SHOP GRID
+========================= */
 
 .shopGrid{
     width:min(1100px,100%);
     margin:0 auto;
+
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+
+    grid-template-columns:
+        repeat(4,1fr);
+
     gap:14px
 }
 
 .shopCard{
     position:relative;
+
     padding:18px;
+
     border-radius:20px;
-    background:linear-gradient(
-        145deg,
-        #17212b,
-        #10171f
-    );
+
+    background:
+        linear-gradient(
+            145deg,
+            #17212b,
+            #10171f
+        );
+
     border:1px solid #2e3b49;
+
     transition:.18s
 }
 
 .shopCard:hover{
     transform:translateY(-3px);
+
     border-color:#4b6277;
+
     box-shadow:0 12px 30px #0007
 }
+
+/*
+   ALL skin images automatically become circles.
+*/
 
 .shopCardPreview{
     width:100px;
     height:100px;
+
     margin:3px auto 15px;
+
     border-radius:50%;
+
+    overflow:hidden;
+    clip-path:circle(50%);
+
     border:4px solid white;
+
     background-size:cover;
     background-position:center;
+    background-repeat:no-repeat;
+
     box-shadow:
-        0 0 15px var(--skin-glow,#00aaff)
+        0 0 15px var(--skin-glow,#00aaff);
+
+    position:relative
+}
+
+.shopCardPreview::after{
+    content:"";
+
+    position:absolute;
+    inset:0;
+
+    border-radius:50%;
+
+    pointer-events:none;
+
+    box-shadow:
+        inset 0 0 12px #ffffff22;
 }
 
 .shopCardName{
     text-align:center;
+
     font-size:18px;
     font-weight:1000
 }
 
 .shopCardType{
     text-align:center;
+
     margin-top:4px;
+
     color:#7e8d9c;
+
     font-size:11px
 }
 
 .shopCardPrice{
     text-align:center;
+
     margin:13px 0;
+
     color:#ffd700;
+
     font-weight:900
 }
 
 .shopAction{
     width:100%;
+
     border:0;
+
     border-radius:11px;
+
     padding:11px;
+
     background:#087fc5;
+
     color:white;
+
     font-weight:900
 }
 
@@ -665,12 +862,15 @@ button{font:inherit;cursor:pointer}
     color:#7fffa0
 }
 
-/* SHOP MOBILE */
+/* =========================
+   SHOP MOBILE
+========================= */
 
 @media(max-width:800px){
 
     .shopGrid{
-        grid-template-columns:repeat(2,1fr)
+        grid-template-columns:
+            repeat(2,1fr)
     }
 
     .shopFeatured{
@@ -750,19 +950,29 @@ button{font:inherit;cursor:pointer}
 #accountOverlay{
     position:fixed;
     inset:0;
+
     z-index:8000;
+
     display:none;
+
     padding:20px;
+
     overflow:auto;
+
     background:#000c
 }
 
 .accountPanel{
     width:min(500px,100%);
+
     margin:35px auto;
+
     padding:20px;
+
     border-radius:20px;
+
     background:#151a20;
+
     color:white
 }
 
@@ -787,12 +997,19 @@ button{font:inherit;cursor:pointer}
 
 .accountAction{
     width:100%;
+
     margin-top:10px;
+
     padding:13px;
+
     border:0;
+
     border-radius:12px;
+
     background:#0077cc;
+
     color:white;
+
     font-weight:bold
 }
 
@@ -804,18 +1021,26 @@ button{font:inherit;cursor:pointer}
     display:flex;
     justify-content:space-between;
     align-items:center;
+
     padding:13px;
     margin-top:10px;
+
     background:#20262d;
+
     border-radius:12px
 }
 
 .toggle{
     padding:8px 12px;
+
     border:0;
+
     border-radius:9px;
+
     background:#0077cc;
+
     color:white;
+
     font-weight:bold
 }
 
@@ -825,23 +1050,36 @@ button{font:inherit;cursor:pointer}
 
 #toast{
     position:fixed;
+
     left:50%;
     bottom:90px;
+
     z-index:10000;
+
     transform:translate(-50%,20px);
+
     opacity:0;
+
     pointer-events:none;
+
     padding:13px 18px;
+
     border-radius:14px;
+
     background:#101820;
+
     color:white;
+
     font-weight:bold;
+
     transition:.25s;
+
     white-space:nowrap
 }
 
 #toast.show{
     opacity:1;
+
     transform:translate(-50%,0)
 }
 
@@ -1063,7 +1301,9 @@ button{font:inherit;cursor:pointer}
             <div
                 id="featuredPreview"
                 class="featuredPreview"
-                style="background-image:url('skins/galaxy.png')"
+                style="
+                    background-image:url('skins/galaxy.png');
+                "
             ></div>
 
         </div>
@@ -1318,10 +1558,18 @@ const SKINS={
         name:"Galaxy",
         price:1000,
         type:"image",
+
+        /*
+           Put galaxy.png inside:
+           skins/galaxy.png
+        */
         image:"skins/galaxy.png",
+
         background:
             "radial-gradient(circle at 30% 30%,#ff4fd8,#5525c9 45%,#09001d)",
+
         color:"#b46cff",
+
         effect:"galaxy"
     },
 
@@ -2232,7 +2480,7 @@ function onLocationError(error){
 }
 
 /* =========================
-   PLAYER
+   PLAYER SKIN
 ========================= */
 
 function skinStyle(skin){
@@ -2242,9 +2490,14 @@ function skinStyle(skin){
         skin.color||
         "#00aaff";
 
+    /*
+       Custom PNGs are applied as a background.
+       CSS handles the circular clipping.
+    */
+
     const image=
         skin.image
-        ?`background-image:url("${skin.image}");background-size:cover;background-position:center;`
+        ?`background-image:url("${skin.image}");`
         :"";
 
     const cls=
@@ -2271,6 +2524,9 @@ function playerMarkerHtml(skin){
                 --player-color:${skin.color};
                 background:${st.background};
                 ${st.image}
+                background-size:cover;
+                background-position:center;
+                background-repeat:no-repeat;
             "
         >
             <div class="playerPointer">
@@ -2779,12 +3035,14 @@ function buildConnectedNetwork(
 function waysConnected(a,b){
 
     const a1=a.geometry[0];
+
     const a2=
         a.geometry[
             a.geometry.length-1
         ];
 
     const b1=b.geometry[0];
+
     const b2=
         b.geometry[
             b.geometry.length-1
@@ -3533,10 +3791,18 @@ function renderFeaturedSkin(){
     const preview=
         $("featuredPreview");
 
+    /*
+       Always use the custom PNG if supplied.
+       CSS automatically makes it circular.
+    */
+
     if(skin.image){
 
         preview.style.backgroundImage=
             `url("${skin.image}")`;
+
+        preview.style.background=
+            "transparent";
 
     }else{
 
@@ -3637,10 +3903,18 @@ function renderSkinGrid(
             skin.color||"#00aaff"
         );
 
+        /*
+           Every image skin gets the same
+           automatic circular treatment.
+        */
+
         if(skin.image){
 
             preview.style.backgroundImage=
                 `url("${skin.image}")`;
+
+            preview.style.background=
+                "transparent";
 
         }else{
 
@@ -3744,7 +4018,9 @@ function renderSkinGrid(
     }
 }
 
-/* SHOP CATEGORIES */
+/* =========================
+   SHOP CATEGORIES
+========================= */
 
 document
     .querySelectorAll(".shopCategory")
@@ -3772,7 +4048,9 @@ document
         };
     });
 
-/* BUY */
+/* =========================
+   BUY
+========================= */
 
 async function buySkin(id){
 
@@ -3818,7 +4096,9 @@ async function buySkin(id){
     );
 }
 
-/* EQUIP */
+/* =========================
+   EQUIP
+========================= */
 
 async function equipSkin(id){
 
