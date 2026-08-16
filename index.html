@@ -933,18 +933,10 @@ input{
 
 <body>
 
-<!-- =========================
-     AUTH SCREEN
-========================= -->
-
 <div id="authScreen">
-
     <div class="authBox">
-
         <div class="logo">🪙</div>
-
         <h1>GPS COIN</h1>
-
         <div class="authSub" id="authSubtitle">
             Create an account or sign in.
         </div>
@@ -974,17 +966,10 @@ input{
         </button>
 
         <div id="authStatus"></div>
-
     </div>
-
 </div>
 
-<!-- =========================
-     MODE
-========================= -->
-
 <div id="modeScreen">
-
     <div class="modeBox">
 
         <div style="font-size:60px">🪙</div>
@@ -998,45 +983,26 @@ input{
         <div class="modeButtons">
 
             <button id="publicMode" class="modeChoice">
-
                 <div class="modeIcon">🌎</div>
-
-                <div class="modeName">
-                    PUBLIC
-                </div>
-
+                <div class="modeName">PUBLIC</div>
                 <div class="modeDescription">
                     Public-access roads and paths.
                 </div>
-
             </button>
 
             <button id="unlimitedMode" class="modeChoice">
-
                 <div class="modeIcon">🔓</div>
-
-                <div class="modeName">
-                    UNLIMITED
-                </div>
-
+                <div class="modeName">UNLIMITED</div>
                 <div class="modeDescription">
                     Wider range of mapped roads.
                 </div>
-
             </button>
 
         </div>
-
     </div>
-
 </div>
 
-<!-- =========================
-     LOADING
-========================= -->
-
 <div id="loadingScreen">
-
     <div class="loadingBox">
 
         <div class="loadingLogo">🪙</div>
@@ -1054,12 +1020,7 @@ input{
         </div>
 
     </div>
-
 </div>
-
-<!-- =========================
-     HUD
-========================= -->
 
 <div id="hud">
 
@@ -1098,10 +1059,6 @@ input{
 <div id="status">
     Waiting for location...
 </div>
-
-<!-- =========================
-     SHOP
-========================= -->
 
 <div id="shopOverlay">
 
@@ -1181,12 +1138,7 @@ input{
         <div id="shopItems" class="shopGrid"></div>
 
     </div>
-
 </div>
-
-<!-- =========================
-     ACCOUNT
-========================= -->
 
 <div id="accountOverlay">
 
@@ -1258,9 +1210,7 @@ input{
 
         <div class="settingRow">
 
-            <span>
-                🎵 Music
-            </span>
+            <span>🎵 Music</span>
 
             <button id="musicSetting" class="toggle">
                 ON
@@ -1270,9 +1220,7 @@ input{
 
         <div class="settingRow">
 
-            <span>
-                🪙 Coin SFX
-            </span>
+            <span>🪙 Coin SFX</span>
 
             <button id="sfxSetting" class="toggle">
                 ON
@@ -1285,7 +1233,6 @@ input{
         </button>
 
     </div>
-
 </div>
 
 <div id="toast"></div>
@@ -1492,6 +1439,9 @@ let toastTimer = null;
 let deviceHeading = null;
 let gpsHeading = null;
 
+/* FIX: declare compass state */
+let compassListening = false;
+
 let lastSpeedSampleLat = null;
 let lastSpeedSampleLon = null;
 let lastSpeedSampleTime = null;
@@ -1625,11 +1575,6 @@ async function loadPlayerAccount(){
 
     updateAllUI();
 
-    /*
-       If the player already selected a mode,
-       skip the mode screen.
-    */
-
     if(playerData.mode){
 
         gameMode = playerData.mode;
@@ -1666,10 +1611,12 @@ async function savePlayerData(){
         });
 
         if(error){
+
             console.error(
                 "Could not save player:",
                 error
             );
+
         }else if(data?.user){
 
             currentUser = data.user;
@@ -1806,11 +1753,6 @@ async function createAccount(){
         return;
     }
 
-    /*
-       If email confirmation is disabled,
-       session exists immediately.
-    */
-
     if(data.session){
 
         currentUser = data.user;
@@ -1821,11 +1763,6 @@ async function createAccount(){
         await loadPlayerAccount();
 
     }else{
-
-        /*
-           This means Supabase is still configured
-           to require email confirmation.
-        */
 
         $("authStatus").textContent =
             "Account created, but email confirmation is enabled in Supabase. Turn off Confirm email in Authentication → Providers → Email.";
@@ -1882,7 +1819,6 @@ async function signOut(){
 
     $("authStatus").textContent =
         "Signed out.";
-
 }
 
 /* =========================================================
@@ -1928,11 +1864,6 @@ async function startAuthentication(){
 
     if(data.session?.user){
 
-        /*
-           THIS is what keeps the player
-           signed in between launches.
-        */
-
         currentUser =
             data.session.user;
 
@@ -1945,11 +1876,8 @@ async function startAuthentication(){
 
         $("authScreen").style.display =
             "flex";
-
     }
 }
-
-/* Listen for login/logout/session refresh */
 
 supabase.auth.onAuthStateChange(
     async (event,session)=>{
@@ -2126,7 +2054,6 @@ function updatePlayerLocation(
         accuracyCircle.setLatLng(
             [lat,lon]
         );
-
     }
 
     if(
@@ -2137,7 +2064,6 @@ function updatePlayerLocation(
         accuracyCircle.setRadius(
             Math.min(accuracy,200)
         );
-
     }
 
     updateRoadsIfNeeded(
@@ -2151,7 +2077,6 @@ function updatePlayerLocation(
     );
 
     updateSpeedStatus();
-
 }
 
 /* =========================================================
@@ -2186,15 +2111,15 @@ function centerOnPlayer(){
         showToast(
             "Location not acquired yet!"
         );
-
     }
 }
 
 /* =========================================================
    GPS
+   FIXED LOADING SCREEN
 ========================================================= */
 
-function startGPS(){
+function startGPS(onFirstLocation){
 
     if(!navigator.geolocation){
 
@@ -2202,12 +2127,18 @@ function startGPS(){
             "GPS is not supported on this device."
         );
 
+        if(onFirstLocation){
+            onFirstLocation(false);
+        }
+
         return;
     }
 
     setStatus(
         "Waiting for GPS location..."
     );
+
+    let firstLocationReceived = false;
 
     watchId =
         navigator.geolocation.watchPosition(
@@ -2242,7 +2173,6 @@ function startGPS(){
                         coords.heading;
 
                     updatePlayerHeading();
-
                 }
 
                 updatePlayerLocation(
@@ -2251,12 +2181,28 @@ function startGPS(){
                     coords.accuracy
                 );
 
+                /*
+                   This is the important fix.
+
+                   The loading screen is now closed
+                   only after the browser actually gives
+                   us a GPS position.
+                */
+
+                if(!firstLocationReceived){
+
+                    firstLocationReceived = true;
+
+                    if(onFirstLocation){
+                        onFirstLocation(true);
+                    }
+                }
+
                 setStatus(
                     isMovingTooFastToCollect()
                         ? `🚗 Moving too fast to collect • ${Math.round(getSpeedMPH())} mph`
                         : "🟢 GPS active • Find the coins!"
                 );
-
             },
 
             error=>{
@@ -2269,7 +2215,34 @@ function startGPS(){
                 if(error.code === 1){
 
                     setStatus(
-                        "Location permission is required to play."
+                        "📍 Location permission is required to play."
+                    );
+
+                    setLoading(
+                        "Location permission required",
+                        100
+                    );
+
+                }else if(error.code === 2){
+
+                    setStatus(
+                        "📍 GPS signal unavailable. Trying again..."
+                    );
+
+                    setLoading(
+                        "GPS signal unavailable • Trying again...",
+                        85
+                    );
+
+                }else if(error.code === 3){
+
+                    setStatus(
+                        "📍 GPS is taking longer than expected. Still trying..."
+                    );
+
+                    setLoading(
+                        "Still waiting for GPS...",
+                        85
                     );
 
                 }else{
@@ -2278,8 +2251,19 @@ function startGPS(){
                         "Waiting for GPS..."
                     );
 
+                    setLoading(
+                        "Waiting for GPS...",
+                        80
+                    );
                 }
 
+                /*
+                   IMPORTANT:
+
+                   We do NOT stop the GPS watcher here.
+
+                   watchPosition will continue trying.
+                */
             },
 
             {
@@ -2287,9 +2271,7 @@ function startGPS(){
                 maximumAge:2000,
                 timeout:15000
             }
-
         );
-
 }
 
 /* =========================================================
@@ -2346,17 +2328,13 @@ function updateMovementSpeed(
                     currentMovementSpeedMPS =
                         currentMovementSpeedMPS*.35 +
                         calculated*.65;
-
                 }
-
             }
-
         }
 
         lastSpeedSampleLat = lat;
         lastSpeedSampleLon = lon;
         lastSpeedSampleTime = now;
-
     }
 
     if(
@@ -2367,7 +2345,6 @@ function updateMovementSpeed(
         lastSpeedSampleLat = lat;
         lastSpeedSampleLon = lon;
         lastSpeedSampleTime = Date.now();
-
     }
 
     if(
@@ -2387,9 +2364,7 @@ function updateMovementSpeed(
     ){
 
         highSpeedReadings = 0;
-
     }
-
 }
 
 function isMovingTooFastToCollect(){
@@ -2398,14 +2373,12 @@ function isMovingTooFastToCollect(){
         highSpeedReadings >=
         HIGH_SPEED_CONFIRMATIONS
     );
-
 }
 
 function getSpeedMPH(){
 
     return currentMovementSpeedMPS *
         2.236936;
-
 }
 
 function updateSpeedStatus(){
@@ -2425,7 +2398,6 @@ function updateSpeedStatus(){
     setStatus(
         `🚗 Moving too fast to collect coins • ${Math.round(getSpeedMPH())} mph`
     );
-
 }
 
 /* =========================================================
@@ -2461,10 +2433,7 @@ function updatePlayerHeading(){
 
     pointer.style.transform =
         `translateX(-50%) rotate(${heading}deg)`;
-
 }
-
-/* Device compass */
 
 function startCompass(){
 
@@ -2497,7 +2466,6 @@ function startCompass(){
 
                 heading =
                     360-event.alpha;
-
             }
 
             if(
@@ -2509,13 +2477,11 @@ function startCompass(){
                     ((heading%360)+360)%360;
 
                 updatePlayerHeading();
-
             }
 
         },
         true
     );
-
 }
 
 /* =========================================================
@@ -2612,9 +2578,7 @@ async function fetchRoads(lat,lon){
                         lat2:b.lat,
                         lon2:b.lon
                     });
-
                 }
-
             }
 
             lastRoadLat = lat;
@@ -2635,13 +2599,10 @@ async function fetchRoads(lat,lon){
                 "Overpass error:",
                 error
             );
-
         }
-
     }
 
     loadingRoads = false;
-
 }
 
 function updateRoadsIfNeeded(lat,lon){
@@ -2661,9 +2622,7 @@ function updateRoadsIfNeeded(lat,lon){
             lat,
             lon
         );
-
     }
-
 }
 
 /* =========================================================
@@ -2687,7 +2646,6 @@ function coinIcon(){
         iconAnchor:[14,14]
 
     });
-
 }
 
 function pointNearPlayer(){
@@ -2726,7 +2684,6 @@ function pointNearPlayer(){
         );
 
     return {lat,lon};
-
 }
 
 function isNearRoad(lat,lon){
@@ -2766,21 +2723,15 @@ function isNearRoad(lat,lon){
 
         if(closest < 80)
             return true;
-
     }
 
     return closest < 120;
-
 }
 
 function generateCoins(lat,lon){
 
     if(!map)
         return;
-
-    /*
-       Remove old coins that are far away.
-    */
 
     coins =
         coins.filter(coin=>{
@@ -2806,15 +2757,12 @@ function generateCoins(lat,lon){
                     map.removeLayer(
                         coin.marker
                     );
-
                 }
 
                 return false;
-
             }
 
             return true;
-
         });
 
     let attempts = 0;
@@ -2855,9 +2803,7 @@ function generateCoins(lat,lon){
 
                 tooClose = true;
                 break;
-
             }
-
         }
 
         if(tooClose)
@@ -2882,9 +2828,7 @@ function generateCoins(lat,lon){
         };
 
         coins.push(coin);
-
     }
-
 }
 
 /* =========================================================
@@ -2929,7 +2873,6 @@ async function checkCoinCollection(
                 map.removeLayer(
                     coin.marker
                 );
-
             }
 
             coins.splice(
@@ -2950,17 +2893,9 @@ async function checkCoinCollection(
                 "🪙 Coin collected!"
             );
 
-            /*
-               Save immediately so coins aren't
-               lost when the player closes the game.
-            */
-
             await savePlayerData();
-
         }
-
     }
-
 }
 
 /* =========================================================
@@ -2976,7 +2911,6 @@ function updateLevel(){
                 playerData.coins/100
             ) + 1
         );
-
 }
 
 /* =========================================================
@@ -3033,14 +2967,12 @@ function renderShop(){
 
             previewStyle +=
                 `background:${skin.background};`;
-
         }
 
         if(skin.type === "image"){
 
             previewStyle +=
                 `background-image:url("${skin.image}");`;
-
         }
 
         card.innerHTML = `
@@ -3083,7 +3015,6 @@ function renderShop(){
                             : "BUY"
                 }
             </button>
-
         `;
 
         const button =
@@ -3097,11 +3028,9 @@ function renderShop(){
         );
 
         container.appendChild(card);
-
     }
 
     updateFeatured();
-
 }
 
 function updateFeatured(){
@@ -3121,7 +3050,6 @@ function updateFeatured(){
 
         preview.style.background =
             skin.background;
-
     }
 
     const owned =
@@ -3157,9 +3085,7 @@ function updateFeatured(){
 
         button.disabled =
             playerData.coins < 1000;
-
     }
-
 }
 
 async function handleSkinAction(id){
@@ -3193,7 +3119,6 @@ async function handleSkinAction(id){
         );
 
         return;
-
     }
 
     if(
@@ -3206,7 +3131,6 @@ async function handleSkinAction(id){
         );
 
         return;
-
     }
 
     playerData.coins -=
@@ -3230,7 +3154,6 @@ async function handleSkinAction(id){
     showToast(
         skin.name + " unlocked! 🎉"
     );
-
 }
 
 /* =========================================================
@@ -3244,7 +3167,6 @@ function renderProfile(){
         $("accountEmail").textContent =
             currentUser.email ||
             "Player account";
-
     }
 
     $("profileCoins").textContent =
@@ -3307,14 +3229,12 @@ function renderProfile(){
 
             style +=
                 `background:${skin.background};`;
-
         }
 
         if(skin.type === "image"){
 
             style +=
                 `background-image:url("${skin.image}");`;
-
         }
 
         card.innerHTML = `
@@ -3341,7 +3261,6 @@ function renderProfile(){
                         : "EQUIP"
                 }
             </button>
-
         `;
 
         card.querySelector(
@@ -3360,14 +3279,11 @@ function renderProfile(){
                 updateAllUI();
 
                 await savePlayerData();
-
             }
         );
 
         container.appendChild(card);
-
     }
-
 }
 
 /* =========================================================
@@ -3392,9 +3308,7 @@ function updateAllUI(){
     ){
 
         renderShop();
-
     }
-
 }
 
 /* =========================================================
@@ -3414,7 +3328,6 @@ function playCoinSound(){
                     window.AudioContext ||
                     window.webkitAudioContext
                 )();
-
         }
 
         const oscillator =
@@ -3445,6 +3358,7 @@ function playCoinSound(){
         );
 
         oscillator.connect(gain);
+
         gain.connect(
             audioContext.destination
         );
@@ -3460,13 +3374,12 @@ function playCoinSound(){
         console.log(
             "Audio unavailable"
         );
-
     }
-
 }
 
 /* =========================================================
    START GAME
+   FIXED GPS LOADING
 ========================================================= */
 
 async function startGame(){
@@ -3494,39 +3407,91 @@ async function startGame(){
 
     startCompass();
 
-    startGPS();
+    /*
+       Start GPS and wait for the FIRST
+       real location before hiding loading.
+    */
 
-    setLoading(
-        "Loading game...",
-        90
+    startGPS(
+        success=>{
+
+            if(!success)
+                return;
+
+            setLoading(
+                "GPS location acquired!",
+                100
+            );
+
+            setTimeout(()=>{
+
+                $("loadingScreen").style.display =
+                    "none";
+
+                setStatus(
+                    "🟢 GPS active • Find the coins!"
+                );
+
+                if(
+                    currentGPSLat !== null &&
+                    currentGPSLon !== null
+                ){
+
+                    map.setView(
+                        [
+                            currentGPSLat,
+                            currentGPSLon
+                        ],
+                        17
+                    );
+                }
+
+            },400);
+
+        }
     );
+
+    /*
+       SAFETY FALLBACK
+
+       GPS continues running even if it takes
+       longer than expected.
+
+       This prevents the loading screen from
+       being permanently stuck.
+    */
 
     setTimeout(()=>{
 
-        $("loadingScreen").style.display =
-            "none";
-
-        setStatus(
-            "🟢 GPS active • Find the coins!"
-        );
-
         if(
-            currentGPSLat !== null &&
-            currentGPSLon !== null
+            $("loadingScreen").style.display !== "none" &&
+            currentGPSLat === null
         ){
 
-            map.setView(
-                [
-                    currentGPSLat,
-                    currentGPSLon
-                ],
-                17
+            setLoading(
+                "GPS is taking a while... continuing in background",
+                90
             );
 
+            setTimeout(()=>{
+
+                if(
+                    currentGPSLat === null &&
+                    $("loadingScreen").style.display !== "none"
+                ){
+
+                    $("loadingScreen").style.display =
+                        "none";
+
+                    setStatus(
+                        "📍 Waiting for GPS • Keep location enabled"
+                    );
+                }
+
+            },1500);
         }
 
-    },500);
-
+    },10000);
 }
 
 /* =========================================================
@@ -3566,7 +3531,6 @@ $("shopButton").addEventListener(
             "block";
 
         renderShop();
-
     }
 );
 
@@ -3576,7 +3540,6 @@ $("closeShop").addEventListener(
 
         $("shopOverlay").style.display =
             "none";
-
     }
 );
 
@@ -3588,7 +3551,6 @@ $("accountButton").addEventListener(
             "block";
 
         renderProfile();
-
     }
 );
 
@@ -3598,7 +3560,6 @@ $("closeAccount").addEventListener(
 
         $("accountOverlay").style.display =
             "none";
-
     }
 );
 
@@ -3622,7 +3583,6 @@ $("musicButton").addEventListener(
         await savePlayerData();
 
         renderProfile();
-
     }
 );
 
@@ -3641,7 +3601,6 @@ $("sfxButton").addEventListener(
         await savePlayerData();
 
         renderProfile();
-
     }
 );
 
@@ -3655,7 +3614,6 @@ $("musicSetting").addEventListener(
         updateAllUI();
 
         await savePlayerData();
-
     }
 );
 
@@ -3669,7 +3627,6 @@ $("sfxSetting").addEventListener(
         updateAllUI();
 
         await savePlayerData();
-
     }
 );
 
@@ -3677,8 +3634,6 @@ $("featuredButton").addEventListener(
     "click",
     ()=>handleSkinAction("galaxy")
 );
-
-/* Shop categories */
 
 document.querySelectorAll(
     ".shopCategory"
@@ -3701,13 +3656,13 @@ document.querySelectorAll(
             );
 
             renderShop();
-
         }
     );
-
 });
 
-/* Mode */
+/* =========================================================
+   MODE
+========================================================= */
 
 $("publicMode").addEventListener(
     "click",
@@ -3721,7 +3676,6 @@ $("publicMode").addEventListener(
         await savePlayerData();
 
         startGame();
-
     }
 );
 
@@ -3737,7 +3691,6 @@ $("unlimitedMode").addEventListener(
         await savePlayerData();
 
         startGame();
-
     }
 );
 
