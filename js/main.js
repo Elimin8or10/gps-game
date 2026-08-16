@@ -1,288 +1,163 @@
 import { supabase } from "./supabase.js";
-import { GAME_CONFIG, SKINS } from "./config.js";
-import {
-    distanceMeters,
-    normalizeHeading,
-    updatePlayerHeading,
-    updateMovementSpeed,
-    isMovingTooFastToCollect,
-    showCollectedCoinLocations
-} from "./map.js";
 
-/* =========================
-   STATE VARIABLES
-========================= */
-
+// Game State
 let currentUser = null;
-let playerData = null;
-let gameMode = null;
+let mapInstance = null;
+let userProfile = { coins: 0, level: 1, skins: ["default"], activeSkin: "default" };
 
-let map = null;
-let playerMarker = null;
-let accuracyCircle = null;
+// DOM Elements
+const authScreen = document.getElementById("authScreen");
+const modeScreen = document.getElementById("modeScreen");
+const loadingScreen = document.getElementById("loadingScreen");
+const shopOverlay = document.getElementById("shopOverlay");
+const accountOverlay = document.getElementById("accountOverlay");
 
-let coins = [];
-let roadNetwork = [];
-let collectedCoinMarkers = [];
+const emailInput = document.getElementById("emailInput");
+const signInButton = document.getElementById("signInButton");
+const authStatus = document.getElementById("authStatus");
 
-let lastRoadLat = null;
-let lastRoadLon = null;
+document.addEventListener("DOMContentLoaded", () => {
+    initApp();
+});
 
-let loadingRoads = false;
-let watchId = null;
-
-let toastTimer = null;
-
-let deviceHeading = null;
-let gpsHeading = null;
-
-let lastGPSLat = null;
-let lastGPSLon = null;
-
-let currentGPSLat = null;
-let currentGPSLon = null;
-
-let lastMovementLat = null;
-let lastMovementLon = null;
-
-let visitedAreas = new Map();
-let recentCollectedLocations = new Map();
-let compassListening = false;
-
-/* Speed tracking state */
-const speedState = {
-    lastSpeedSampleLat: null,
-    lastSpeedSampleLon: null,
-    lastSpeedSampleTime: null,
-    currentMovementSpeedMPS: 0,
-    highSpeedReadings: 0,
-    lastSpeedStatusTime: 0
-};
-
-/* =========================
-   UI HELPERS
-========================= */
-
-const $ = id => document.getElementById(id);
-
-function setStatus(text) {
-    const el = $("status");
-    if (el) el.textContent = text;
+async function initApp() {
+    setupEventListeners();
+    initMap();
+    await checkExistingSession();
 }
 
-function setLoading(text, percent) {
-    const textEl = $("loadingText");
-    const barEl = $("loadingBar");
-    if (textEl) textEl.textContent = text;
-    if (barEl) barEl.style.width = percent + "%";
-}
-
-function showToast(message) {
-    const el = $("toast");
-    if (!el) return;
-    el.textContent = message;
-    el.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-        el.classList.remove("show");
-    }, 2200);
-}
-
-function getSpeedMPH() {
-    return speedState.currentMovementSpeedMPS * 2.236936;
-}
-
-function updateSpeedStatus() {
-    if (!isMovingTooFastToCollect(speedState.highSpeedReadings)) return;
-    const now = Date.now();
-    if (now - speedState.lastSpeedStatusTime < 3000) return;
-    speedState.lastSpeedStatusTime = now;
-    setStatus(`🚗 Moving too fast to collect coins • ${Math.round(getSpeedMPH())} mph`);
-}
-
-function centerOnPlayer() {
-    if (currentGPSLat !== null && currentGPSLon !== null && map) {
-        map.setView([currentGPSLat, currentGPSLon], 17, { animate: true });
-        showToast("Centered on player 🎯");
-    } else {
-        showToast("Location not acquired yet!");
+function initMap() {
+    // Initialize Leaflet map targeting the #map div
+    if (document.getElementById("map")) {
+        mapInstance = L.map("map").setView([51.505, -0.09], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap contributors"
+        }).addTo(mapInstance);
     }
 }
 
-/* =========================
-   GAME FLOW & SCREEN SWITCHING
-========================= */
+function setupEventListeners() {
+    if (signInButton) {
+        signInButton.addEventListener("click", handleSignIn);
+    }
 
-function handleSignIn() {
-    const emailInput = $("emailInput");
-    const statusEl = $("authStatus");
+    // Mode Selection Buttons
+    const publicModeBtn = document.getElementById("publicMode");
+    const unlimitedModeBtn = document.getElementById("unlimitedMode");
+
+    if (publicModeBtn) publicModeBtn.addEventListener("click", () => selectMode("public"));
+    if (unlimitedModeBtn) unlimitedModeBtn.addEventListener("click", () => selectMode("unlimited"));
+
+    // HUD Button Toggles
+    const shopButton = document.getElementById("shopButton");
+    const accountButton = document.getElementById("accountButton");
+    const closeShop = document.getElementById("closeShop");
+    const closeAccount = document.getElementById("closeAccount");
+    const signOutButton = document.getElementById("signOutButton");
+
+    if (shopButton) shopButton.addEventListener("click", () => shopOverlay.classList.add("active"));
+    if (closeShop) closeShop.addEventListener("click", () => shopOverlay.classList.remove("active"));
+    
+    if (accountButton) accountButton.addEventListener("click", () => accountOverlay.classList.add("active"));
+    if (closeAccount) closeAccount.addEventListener("click", () => accountOverlay.classList.remove("active"));
+
+    if (signOutButton) signOutButton.addEventListener("click", handleSignOut);
+}
+
+async function checkExistingSession() {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        if (session && session.user) {
+            currentUser = session.user;
+            showScreen(modeScreen);
+        } else {
+            showScreen(authScreen);
+        }
+    } catch (err) {
+        console.error("Session check error:", err);
+        showScreen(authScreen);
+    }
+}
+
+async function handleSignIn() {
     const email = emailInput ? emailInput.value.trim() : "";
 
-    if (!email || !email.includes("@")) {
-        if (statusEl) statusEl.textContent = "Please enter a valid email address.";
+    if (!email) {
+        showStatus("Please enter a valid email.", true);
         return;
     }
 
-    if (statusEl) statusEl.textContent = "Logging in...";
+    try {
+        showStatus("Sending login email...");
+        signInButton.disabled = true;
 
-    currentUser = { email };
+        const { error } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: { emailRedirectTo: window.location.href }
+        });
 
-    $("authScreen").style.display = "none";
-    $("modeScreen").style.display = "flex";
+        if (error) throw error;
+        showStatus("Check your email for the magic link!");
+    } catch (err) {
+        console.error("Sign-in error:", err);
+        showStatus(err.message || "Sign-in failed.", true);
+    } finally {
+        if (signInButton) signInButton.disabled = false;
+    }
+}
+
+async function handleSignOut() {
+    try {
+        await supabase.auth.signOut();
+        currentUser = null;
+        accountOverlay.classList.remove("active");
+        showScreen(authScreen);
+    } catch (err) {
+        console.error("Sign-out error:", err);
+    }
 }
 
 function selectMode(mode) {
-    gameMode = mode;
-    $("modeScreen").style.display = "none";
-    $("loadingScreen").style.display = "flex";
-
-    setLoading("Initializing map...", 40);
+    showScreen(loadingScreen);
+    const loadingText = document.getElementById("loadingText");
+    if (loadingText) loadingText.textContent = `Loading ${mode.toUpperCase()} mode...`;
 
     setTimeout(() => {
-        initGameMap();
-    }, 500);
+        hideAllScreens();
+        if (mapInstance) {
+            mapInstance.invalidateSize(); // Fixes map rendering bugs after UI switch
+        }
+        showToast(`Game started in ${mode.toUpperCase()} mode!`);
+    }, 1200);
 }
 
-function initGameMap() {
-    setLoading("Locating player...", 70);
+function hideAllScreens() {
+    authScreen.classList.remove("active");
+    modeScreen.classList.remove("active");
+    loadingScreen.classList.remove("active");
+    shopOverlay.classList.remove("active");
+    accountOverlay.classList.remove("active");
+}
 
-    if (!map) {
-        map = L.map("map", { zoomControl: false }).setView([0, 0], 2);
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-            maxZoom: 19,
-            attribution: "© OpenStreetMap"
-        }).addTo(map);
-    }
+function showScreen(targetScreen) {
+    hideAllScreens();
+    if (targetScreen) targetScreen.classList.add("active");
+}
 
-    if ("geolocation" in navigator) {
-        watchId = navigator.geolocation.watchPosition(
-            onLocationSuccess,
-            onLocationError,
-            { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }
-        );
-    } else {
-        setStatus("Geolocation is not supported by your browser.");
-        $("loadingScreen").style.display = "none";
+function showStatus(message, isError = false) {
+    if (authStatus) {
+        authStatus.textContent = message;
+        authStatus.style.color = isError ? "#ff5252" : "#4caf50";
     }
 }
 
-function onLocationSuccess(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    const accuracy = position.coords.accuracy;
-    const speed = position.coords.speed;
-    const heading = position.coords.heading;
-
-    currentGPSLat = lat;
-    currentGPSLon = lon;
-    if (heading !== null && !isNaN(heading)) {
-        gpsHeading = normalizeHeading(heading);
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (toast) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
     }
-
-    updateMovementSpeed(lat, lon, speed, speedState);
-    updateSpeedStatus();
-
-    if ($("loadingScreen").style.display !== "none") {
-        setLoading("Ready!", 100);
-        setTimeout(() => {
-            $("loadingScreen").style.display = "none";
-        }, 300);
-        map.setView([lat, lon], 17);
-    }
-
-    const playerIcon = L.divIcon({
-        className: "player-wrapper",
-        html: `
-            <div class="player skin-blue" style="--player-color: #00aaff;">
-                <div class="playerPointer"><div class="playerPointerInner"></div></div>
-            </div>
-        `,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-    });
-
-    if (!playerMarker) {
-        playerMarker = L.marker([lat, lon], { icon: playerIcon }).addTo(map);
-    } else {
-        playerMarker.setLatLng([lat, lon]);
-    }
-
-    if (!accuracyCircle) {
-        accuracyCircle = L.circle([lat, lon], { radius: accuracy, color: "#00aaff", opacity: 0.2, fillOpacity: 0.05 }).addTo(map);
-    } else {
-        accuracyCircle.setLatLng([lat, lon]);
-        accuracyCircle.setRadius(accuracy);
-    }
-
-    updatePlayerHeading(playerMarker, deviceHeading, gpsHeading);
-    setStatus(`GPS Active • ${Math.round(accuracy)}m accuracy`);
 }
-
-function onLocationError(err) {
-    setStatus(`GPS Error: ${err.message}`);
-}
-
-/* =========================
-   EVENT BINDINGS
-========================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-    const signInBtn = $("signInButton");
-    if (signInBtn) {
-        signInBtn.addEventListener("click", handleSignIn);
-    }
-
-    const publicBtn = $("publicMode");
-    if (publicBtn) {
-        publicBtn.addEventListener("click", () => selectMode("public"));
-    }
-
-    const unlimitedBtn = $("unlimitedMode");
-    if (unlimitedBtn) {
-        unlimitedBtn.addEventListener("click", () => selectMode("unlimited"));
-    }
-
-    const centerBtn = $("centerPlayerButton");
-    if (centerBtn) {
-        centerBtn.addEventListener("click", centerOnPlayer);
-    }
-
-    const shopBtn = $("shopButton");
-    if (shopBtn) {
-        shopBtn.addEventListener("click", () => {
-            $("shopOverlay").style.display = "block";
-        });
-    }
-
-    const closeShopBtn = $("closeShop");
-    if (closeShopBtn) {
-        closeShopBtn.addEventListener("click", () => {
-            $("shopOverlay").style.display = "none";
-        });
-    }
-
-    const accountBtn = $("accountButton");
-    if (accountBtn) {
-        accountBtn.addEventListener("click", () => {
-            $("accountOverlay").style.display = "block";
-        });
-    }
-
-    const closeAccountBtn = $("closeAccount");
-    if (closeAccountBtn) {
-        closeAccountBtn.addEventListener("click", () => {
-            $("accountOverlay").style.display = "none";
-        });
-    }
-
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener("deviceorientation", (e) => {
-            if (e.webkitCompassHeading !== undefined) {
-                deviceHeading = normalizeHeading(e.webkitCompassHeading);
-            } else if (e.alpha !== null) {
-                deviceHeading = normalizeHeading(360 - e.alpha);
-            }
-            updatePlayerHeading(playerMarker, deviceHeading, gpsHeading);
-        }, true);
-    }
-});
