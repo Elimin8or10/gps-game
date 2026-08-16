@@ -1,4 +1,12 @@
+// =========================
+// GLOBAL GAME STATE
+// =========================
+
 export const state = {
+
+    // -------------------------
+    // ACCOUNT
+    // -------------------------
 
     currentUser: null,
 
@@ -6,11 +14,21 @@ export const state = {
 
     gameMode: null,
 
+
+    // -------------------------
+    // MAP
+    // -------------------------
+
     map: null,
 
     playerMarker: null,
 
     accuracyCircle: null,
+
+
+    // -------------------------
+    // COINS
+    // -------------------------
 
     coins: [],
 
@@ -18,37 +36,60 @@ export const state = {
 
     collectedCoinMarkers: [],
 
+
+    // -------------------------
+    // ROADS
+    // -------------------------
+
     lastRoadLat: null,
 
     lastRoadLon: null,
 
     loadingRoads: false,
 
+
+    // -------------------------
+    // GPS
+    // -------------------------
+
     watchId: null,
-
-    toastTimer: null,
-
-    deviceHeading: null,
-
-    gpsHeading: null,
-
-    lastGPSLat: null,
-
-    lastGPSLon: null,
 
     currentGPSLat: null,
 
     currentGPSLon: null,
 
+    lastGPSLat: null,
+
+    lastGPSLon: null,
+
     lastMovementLat: null,
 
     lastMovementLon: null,
+
+
+    // -------------------------
+    // HEADING
+    // -------------------------
+
+    deviceHeading: null,
+
+    gpsHeading: null,
+
+    compassListening: false,
+
+
+    // -------------------------
+    // VISITED AREAS
+    // -------------------------
 
     visitedAreas: new Map(),
 
     recentCollectedLocations: new Map(),
 
-    compassListening: false,
+
+    // -------------------------
+    // SPEED
+    // -------------------------
 
     lastSpeedSampleLat: null,
 
@@ -60,6 +101,13 @@ export const state = {
 
     lastSpeedStatusTime: 0,
 
-    highSpeedReadings: 0
+    highSpeedReadings: 0,
+
+
+    // -------------------------
+    // UI
+    // -------------------------
+
+    toastTimer: null
 
 };
