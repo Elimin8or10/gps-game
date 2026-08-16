@@ -1,0 +1,210 @@
+.player {
+    width: 30px;
+    height: 30px;
+
+    border: 3px solid white;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+
+    clip-path: circle(50%);
+
+    background: var(--player-color);
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    box-shadow:
+        0 0 8px var(--player-color),
+        0 0 18px var(--player-color),
+        0 0 30px var(--player-color);
+
+    position: relative;
+}
+
+
+/* SKIN EFFECTS */
+
+.player.skin-lava {
+    animation: skinPulse .8s infinite alternate;
+}
+
+.player.skin-ice {
+    animation: skinPulse 1.6s infinite alternate;
+}
+
+.player.skin-toxic {
+    animation: toxicPulse .7s infinite alternate;
+}
+
+.player.skin-galaxy {
+    animation: galaxyGlow 1.8s infinite alternate;
+}
+
+.player.skin-crystal {
+    animation: crystalPulse 1.2s infinite alternate;
+}
+
+.player.skin-gold {
+    animation: goldPulse 1s infinite alternate;
+}
+
+.player.skin-pink {
+    animation: pinkPulse 1.1s infinite alternate;
+}
+
+
+@keyframes skinPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter:
+            brightness(1.45)
+            saturate(1.25);
+    }
+}
+
+
+@keyframes toxicPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter:
+            brightness(1.6)
+            drop-shadow(0 0 7px #39ff14);
+    }
+}
+
+
+@keyframes galaxyGlow {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter:
+            brightness(1.28)
+            drop-shadow(0 0 7px #b46cff);
+    }
+}
+
+
+@keyframes crystalPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter: brightness(1.55);
+    }
+}
+
+
+@keyframes goldPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter: brightness(1.35);
+    }
+}
+
+
+@keyframes pinkPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter: brightness(1.3);
+    }
+}
+
+
+/* PLAYER POINTER */
+
+.playerPointer {
+    position: absolute;
+
+    left: 50%;
+    top: -22px;
+
+    width: 0;
+    height: 0;
+
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 18px solid var(--player-color);
+
+    transform: translateX(-50%);
+
+    filter:
+        drop-shadow(0 0 4px var(--player-color))
+        drop-shadow(0 0 8px var(--player-color));
+
+    transform-origin: 50% 33px;
+
+    pointer-events: none;
+}
+
+.playerPointerInner {
+    position: absolute;
+
+    left: 50%;
+    top: 3px;
+
+    transform: translateX(-50%);
+
+    width: 0;
+    height: 0;
+
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 9px solid white;
+}
+
+
+/* COINS */
+
+.coin {
+    width: 29px;
+    height: 29px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border: 3px solid #fff4a3;
+
+    background:
+        radial-gradient(
+            circle at 35% 35%,
+            #fffbd0,
+            #ffe44d 28%,
+            #ffd000 58%,
+            #d88600
+        );
+
+    box-shadow:
+        0 0 8px #ffd700,
+        0 0 18px #ffb000,
+        0 0 28px #ffbe00b3;
+
+    animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+    50% {
+        transform: scale(1.13);
+    }
+}
