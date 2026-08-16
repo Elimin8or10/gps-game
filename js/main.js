@@ -1,288 +1,235 @@
 import { supabase } from "./supabase.js";
 import { GAME_CONFIG, SKINS } from "./config.js";
-import {
-    distanceMeters,
-    normalizeHeading,
-    updatePlayerHeading,
-    updateMovementSpeed,
-    isMovingTooFastToCollect,
-    showCollectedCoinLocations
-} from "./map.js";
 
-/* =========================
-   STATE VARIABLES
-========================= */
-
+// State
 let currentUser = null;
-let playerData = null;
-let gameMode = null;
-
-let map = null;
-let playerMarker = null;
-let accuracyCircle = null;
-
-let coins = [];
-let roadNetwork = [];
-let collectedCoinMarkers = [];
-
-let lastRoadLat = null;
-let lastRoadLon = null;
-
-let loadingRoads = false;
-let watchId = null;
-
-let toastTimer = null;
-
-let deviceHeading = null;
-let gpsHeading = null;
-
-let lastGPSLat = null;
-let lastGPSLon = null;
-
-let currentGPSLat = null;
-let currentGPSLon = null;
-
-let lastMovementLat = null;
-let lastMovementLon = null;
-
-let visitedAreas = new Map();
-let recentCollectedLocations = new Map();
-let compassListening = false;
-
-/* Speed tracking state */
-const speedState = {
-    lastSpeedSampleLat: null,
-    lastSpeedSampleLon: null,
-    lastSpeedSampleTime: null,
-    currentMovementSpeedMPS: 0,
-    highSpeedReadings: 0,
-    lastSpeedStatusTime: 0
+let userProfile = {
+    coins: 0,
+    level: 1,
+    skins: ["default"],
+    activeSkin: "default"
 };
 
-/* =========================
-   UI HELPERS
-========================= */
+// DOM Elements
+const authScreen = document.getElementById("authScreen");
+const modeScreen = document.getElementById("modeScreen");
+const loadingScreen = document.getElementById("loadingScreen");
+const shopOverlay = document.getElementById("shopOverlay");
+const accountOverlay = document.getElementById("accountOverlay");
 
-const $ = id => document.getElementById(id);
+const emailInput = document.getElementById("emailInput");
+const signInButton = document.getElementById("signInButton");
+const authStatus = document.getElementById("authStatus");
 
-function setStatus(text) {
-    const el = $("status");
-    if (el) el.textContent = text;
+// Wait for DOM to load before attaching events
+document.addEventListener("DOMContentLoaded", () => {
+    initApp();
+});
+
+async function initApp() {
+    setupEventListeners();
+    await checkExistingSession();
 }
 
-function setLoading(text, percent) {
-    const textEl = $("loadingText");
-    const barEl = $("loadingBar");
-    if (textEl) textEl.textContent = text;
-    if (barEl) barEl.style.width = percent + "%";
+function setupEventListeners() {
+    if (signInButton) {
+        signInButton.addEventListener("click", handleSignIn);
+    }
+
+    // Mode selection
+    const publicModeBtn = document.getElementById("publicMode");
+    const unlimitedModeBtn = document.getElementById("unlimitedMode");
+
+    if (publicModeBtn) {
+        publicModeBtn.addEventListener("click", () => selectMode("public"));
+    }
+    if (unlimitedModeBtn) {
+        unlimitedModeBtn.addEventListener("click", () => selectMode("unlimited"));
+    }
+
+    // HUD Buttons
+    const shopButton = document.getElementById("shopButton");
+    const accountButton = document.getElementById("accountButton");
+    const closeShop = document.getElementById("closeShop");
+    const closeAccount = document.getElementById("closeAccount");
+    const signOutButton = document.getElementById("signOutButton");
+
+    if (shopButton) shopButton.addEventListener("click", () => shopOverlay.classList.add("active"));
+    if (closeShop) closeShop.addEventListener("click", () => shopOverlay.classList.remove("active"));
+    
+    if (accountButton) accountButton.addEventListener("click", () => {
+        updateAccountUI();
+        accountOverlay.classList.add("active");
+    });
+    if (closeAccount) closeAccount.addEventListener("click", () => accountOverlay.classList.remove("active"));
+
+    if (signOutButton) signOutButton.addEventListener("click", handleSignOut);
 }
 
-function showToast(message) {
-    const el = $("toast");
-    if (!el) return;
-    el.textContent = message;
-    el.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-        el.classList.remove("show");
-    }, 2200);
-}
+// Check if user is already logged in
+async function checkExistingSession() {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
 
-function getSpeedMPH() {
-    return speedState.currentMovementSpeedMPS * 2.236936;
-}
-
-function updateSpeedStatus() {
-    if (!isMovingTooFastToCollect(speedState.highSpeedReadings)) return;
-    const now = Date.now();
-    if (now - speedState.lastSpeedStatusTime < 3000) return;
-    speedState.lastSpeedStatusTime = now;
-    setStatus(`🚗 Moving too fast to collect coins • ${Math.round(getSpeedMPH())} mph`);
-}
-
-function centerOnPlayer() {
-    if (currentGPSLat !== null && currentGPSLon !== null && map) {
-        map.setView([currentGPSLat, currentGPSLon], 17, { animate: true });
-        showToast("Centered on player 🎯");
-    } else {
-        showToast("Location not acquired yet!");
+        if (session && session.user) {
+            currentUser = session.user;
+            await loadUserProfile();
+            showModeScreen();
+        } else {
+            showAuthScreen();
+        }
+    } catch (err) {
+        console.error("Session check error:", err);
+        showAuthScreen();
     }
 }
 
-/* =========================
-   GAME FLOW & SCREEN SWITCHING
-========================= */
-
-function handleSignIn() {
-    const emailInput = $("emailInput");
-    const statusEl = $("authStatus");
+// Handle Sign In / Up
+async function handleSignIn() {
     const email = emailInput ? emailInput.value.trim() : "";
 
-    if (!email || !email.includes("@")) {
-        if (statusEl) statusEl.textContent = "Please enter a valid email address.";
+    if (!email) {
+        showStatus("Please enter a valid email address.", true);
         return;
     }
 
-    if (statusEl) statusEl.textContent = "Logging in...";
+    try {
+        showStatus("Signing in...");
+        signInButton.disabled = true;
 
-    currentUser = { email };
+        // Magic Link Authentication
+        const { data, error } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: {
+                emailRedirectTo: window.location.href
+            }
+        });
 
-    $("authScreen").style.display = "none";
-    $("modeScreen").style.display = "flex";
+        if (error) throw error;
+
+        showStatus("Check your email for the login link!");
+    } catch (err) {
+        console.error("Sign-in error:", err);
+        showStatus(err.message || "Failed to sign in. Check your API setup.", true);
+    } finally {
+        if (signInButton) signInButton.disabled = false;
+    }
+}
+
+// Handle Sign Out
+async function handleSignOut() {
+    try {
+        await supabase.auth.signOut();
+        currentUser = null;
+        accountOverlay.classList.remove("active");
+        showAuthScreen();
+    } catch (err) {
+        console.error("Sign-out error:", err);
+    }
+}
+
+// Load profile data from database
+async function loadUserProfile() {
+    if (!currentUser) return;
+
+    try {
+        const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", currentUser.id)
+            .single();
+
+        if (error && error.code !== "PGRST116") {
+            console.error("Error fetching profile:", error);
+            return;
+        }
+
+        if (data) {
+            userProfile = {
+                coins: data.coins || 0,
+                level: data.level || 1,
+                skins: data.skins || ["default"],
+                activeSkin: data.active_skin || "default"
+            };
+        } else {
+            // Create initial profile record
+            await supabase.from("profiles").insert([{
+                id: currentUser.id,
+                coins: 0,
+                level: 1,
+                skins: ["default"],
+                active_skin: "default"
+            }]);
+        }
+
+        updateHUD();
+    } catch (err) {
+        console.error("Profile sync error:", err);
+    }
+}
+
+// UI State Screen Switches
+function showAuthScreen() {
+    if (authScreen) authScreen.style.display = "flex";
+    if (modeScreen) modeScreen.classList.remove("active");
+    if (loadingScreen) loadingScreen.classList.remove("active");
+}
+
+function showModeScreen() {
+    if (authScreen) authScreen.style.display = "none";
+    if (modeScreen) modeScreen.classList.add("active");
+    if (loadingScreen) loadingScreen.classList.remove("active");
 }
 
 function selectMode(mode) {
-    gameMode = mode;
-    $("modeScreen").style.display = "none";
-    $("loadingScreen").style.display = "flex";
+    if (modeScreen) modeScreen.classList.remove("active");
+    if (loadingScreen) loadingScreen.classList.add("active");
 
-    setLoading("Initializing map...", 40);
+    const loadingText = document.getElementById("loadingText");
+    if (loadingText) loadingText.textContent = `Loading ${mode.toUpperCase()} mode...`;
 
+    // Simulate game initialization
     setTimeout(() => {
-        initGameMap();
-    }, 500);
+        if (loadingScreen) loadingScreen.classList.remove("active");
+        showToast(`Game loaded in ${mode.toUpperCase()} mode!`);
+    }, 1500);
 }
 
-function initGameMap() {
-    setLoading("Locating player...", 70);
+function updateHUD() {
+    const coinsDisplay = document.getElementById("coinsDisplay");
+    const shopBalance = document.getElementById("shopBalance");
 
-    if (!map) {
-        map = L.map("map", { zoomControl: false }).setView([0, 0], 2);
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-            maxZoom: 19,
-            attribution: "© OpenStreetMap"
-        }).addTo(map);
+    if (coinsDisplay) coinsDisplay.textContent = `🪙 Coins: ${userProfile.coins}`;
+    if (shopBalance) shopBalance.textContent = `🪙 ${userProfile.coins}`;
+}
+
+function updateAccountUI() {
+    const accountEmail = document.getElementById("accountEmail");
+    const profileCoins = document.getElementById("profileCoins");
+    const profileLevel = document.getElementById("profileLevel");
+    const profileSkinCount = document.getElementById("profileSkinCount");
+
+    if (accountEmail) {
+        accountEmail.textContent = currentUser ? currentUser.email : "Guest Account";
     }
+    if (profileCoins) profileCoins.textContent = userProfile.coins;
+    if (profileLevel) profileLevel.textContent = userProfile.level;
+    if (profileSkinCount) profileSkinCount.textContent = userProfile.skins.length;
+}
 
-    if ("geolocation" in navigator) {
-        watchId = navigator.geolocation.watchPosition(
-            onLocationSuccess,
-            onLocationError,
-            { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }
-        );
-    } else {
-        setStatus("Geolocation is not supported by your browser.");
-        $("loadingScreen").style.display = "none";
+function showStatus(message, isError = false) {
+    if (authStatus) {
+        authStatus.textContent = message;
+        authStatus.style.color = isError ? "#ff5252" : "#4caf50";
     }
 }
 
-function onLocationSuccess(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    const accuracy = position.coords.accuracy;
-    const speed = position.coords.speed;
-    const heading = position.coords.heading;
-
-    currentGPSLat = lat;
-    currentGPSLon = lon;
-    if (heading !== null && !isNaN(heading)) {
-        gpsHeading = normalizeHeading(heading);
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (toast) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
     }
-
-    updateMovementSpeed(lat, lon, speed, speedState);
-    updateSpeedStatus();
-
-    if ($("loadingScreen").style.display !== "none") {
-        setLoading("Ready!", 100);
-        setTimeout(() => {
-            $("loadingScreen").style.display = "none";
-        }, 300);
-        map.setView([lat, lon], 17);
-    }
-
-    const playerIcon = L.divIcon({
-        className: "player-wrapper",
-        html: `
-            <div class="player skin-blue" style="--player-color: #00aaff;">
-                <div class="playerPointer"><div class="playerPointerInner"></div></div>
-            </div>
-        `,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-    });
-
-    if (!playerMarker) {
-        playerMarker = L.marker([lat, lon], { icon: playerIcon }).addTo(map);
-    } else {
-        playerMarker.setLatLng([lat, lon]);
-    }
-
-    if (!accuracyCircle) {
-        accuracyCircle = L.circle([lat, lon], { radius: accuracy, color: "#00aaff", opacity: 0.2, fillOpacity: 0.05 }).addTo(map);
-    } else {
-        accuracyCircle.setLatLng([lat, lon]);
-        accuracyCircle.setRadius(accuracy);
-    }
-
-    updatePlayerHeading(playerMarker, deviceHeading, gpsHeading);
-    setStatus(`GPS Active • ${Math.round(accuracy)}m accuracy`);
 }
-
-function onLocationError(err) {
-    setStatus(`GPS Error: ${err.message}`);
-}
-
-/* =========================
-   EVENT BINDINGS
-========================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-    const signInBtn = $("signInButton");
-    if (signInBtn) {
-        signInBtn.addEventListener("click", handleSignIn);
-    }
-
-    const publicBtn = $("publicMode");
-    if (publicBtn) {
-        publicBtn.addEventListener("click", () => selectMode("public"));
-    }
-
-    const unlimitedBtn = $("unlimitedMode");
-    if (unlimitedBtn) {
-        unlimitedBtn.addEventListener("click", () => selectMode("unlimited"));
-    }
-
-    const centerBtn = $("centerPlayerButton");
-    if (centerBtn) {
-        centerBtn.addEventListener("click", centerOnPlayer);
-    }
-
-    const shopBtn = $("shopButton");
-    if (shopBtn) {
-        shopBtn.addEventListener("click", () => {
-            $("shopOverlay").style.display = "block";
-        });
-    }
-
-    const closeShopBtn = $("closeShop");
-    if (closeShopBtn) {
-        closeShopBtn.addEventListener("click", () => {
-            $("shopOverlay").style.display = "none";
-        });
-    }
-
-    const accountBtn = $("accountButton");
-    if (accountBtn) {
-        accountBtn.addEventListener("click", () => {
-            $("accountOverlay").style.display = "block";
-        });
-    }
-
-    const closeAccountBtn = $("closeAccount");
-    if (closeAccountBtn) {
-        closeAccountBtn.addEventListener("click", () => {
-            $("accountOverlay").style.display = "none";
-        });
-    }
-
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener("deviceorientation", (e) => {
-            if (e.webkitCompassHeading !== undefined) {
-                deviceHeading = normalizeHeading(e.webkitCompassHeading);
-            } else if (e.alpha !== null) {
-                deviceHeading = normalizeHeading(360 - e.alpha);
-            }
-            updatePlayerHeading(playerMarker, deviceHeading, gpsHeading);
-        }, true);
-    }
-});
