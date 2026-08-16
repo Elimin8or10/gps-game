@@ -1,0 +1,66 @@
+#hud {
+    position: fixed;
+
+    top:
+        calc(
+            10px +
+            env(safe-area-inset-top)
+        );
+
+    left: 10px;
+    right: 10px;
+
+    z-index: 2000;
+
+    display: flex;
+
+    gap: 7px;
+}
+
+.hud {
+    min-height: 44px;
+
+    padding: 10px 13px;
+
+    border-radius: 13px;
+
+    background: #080d13f2;
+
+    color: white;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 4px 18px #0006;
+
+    backdrop-filter: blur(10px);
+}
+
+#coinsDisplay {
+    flex: 1;
+
+    justify-content: flex-start;
+
+    font-weight: bold;
+}
+
+.hudButton {
+    cursor: pointer;
+
+    font-size: 20px;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    transition:
+        transform .1s ease,
+        background .2s ease;
+}
+
+.hudButton:active {
+    transform: scale(.92);
+
+    background: #121f2d;
+}
