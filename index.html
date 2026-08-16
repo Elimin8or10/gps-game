@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GPS Coin</title>
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Game Stylesheet -->
     <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
 
-    <div id="authScreen">
+    <!-- Leaflet Map Container -->
+    <div id="map"></div>
+
+    <!-- Authentication Screen -->
+    <div id="authScreen" class="overlay active">
         <div class="authBox">
             <div class="logo">🪙</div>
             <h1>GPS COIN</h1>
@@ -20,7 +26,8 @@
         </div>
     </div>
 
-    <div id="modeScreen">
+    <!-- Mode Selection Screen -->
+    <div id="modeScreen" class="overlay">
         <div class="modeBox">
             <div style="font-size:60px">🪙</div>
             <h1>Choose Your Mode</h1>
@@ -40,71 +47,55 @@
         </div>
     </div>
 
-    <div id="loadingScreen">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="overlay">
         <div class="loadingBox">
             <div class="loadingLogo">🪙</div>
             <div class="loadingTitle">GPS COIN</div>
             <div class="loadingBar">
-                <div id="loadingBar"></div>
+                <div id="loadingBarFill"></div>
             </div>
             <div id="loadingText">Starting GPS...</div>
         </div>
     </div>
 
+    <!-- Main Game HUD -->
     <div id="hud">
-        <div id="coinsDisplay" class="hud">🪙 Coins: 0</div>
-        <div id="centerPlayerButton" class="hud hudButton" title="Center map on player">🎯</div>
-        <div id="musicButton" class="hud hudButton">🔊</div>
-        <div id="sfxButton" class="hud hudButton">🔔</div>
-        <div id="shopButton" class="hud hudButton">🛒</div>
-        <div id="accountButton" class="hud hudButton">👤</div>
+        <div id="coinsDisplay" class="hudItem">🪙 Coins: 0</div>
+        <div id="centerPlayerButton" class="hudItem hudButton" title="Center map on player">🎯</div>
+        <div id="shopButton" class="hudItem hudButton">🛒</div>
+        <div id="accountButton" class="hudItem hudButton">👤</div>
     </div>
 
-    <div id="map"></div>
-
-    <div id="status">Waiting for location...</div>
-
-    <div id="shopOverlay">
+    <!-- Shop Overlay -->
+    <div id="shopOverlay" class="overlay">
         <div class="shopPage">
             <div class="shopTopbar">
                 <button id="closeShop" class="shopBack">← BACK</button>
                 <div class="shopTitle">🛒 SHOP</div>
                 <div id="shopBalance" class="shopBalance">🪙 0</div>
             </div>
-
             <div class="shopFeatured">
                 <div class="featuredInfo">
                     <div class="featuredLabel">✨ FEATURED SKIN</div>
                     <div class="featuredName">Galaxy</div>
-                    <div class="featuredDescription">
-                        Become a walking galaxy. This skin uses your custom Galaxy artwork and has an animated cosmic glow.
-                    </div>
+                    <div class="featuredDescription">Become a walking galaxy with an animated cosmic glow.</div>
                     <button id="featuredButton" class="featuredButton">🪙 1,000</button>
                 </div>
-                <div id="featuredPreview" class="featuredPreview"></div>
             </div>
-
-            <div class="shopCategories">
-                <button class="shopCategory active" data-category="all">ALL</button>
-                <button class="shopCategory" data-category="basic">BASIC</button>
-                <button class="shopCategory" data-category="rare">RARE</button>
-                <button class="shopCategory" data-category="legendary">LEGENDARY</button>
-            </div>
-
             <div class="shopSectionTitle">🧤 Skins</div>
             <div id="shopItems" class="shopGrid"></div>
         </div>
     </div>
 
-    <div id="accountOverlay">
+    <!-- Account Overlay -->
+    <div id="accountOverlay" class="overlay">
         <div class="accountPanel">
             <div class="panelHeader">
                 <h2>👤 Player Profile</h2>
                 <button id="closeAccount" class="close">✕</button>
             </div>
-
-            <div id="accountEmail" class="accountEmail">Player account • No email required</div>
-
+            <div id="accountEmail" class="accountEmail">Player account</div>
             <div class="profileStats">
                 <div class="profileStat">
                     <div id="profileCoins" class="profileStatValue">0</div>
@@ -119,28 +110,14 @@
                     <div class="profileStatLabel">SKINS</div>
                 </div>
             </div>
-
-            <div class="profileSectionTitle">🎨 Your Skins</div>
-            <div id="profileSkins" class="profileSkins"></div>
-
-            <div class="profileSectionTitle">⚙️ Settings</div>
-
-            <div class="settingRow">
-                <span>🎵 Music</span>
-                <button id="musicSetting" class="toggle">ON</button>
-            </div>
-
-            <div class="settingRow">
-                <span>🪙 Coin SFX</span>
-                <button id="sfxSetting" class="toggle">ON</button>
-            </div>
-
             <button id="signOutButton" class="accountAction danger">Sign Out</button>
         </div>
     </div>
 
+    <!-- Notification Toast -->
     <div id="toast"></div>
 
+    <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="./js/main.js"></script>
 </body>
